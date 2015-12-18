@@ -1,0 +1,6 @@
+[
+null,
+{"id":1,"battlerName":"ali","characterIndex":0,"characterName":"aliw","classId":6,"equips":[5,0,2,3,0],"faceIndex":0,"faceName":"alice","traits":[{"code":51,"dataId":1,"value":1}],"initialLevel":1,"maxLevel":99,"name":"アリス","nickname":"","note":"","profile":""},
+{"id":2,"battlerName":"kmm2","characterIndex":0,"characterName":"kmmw2","classId":5,"equips":[1,0,2,3,4],"faceIndex":0,"faceName":"kmm2","traits":[],"initialLevel":1,"maxLevel":99,"name":"雲李","nickname":"","note":"","profile":""},
+{"id":3,"battlerName":"shikyoub2","characterIndex":0,"characterName":"shikyouw2","classId":5,"equips":[0,0,0,3,4],"faceIndex":0,"faceName":"shikyou","traits":[{"code":51,"dataId":9,"value":1}],"initialLevel":1,"maxLevel":99,"name":"時叶","nickname":"","note":"","profile":""}
+]
