@@ -186,6 +186,9 @@ Yanfly.Gab = Yanfly.Gab || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Fixed a bug with GabSound that didn't load the proper sound filenames.
+ *
  * Version 1.02a:
  * - Added functionality for battle gabs to be saved when going into other
  * scenes and returning to battle.
@@ -346,6 +349,10 @@ Game_Interpreter.prototype.setGabSound = function(args) {
     var text = '';
     if (args.length === 1) return this._gabSoundName = String(args[0]);
     for (var i = 0; i < args.length; ++i) {
+      if (i === 0) {
+        text = args[0];
+        continue;
+      }
       text = text + ' ' + args[i];
     }
     this._gabSoundName = text;

@@ -11,7 +11,7 @@ Yanfly.SLS = Yanfly.SLS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06a Allows actors to learn skills from the skill menu
+ * @plugindesc v1.06b Allows actors to learn skills from the skill menu
  * through crafting them via items or otherwise.
  * @author Yanfly Engine Plugins
  *
@@ -228,11 +228,12 @@ Yanfly.SLS = Yanfly.SLS || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06a:
+ * Version 1.06b:
  * - Added 'Confirm Window', 'Confirm Text', 'Confirm Yes', 'Confirm No' to the
  * plugin's parameters. This confirm window only appears for non-integrated
  * menus as the integrated menus have a class confirmation window already.
  * - Confirm Text now supports text codes.
+ * - Fixed a visual bug when learning skills.
  *
  * Version 1.05:
  * - Fixed a bug with the 'OpenLearnSkill party x' plugin command not opening
@@ -1224,7 +1225,8 @@ Window_SkillLearnCommand.prototype.update = function() {
       } else {
         actor.changeClass(classId, false);
       }
-      var hpAmount = Math.max(1, parseInt(actor.mhp * hpRate));
+      var max = actor.isDead() ? 0 : 1;
+      var hpAmount = Math.max(max, parseInt(actor.mhp * hpRate));
       actor.setHp(hpAmount);
       actor.setMp(parseInt(actor.mmp * mpRate));
       this._statusWindow.setActor(actor);
@@ -1667,7 +1669,8 @@ Scene_LearnSkill.prototype.refreshStatus = function() {
     } else {
       actor.changeClass(classId, false);
     }
-    var hpAmount = Math.max(1, parseInt(actor.mhp * hpRate));
+    var max = actor.isDead() ? 0 : 1;
+    var hpAmount = Math.max(max, parseInt(actor.mhp * hpRate));
     actor.setHp(hpAmount);
     actor.setMp(parseInt(actor.mmp * mpRate));
     this._statusWindow.setActor(actor);

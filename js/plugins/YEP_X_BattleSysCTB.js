@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05b (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.06 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -388,7 +388,10 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.05b:
+ * Version 1.06:
+ * - Fixed a bug that would cause a crash when a party member leaves the party.
+ *
+ * Version 1.05c:
  * - Implemented a Forced Action queue list. This means if a Forced Action
  * takes place in the middle of an action, the action will resume after the
  * forced action finishes rather than cancels it out like MV does.
@@ -2084,8 +2087,8 @@ Window_CTBIcon.prototype.updateBattler = function() {
     if (this._battler && this._battler._ctbTransformed) changed = true;
     if (!changed) return;
     this._battler = this._mainSprite._battler;
-    this._battler._ctbTransformed = undefined;
     if (!this._battler) return this.removeCTBIcon();
+    this._battler._ctbTransformed = undefined;
     this._iconIndex = this._battler.ctbIcon();
     if (this._iconIndex > 0) {
       this._image = ImageManager.loadSystem('IconSet');

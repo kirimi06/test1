@@ -11,7 +11,7 @@ Yanfly.EED = Yanfly.EED || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Allows your enemies to drop more than just three
+ * @plugindesc v1.02 Allows your enemies to drop more than just three
  * items as per the editor's limit.
  * @author Yanfly Engine Plugins
  *
@@ -344,6 +344,10 @@ Yanfly.EED = Yanfly.EED || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version v1.02:
+ * - Fixed a bug that crashed the game when a conditional drop is made based
+ * off of an item count.
  *
  * Version v1.01:
  * - Added a new section: Lunatic Mode - New JavaScript Functions to allow
@@ -874,7 +878,7 @@ DropManager.conditionCount = function(line1, line2) {
     var a = this._enemy;
     var s = $gameSwitches._data;
     var v = $gameVariables._data;
-    value = eval('quantity ' + line);
+    value = eval('quantity ' + line2);
     return value;
 };
 
