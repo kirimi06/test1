@@ -1,9 +1,10 @@
+
 //=============================================================================
 // MOG_BattlerMotion.js
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Adiciona efeitos animados nos battlers.
+ * @plugindesc (v1.2) Adiciona efeitos animados nos battlers.
  * @author Moghunter
  *
  * @param Shake Effect Actor
@@ -20,7 +21,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battler Motion (v1.1) +++
+ * +++ MOG - Battler Motion (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -49,6 +50,8 @@
  * =============================================================================
  * Histórico.
  * =============================================================================
+ * (1.2) - Correção de não atualizar o efeito ao transformar o inimigo.
+ *       - Correção do efeito tremer ao reviver o aliado.
  * (1.1) - Melhoria na animação de ação.
  * 
  */
@@ -257,21 +260,34 @@ Game_Battler.prototype.motion_shake = function() {
 };
 
 //=============================================================================
+// ** Game Enemy
+//=============================================================================
+
+//==============================
+// * Transform
+//==============================
+var _alias_mog_bmotion_transform = Game_Enemy.prototype.transform
+Game_Enemy.prototype.transform = function(enemyId) {
+    _alias_mog_bmotion_transform.call(this,enemyId) 
+	this.set_motion_data();	
+};
+
+//=============================================================================
 // ** Game Action
 //=============================================================================
 
 //==============================
-// * executeHpDamage
+// * Apply
 //==============================
-var _alias_mog_bmotion_executeHpDamage = Game_Action.prototype.executeHpDamage
-Game_Action.prototype.executeHpDamage = function(target, value) {	
-	 _alias_mog_bmotion_executeHpDamage.call(this,target, value);
-	 if (value > 0) {
+var _alias_mog_bmotion_gact_apply = Game_Action.prototype.apply;
+Game_Action.prototype.apply = function(target) {
+	 var old_hp = target.hp;
+	_alias_mog_bmotion_gact_apply.call(this,target);
+	if (target.hp < old_hp) {
     	 if (target.isActor() && $gameSystem._bmotion[0]) {target.motion_shake()};
-	     if (target.isEnemy() && $gameSystem._bmotion[1]) {target.motion_shake()};
-     };
+	     if (target.isEnemy() && $gameSystem._bmotion[1]) {target.motion_shake()};		
+	};
 };
-
 
 //=============================================================================
 // ** Spriteset_Battle
@@ -719,6 +735,7 @@ SpriteBattlerShadow.prototype.update_shadow = function(sprite) {
 	if (!this._data[0]) {this.loadFiles(sprite);return};
 	if (!this.bitmap.isReady()) {return;};
 	if (!this._data[1]) {this.set_data(sprite)};
+	if (!sprite._battler.is_fly_mode()){this.visible = false;return};
 	this.x = sprite.x;
 	ny = 0
 	if (this.need_set_ny_action(sprite._battler)) {ny = sprite._battler._motion_action_xy[1]};

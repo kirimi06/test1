@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.5) Permite customizar o layout de batalha.
+ * @plugindesc (v2.0) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -29,7 +29,11 @@
  * @param Command Auto Adjust
  * @desc Ativar ajuste automático baseado na posição
  * da Hud. (false - Define a posição fixa.)
- * @default true  
+ * @default true
+ *
+ * @param Max Battle Members
+ * @desc Quantidade de maxima de battler na batalha.
+ * @default 4
  *
  * @param >> TURN ===================
  * @desc 
@@ -590,7 +594,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v1.5) +++
+ * +++ MOG_BattleHud (v2.0) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -630,6 +634,8 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (2.0) - Faces como actors no modo Frontview. 
+ *       - Opção de definir a quantidade battlers na batalha.
  * (1.5) - Correção no setup do ângulo dos medidores. 
  * (1.4) - Correção na prioridade do layout Screen.
  * (1.3) - Correção na posição do plugin do template. 
@@ -665,6 +671,7 @@
 	Moghunter.bhud_space_x = Number(Moghunter.parameters['Hud Space X'] || 0);
 	Moghunter.bhud_space_y  = Number(Moghunter.parameters['Hud Space Y'] || 0);
 	Moghunter.bhud_pos_mode = String(Moghunter.parameters['Vertical Mode'] || false);
+	Moghunter.bhud_max_battle_members = Number(Moghunter.parameters['Max Battle Members'] || 4);
 	
     // Screen Layout
 	Moghunter.bhud_screen_layout = String(Moghunter.parameters['Screen Layout'] || true);
@@ -821,7 +828,8 @@
 	for (var i = 0; i < 8; i++) {
 		Moghunter.bhud_custom_pos[i] = (Moghunter.parameters['Custom Position ' + String(i + 1)] || null);
 	};
-		
+
+
 //=============================================================================
 // ** ImageManager
 //=============================================================================
@@ -846,6 +854,7 @@ Game_Temp.prototype.initialize = function() {
 	this._bhud_position = [];	
 	this._bhud_position_active = null;
 	this._battleEnd = false;
+	this._bhud_dp = false;
 	this._refreshBhud = false;
 };
 
@@ -879,6 +888,10 @@ Game_System.prototype.set_hudcp = function(value) {
 	return  [Number(s[0]),Number(s[1])];
 }
 
+//=============================================================================
+// ** Game Interpreter
+//=============================================================================
+
 //==============================
 // * Command129
 //==============================
@@ -887,6 +900,17 @@ Game_Interpreter.prototype.command129 = function() {
 	_alias_mog_bhud_command129.call(this);	
 	$gameTemp._refresh_Bhud = true;
 	return true;
+};
+
+//=============================================================================
+// ** Game Party
+//=============================================================================
+
+//==============================
+// * max Battle Members
+//==============================
+Game_Party.prototype.maxBattleMembers = function() {
+    return Math.max(Moghunter.bhud_max_battle_members,1);
 };
 
 //=============================================================================
@@ -1146,6 +1170,86 @@ Window_PartyCommand.prototype.update = function() {
 };
 
 //=============================================================================
+// ** Sprite Actor
+//=============================================================================
+
+//==============================
+// * Initialize
+//==============================
+var _alias_bhud_sprt_actor_initialize = Sprite_Actor.prototype.initialize
+Sprite_Actor.prototype.initialize = function(battler) {
+	_alias_bhud_sprt_actor_initialize.call(this,battler);
+	this._sprite_face = false;
+	if (String(Moghunter.bhud_face_visible) === "true") {this._sprite_face = true};
+};
+
+//==============================
+// * Damage Offset X
+//==============================
+Sprite_Actor.prototype.damageOffsetX = function() {
+	if (!$gameSystem.isSideView() && this._sprite_face) {return 0};
+    return -32;
+};
+
+//==============================
+// * update Position
+//==============================
+var _alias_mog_bhud_sprt_actor_updatePosition = Sprite_Battler.prototype.updatePosition;
+Sprite_Battler.prototype.updatePosition = function() {
+	if (!$gameSystem.isSideView() && this._sprite_face) {
+		if (this._battler && $gameTemp._bhud_position[this._battler.index()]) {
+   		   this.x = $gameTemp._bhud_position[this._battler.index()][0] + Moghunter.bhud_face_pos_x;
+		   this.y = $gameTemp._bhud_position[this._battler.index()][1] + Moghunter.bhud_face_pos_y;
+		   return;
+		};
+	};	
+    _alias_mog_bhud_sprt_actor_updatePosition.call(this);
+};
+
+//==============================
+// * Setup Animation
+//==============================
+var _alias_mog_bhud_sprt_actor_setupAnimation = Sprite_Battler.prototype.setupAnimation;
+Sprite_Actor.prototype.setupAnimation = function() {
+	if (!$gameSystem.isSideView() && this._sprite_face) {
+    while (this._battler.isAnimationRequested()) {
+        var data = this._battler.shiftAnimation();
+        var animation = $dataAnimations[data.animationId];
+        var mirror = data.mirror;
+        var delay = animation.position === 3 ? 0 : data.delay;
+        this.startAnimation(animation, mirror, delay);
+        for (var i = 0; i < this._animationSprites.length; i++) {
+            var sprite = this._animationSprites[i];
+            sprite.visible = true;
+        }
+    }
+	return;
+	};
+	_alias_mog_bhud_sprt_actor_setupAnimation.call(this);
+};
+
+//==============================
+// * Setup Damage Popup
+//==============================
+var _alias_mog_bhud_sprt_actor_setupDamagePopup = Sprite_Battler.prototype.setupDamagePopup
+Sprite_Actor.prototype.setupDamagePopup = function() {
+	if (!$gameSystem.isSideView() && this._sprite_face) {
+	    if (this._battler.isDamagePopupRequested()) {
+            var sprite = new Sprite_Damage();
+            sprite.x = this.x + this.damageOffsetX();
+            sprite.y = this.y + this.damageOffsetY();
+            sprite.setup(this._battler);
+            this._damages.push(sprite);
+            this.parent.addChild(sprite);
+            this._battler.clearDamagePopup();
+            this._battler.clearResult();
+        };
+	return;
+	};
+	_alias_mog_bhud_sprt_actor_setupDamagePopup.call(this);
+};
+
+//=============================================================================
 // ** Scene Battle
 //=============================================================================
 
@@ -1154,8 +1258,30 @@ Window_PartyCommand.prototype.update = function() {
 //==============================
 var _alias_mog_bhud_createWindowLayer = Scene_Battle.prototype.createWindowLayer
 Scene_Battle.prototype.createWindowLayer = function() {
-	this.create_battle_hud() 
+	this.create_battle_hud() 	
 	_alias_mog_bhud_createWindowLayer.call(this);
+	if (!$gameSystem.isSideView()) {this.createActors()};
+};
+
+//==============================
+// ** createActors
+//==============================
+Scene_Battle.prototype.createActors = function() {
+    this._actorSprites = [];
+    for (var i = 0; i < $gameParty.maxBattleMembers(); i++) {
+        this._actorSprites[i] = new Sprite_Actor();
+        this.addChild(this._actorSprites[i]);
+    };
+};
+
+//==============================
+// ** updateActors
+//==============================
+Scene_Battle.prototype.updateActors = function() {
+    var members = $gameParty.battleMembers();
+    for (var i = 0; i < this._actorSprites.length; i++) {
+        this._actorSprites[i].setBattler(members[i]);
+    }
 };
 
 //==============================
@@ -1207,6 +1333,7 @@ var _alias_mog_bhud_scbat_update = Scene_Battle.prototype.update
 Scene_Battle.prototype.update = function() {
 	_alias_mog_bhud_scbat_update.call(this);
 	if (this._screen_layout) {this.update_hud_visible()};
+	if (this._actorSprites) {this.updateActors()};
 	if ($gameTemp._refresh_Bhud) {this.refresh_battle_hud()};
 }
 

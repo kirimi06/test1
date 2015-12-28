@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.03 (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -700,6 +700,10 @@ Yanfly.SVE = Yanfly.SVE || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version v1.03:
+ * - Fixed a bug that would cause <Sideview Width: x> & <Sideview Height: x>
+ * notetags to crash the game.
  *
  * Version v1.02:
  * - Synchronized state icons and overlays with floating enemies.
@@ -1473,10 +1477,10 @@ Sprite_Enemy.prototype.adjustMainBitmapSettings = function(bitmap) {
     this._adjustMainBitmapSettings = true;
     var svw = this._enemy.sideviewWidth();
     var svh = this._enemy.sideviewHeight();
-    if (svw.toLowerCase() === 'auto') svw = bitmap.width / 9;
-    if (svh.toLowerCase() === 'auto') svh = bitmap.height / 6;
-    svw = Math.floor(svw * this._enemy.spriteScaleX());
-    svh = Math.floor(svh * this._enemy.spriteScaleY());
+    if (svw === 'auto') svw = bitmap.width / 9;
+    if (svh === 'auto') svh = bitmap.height / 6;
+    svw = Math.floor(Math.abs(svw * this._enemy.spriteScaleX()));
+    svh = Math.floor(Math.abs(svh * this._enemy.spriteScaleY()));
     this.bitmap = new Bitmap(svw, svh);
 };
 

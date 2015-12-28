@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Minigame baseado no jogo Final Fantasy Theatrhythm.
+ * @plugindesc (v1.1) Minigame baseado no jogo Final Fantasy Theatrhythm.
  * @author Moghunter
  *
  * @param >> MAIN ===================
@@ -13,6 +13,10 @@
  * @param Points Variable ID
  * @desc Definição da variável que ficara guardada a quantidade de Pontos.
  * @default 5
+ *
+ * @param Result Switch ID
+ * @desc Definição da switch que corresponde a vitória ou derrota do minigame.
+ * @default 10 
  *
  * @param Score Base
  * @desc Definição do valor basico dos pontos.
@@ -216,7 +220,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Theatrhythm (v1.0) +++
+ * +++ MOG - Theatrhythm (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -242,6 +246,13 @@
  * abaixo na caixa de notas do inimigo.
  *
  * Theatrhythm Action Animation: X
+ *
+ * =============================================================================
+ * HITSTÓRICO
+ * =============================================================================
+ * (v1.1) - Correção de prosseguir os comandos de eventos antes da cena do
+ *          Theatrhythm terminar.
+ *        - Adicionado a switch de resultado do minigame. 
  *
  */
 
@@ -304,6 +315,7 @@
 	Moghunter.theatrhythm_name_x = Number(Moghunter.parameters['E Name X'] || 300);
 	Moghunter.theatrhythm_name_y = Number(Moghunter.parameters['E Name Y'] || 575);
 	Moghunter.theatrhythm_name_font_size = Number(Moghunter.parameters['E Name Font Size'] || 24);
+	Moghunter.theatrhythm_result_switch_id = Number(Moghunter.parameters['Result Switch ID'] || 10);
 	
 //=============================================================================
 // ** Load Theatrhythm
@@ -328,6 +340,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 		     var speed = Math.min(Math.max(args[3],1),20);
 		     $gameSystem._theatrhythm_data = [enemy_id,speed];
 			 $gameSystem._theatrhythm_start = true;
+			 this.wait(10);
 	    };
     };	
 	return true;
@@ -534,7 +547,8 @@ Scene_Theatrhythm.prototype.initialize = function() {
 	this._result_data = [0,0];
 	BattleManager.saveBgmAndBgs();
 	AudioManager.fadeOutBgm(2);
-	AudioManager.stopBgs();	
+	AudioManager.stopBgs();
+	$gameSwitches._data[Moghunter.theatrhythm_result_switch_id] = false;
 	if (!$gameVariables._data[Moghunter.theatrhythm_variable_id]) {
 	     $gameVariables._data[Moghunter.theatrhythm_variable_id] = 0;
 	};
@@ -1313,6 +1327,11 @@ Scene_Theatrhythm.prototype.execute_damage = function(target) {
 //==============================
 Scene_Theatrhythm.prototype.battle_end = function(type) {
 	if ($gameSystem._theatrhythm_phase != 1) {return};
+	if (type === 10) { 
+     	$gameSwitches._data[Moghunter.theatrhythm_result_switch_id] = true;
+	} else {
+		$gameSwitches._data[Moghunter.theatrhythm_result_switch_id] = false;
+	};		
 	$gameSystem._theatrhythm_phase = type;
 	if (type === 10) {
 		for (var i = 0; i < this._battlers.length; i++) {		
@@ -1420,14 +1439,7 @@ Scene_Theatrhythm.prototype.update_victory_phase = function() {
 		case 3:
 		    this._phase_sprite.opacity -= 3;
 			this._phase_sprite.scale.x += 0.02;	
-			if (this._phase_sprite.opacity <= 0) {this._phase[1] = 4;this.refresh_phase_sprite(3);
-			$gameVariables._data[Moghunter.theatrhythm_variable_id] += this.set_total();
-			this._text_sprite.bitmap.drawText(this.score(),0,0,200,32,"right");
-			this._text_sprite.bitmap.drawText("(" + String(this._result_data[0]) + ") " + String(this.chainBonus()),0,32,200,32,"right");
-			this._text_sprite.bitmap.drawText(this._enemy_bp,0,64,200,32,"right"); 
-			this._text_sprite.bitmap.drawText(this.set_total(),0,96,200,32,"right");
-			this._text2_sprite.bitmap.drawText($gameVariables._data[Moghunter.theatrhythm_variable_id],0,0,200,100,"left"); 
-			};	
+			if (this._phase_sprite.opacity <= 0) {this.display_result()};	
 			break;			
 		case 4:
 	        this._phase_sprite.opacity += 3;			
@@ -1449,6 +1461,34 @@ Scene_Theatrhythm.prototype.update_victory_phase = function() {
 	this._text2_sprite.opacity = this._phase_sprite.opacity;
 	this._text2_sprite.scale.x = this._phase_sprite.scale.x;
 	this._text2_sprite.scale.y = this._phase_sprite.scale.y;		
+};
+
+//==============================
+// * Display Result
+//==============================
+Scene_Theatrhythm.prototype.display_result = function() {
+	this._phase[1] = 4;
+	this.refresh_phase_sprite(3);
+	this.gain_rewards();
+    this.draw_result();
+};
+
+//==============================
+// * Gain Rewards
+//==============================
+Scene_Theatrhythm.prototype.gain_rewards = function() {
+   $gameVariables._data[Moghunter.theatrhythm_variable_id] += this.set_total();
+};
+
+//==============================
+// * Draw Result
+//==============================
+Scene_Theatrhythm.prototype.draw_result = function() {
+	this._text_sprite.bitmap.drawText(this.score(),0,0,200,32,"right");
+	this._text_sprite.bitmap.drawText("(" + String(this._result_data[0]) + ") " + String(this.chainBonus()),0,32,200,32,"right");
+	this._text_sprite.bitmap.drawText(this._enemy_bp,0,64,200,32,"right"); 
+	this._text_sprite.bitmap.drawText(this.set_total(),0,96,200,32,"right");
+	this._text2_sprite.bitmap.drawText($gameVariables._data[Moghunter.theatrhythm_variable_id],0,0,200,100,"left"); 
 };
 
 //==============================

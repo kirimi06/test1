@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) O plugin adiciona a cena Livro de Músicas.
+ * @plugindesc (v1.5) O plugin adiciona a cena Livro de Músicas.
  * @author Moghunter
  *
  * @param Command Menu
@@ -48,7 +48,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG - Music Book (v1.3) +++
+ * +++ MOG - Music Book (v1.5) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -96,15 +96,8 @@
  * =============================================================================
  * HISTÓRICO 
  * =============================================================================
- * (1.3)
- * - Correção de não ler os arquivos quando o sistema é convertido para
- *          outras plataformas. (Deployment) 
- * - Agora as definições dos títulos das músicas deverão ser editadas 
- *   diretamente no plugin.
- * (1.2) 
- * - Melhoria na codificação.
- * (1.1)
- * - Adicionado compatibilidade com músicas com loop.
+ * (1.5) Correção do bug Required no modo WEB, no entanto a quantidade de músicas
+ *       será baseado no setup do Plugin. 
  */
 
 //=============================================================================
@@ -153,39 +146,6 @@
 ImageManager.loadmusicbook = function(filename) {
     return this.loadBitmap('img/musicbook/', filename, 0, true);
 };	
-
-//=============================================================================
-// ** StorageManager
-//=============================================================================	
-
-//==============================
-// * getDirectoryPath
-//==============================
-StorageManager.getDirectoryPath = function() {
-    var path = window.location.pathname.replace(/(\/www|)\/[^\/]*$/,"/");
-    if (path.match(/^\/([A-Z]\:)/)) {
-        path = path.slice(1);
-    };
-    return decodeURIComponent(path);
-};
-
-//==============================
-// * getFilesNamesInDirectory
-//==============================
-StorageManager.getFilesNamesInDirectory = function(path) {
-	var fs = require('fs');	
-	var file_list = [];
-	var full_path = this.getDirectoryPath() + path;
-	if (!fs.existsSync(full_path)) {
-    	var full_path = this.getDirectoryPath() + "www/" + path;
-	};
-	var files = fs.readdirSync(full_path);	
-	for (var i = 0; i < files.length; i++) {
-		var f = files[i].split('.');
-        if (f[0] !=  file_list[i - 1]) {file_list.push(f[0])};
-	};
-	return file_list;
-};
 
 //=============================================================================
 // ** Game_Interpreter
@@ -305,32 +265,21 @@ Game_System.prototype.bgmPosText = function() {
 //==============================
 Game_System.prototype.make_music_list = function() {
 	var music_data = Moghunter.musicbook_titles;
-	var music_list = StorageManager.getFilesNamesInDirectory("audio/bgm/")
 	this._music_list = [];
-	for (var i = 0; i < music_list.length; i++) {
+	for (var i = 0; i < music_data.length; i++) {
 		 var e = false;
 		 var t = "";
 		 var h = "";
 		 var pn = null;
 		 var px = 0;
-		 var py = 0;
-		 if (music_list[i] === $dataSystem.titleBgm.name) {e = true};
-	     for (var f = 0; f < music_data.length; f++) {		 
-     		 mt = music_data[f];
-			 if (mt[0] === music_list[i]) {t = mt[1];
-			     if (mt[2]) {h = mt[2];};
-			     if (mt[3]) {pn = mt[3];};
-				 if (mt[4]) {px = mt[4];};
-				 if (mt[5]) {py = mt[5];};
-			 };
-			 if (i === 0 && t === "") {t = mt[1]; 
-			     if (mt[2]) {h = mt[2];}
-			     if (mt[3]) {pn = mt[3];};
-				 if (mt[4]) {px = mt[4];};
-				 if (mt[5]) {py = mt[5];}; 
-			 ;}
-		 };			 
-		 this._music_list[i] = [e,music_list[i],t,h,pn,px,py];
+		 var py = 0;		 
+		 if (music_data[i][0] === $dataSystem.titleBgm.name) {e = true};
+	     if (music_data[i][1]) {t = music_data[i][1]};
+		 if (music_data[i][2]) {h = music_data[i][2]};
+		 if (music_data[i][3]) {pn = music_data[i][3]};
+		 if (music_data[i][4]) {px = music_data[i][4]};
+		 if (music_data[i][5]) {py = music_data[i][5]};
+		 this._music_list[i] = [e,music_data[i][0],t,h,pn,px,py];
 	};	
 };
 
@@ -909,18 +858,13 @@ Scene_Music_Book.prototype.nodata_effect = function() {
 Scene_Music_Book.prototype.refresh_cover = function() {	
 	var file_name = String(this.music()[1]) + ".png"
 	var path = "img/musicbook/"
-	var mt_file = StorageManager.load_File(file_name,path)
-	if (mt_file) {
-		this._cover_fade = false;
-	   this._cover.bitmap = ImageManager.loadmusicbook(this.music()[1])
-	   this._cover.opacity = 0;
-	   this._cover.scale.x = 1.5;
-	   this._cover.scale.y = this._cover.scale.x;
-	   this._cover.x = Graphics.width / 2;
-	   this._cover.y = Graphics.height / 2;
-	}
-	else { this._cover_fade = true;	   
-    }; 
+	this._cover_fade = false;
+	this._cover.bitmap = ImageManager.loadmusicbook(this.music()[1])
+	this._cover.opacity = 0;
+	this._cover.scale.x = 1.5;
+	this._cover.scale.y = this._cover.scale.x;
+	this._cover.x = Graphics.width / 2;
+	this._cover.y = Graphics.height / 2;
 };
 
 //==============================

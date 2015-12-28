@@ -892,6 +892,8 @@ Window_ClassList.prototype.selectLast = function() {
 };
 
 Window_ClassList.prototype.playOkSound = function() {
+    if (SceneManager._scene instanceof Scene_Class) return;
+    Window_Selectable.prototype.playOkSound.call(this);
 };
 
 //=============================================================================

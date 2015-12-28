@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.1.9
+// Version: 1.2.0
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -9,11 +9,9 @@
 // Game_CharacterBase.prototype.updateMove
 // Spriteset_Map.prototype.createLowerLayer
 
-
-
 //=============================================================================
  /*:
- * @plugindesc v1.1.9 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.2.0 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -38,6 +36,11 @@
  *
  * @param Save DaynightSeconds
  * @desc Game variable the time of day (0-59) can be stored in
+ * Default: 0
+ * @default 0 
+ *
+ * @param Flashlight offset
+ * @desc Increase this setting to move up the flashlight for double height characters.
  * Default: 0
  * @default 0 
  *
@@ -72,7 +75,7 @@
  * To completly turn off the script use : 'Light deactivate'
  * To turn it on again use the command: 'Light activate'
  *
- * To activate a day-night cycle on a map, put in a trigger with 'DayNight' in a trigger note
+ * To activate a day-night cycle on a map, put in a trigger with 'DayNight' in an event note
  * or in the map note.
  * Plugin command 'Daynight speed 10' changes the speed.
  * Speed 10 means it takes 10 seconds to to pass one hour in game (probably to fast)
@@ -103,6 +106,24 @@
  * optional and can be used to turn the NPC's flashlight on or off and set the direction of the beam
  * if the event is not moving (1=up, 2=right, 3=down, 4=left) the default is down.
  *
+ * TileLight and RegionLight settings
+ * To create lightsources without using events you can use the following plugin command.
+ * TileLight 1 ON #FFFFFF 150  Will create a lightsource (color #FFFFFF radius 150) on all tiles with tile-tag 1.
+ * TileRegion 1 ON #FFFFFF 150 Will create a lightsource on all tiles with region-number 1.
+ * TileLight 1 OFF will turn off the lights on tile-tag 1 again 
+ * TileRegion 1 OFF will turn off the lights on region-number 1 again  
+ * TileFire and RegionFire works the same as TileLight, but with fire effect.
+ * Make sure your map still has at least one event with lights in it, otherwise the script will not run.
+ *
+ * TileBlock and RegionBlock settings
+ * To block lights on certain tiles (roofs for instance) you can use the following plugin command.
+ * TileBlock 1 ON #000000  Will block light on tiles with tile-tag 1. 
+ * RegionBlock 1 ON #000000 Will block lights on tiles with region-number 1.
+ * TileBlock 1 OFF and TileRegion 1 OFF turns off the blocking again.
+ * To darken but not completly block light use a slightly higher color setting (#333333) for instance.
+ * This function does not raytrace. If the players lightradius is bigger then the blocking tiles the 
+ * light will show on the other side. For the best effect keep the lightradius a bit smaller then the block section.
+ *
  * Released under the MIT license,
  * if used for commercial projects feel free to make a donation or 
  * better yet, give me a free version of what you have created.
@@ -115,8 +136,6 @@
 // object orientated programming bugs the hell out of me.
 var Imported = Imported || {};
 Imported.TerraxLighting = true;
-
-var testcounter = 0;
 
 (function() {
 	var lightarray_id = [];
@@ -153,6 +172,7 @@ var testcounter = 0;
 	var daynightsave = Number(parameters['Save DaynightHours'] || 10);	
 	var daynightsavemin = Number(parameters['Save DaynightMinutes'] || 11);
 	var daynightsavesec = Number(parameters['Save DaynightSeconds'] || 12);
+	var flashlightoffset = Number(parameters['Flashlight offset'] || 0);
 	var daynightdebug = false;
 	
 	var tint_value = '#000000';
@@ -173,67 +193,56 @@ var testcounter = 0;
         _Game_Interpreter_pluginCommand.call(this, command, args);
         command = command.toLowerCase();
               
-                
-        if (command === 'test') {
-	    	tiletest = true;    
-    	}  
-	    /*
-	        var width = $dataMap.width;
-    		var height = $dataMap.height;
-  
-	        var taglist = '';
-		    for (var y = 0; y < $dataMap.height; y++) {	
-				for (var x = 0; x < $dataMap.width; x++) {
-			    	//var tag = $gameMap.terrainTag(x,y);
-			    	var tag = $dataMap.data[(5 * height + y) * width + x];
-			    	
-		        	taglist = taglist + tag + ',';
-	        	}
-        	}
-        	Graphics.Debug('TAG',taglist);	
-        }
-        // ************* TILE TAGS ***************
-        
 
-        if (command === 'tileblock' || command === 'regionblock' || command === 'tilelight' || command === 'regionlight') {
+        // ************* TILE TAGS ***************
+
+
+        if (command === 'tileblock' || command === 'regionblock' || command === 'tilelight' || command === 'regionlight' || command === 'tilefire' || command === 'regionfire') {
 	        var tiletype = 0;
 	        if (command === 'tileblock') { tiletype = 1; }
 	        if (command === 'regionblock') { tiletype = 2; }
 	  	    if (command === 'tilelight') { tiletype = 3; }
-	  	    if (command === 'regionlight') { tiletype = 4; }	        
+	  	    if (command === 'regionlight') { tiletype = 4; }	
+	  	    if (command === 'tilefire') { tiletype = 5; }
+	  	    if (command === 'regionfire') { tiletype = 6; }	  	            
 	 		var tilenumber = Number(args[0]);
-	 		var tilecolor = args[1];
+ 			var tile_on = 0;
+ 			if (args[1] === 'on' || args[1] === 'ON') {
+ 				var tile_on = 1;
+		 	} 
+	 		var tilecolor = args[2];
 	 		var isValidColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tilecolor); 	
 	 		if (!isValidColor) {
 		 		if ( tiletype === 1 || tiletype === 2) {
-	 				tilecolor = '#000000'
+	 				tilecolor = '#000000';
  				} else {
-	 				tilecolor = '#FFFFFF'
+	 				tilecolor = '#FFFFFF';
  				}
 			}
- 			var set = false;
- 			if (args[2] === 'on' || args[2] === 'ON') {
- 				var set = true;
-		 	}
-
-			var tilevar = false;
+			var tileradius = 100;
+			if (args.length > 3) { tileradius = args[3]; }
+			var tilefound = false;
+			
 			for (var i = 0; i < tilearray.length; i++) {
 				tilestr = tilearray[i];
 				var tileargs = tilestr.split(";");
-				if (tileargs[0] === ) {
-					tilevar = true;
-					lightarray_state[i] = true;
+				if (tileargs[0] == tiletype && tileargs[1] == tilenumber ) {
+					tilefound = true;
+					tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius;
+					//Graphics.Debug('Set',tilearray[i]);
 				}
 			}
-			if (tilevar == false) {
-				lightarray_id.push(lightid);
-				lightarray_state.push(true);					
-			}	    
-	            
+			
+			if (tilefound === false) {
+				var tiletag =  tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius;
+				tilearray.push(tiletag);	
+				//Graphics.Debug('Push',tiletag);			
+			}	 
+			$gameVariables.setTileArray(tilearray);   
+	          
     	}
-    	*/
-        
-           
+    	
+   
 	    // ************* TINT  *******************        
         if (command === 'tint') {
 	     
@@ -342,14 +351,13 @@ var testcounter = 0;
 					}
 	    		}
     			if (args.length >= 4) {
-	    			 flashlightdensity = args[4];
-    			 	 //Graphics.Debug('test',flashlightlength+' '+flashlightwidth+' '+flashlightdensity);
+	    			 flashlightdensity = args[4]; // density
 	    		}
 
     			if (flashlightlength == 0 || isNaN(flashlightlength)) { flashlightlength = 8 }
     			if (flashlightwidth == 0 || isNaN(flashlightwidth)) { flashlightwidth = 12 }
     			if (flashlightdensity == 0 || isNaN(flashlightdensity)) { flashlightdensity = 3 }
-    			//Graphics.Debug('test',flashlightlength+' '+flashlightwidth);
+
     			$gameVariables.setPlayerColor(playercolor);  
     			$gameVariables.setFlashlightWidth(flashlightwidth); 
     			$gameVariables.setFlashlightLength(flashlightlength); 
@@ -366,7 +374,6 @@ var testcounter = 0;
 	       
 			flickerradiusshift = args[0];
 			flickercolorshift = args[1];
-		 	//Graphics.printError('test',flickerradiusshift+' '+flickercolorshift);
 			$gameVariables.setFireRadius(flickerradiusshift);
 			$gameVariables.setFireColorshift(flickercolorshift);
 		}			
@@ -394,17 +401,14 @@ var testcounter = 0;
     			if (newradius >= 0) {
     				player_radius = newradius;
     				lightgrow_value = newradius;
-    				lightgrow_target = newradius;
-    				
+    				lightgrow_target = newradius;		
 					$gameVariables.setRadiusSave(player_radius);
-    				
 				}
 				if (args.length > 2) {
 					playercolor = args[2];
 					var isValidPlayerColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor); 	    
 					if (!isValidPlayerColor) {
 						playercolor = '#FFFFFF'    
-						
 					}
 					$gameVariables.setPlayerColor(playercolor);  
 				}
@@ -485,8 +489,7 @@ var testcounter = 0;
 			
 			// **************************** RESET ALL SWITCHES ***********************
 			if (args[0] === 'switch' && args[1] === 'reset') {
-				// reset switches to false
-				//Graphics.Debug('RESET2','RESET2');					
+				// reset switches to false					
 				for (var i = 0; i < $dataMap.events.length; i++) {
 	        		if ($dataMap.events[i]) {
 						for (var j = 0; j < lightarray_id.length; j++) {
@@ -517,6 +520,8 @@ var testcounter = 0;
 						
 
 	}
+	
+
     
 	Spriteset_Map.prototype.createLightmask = function() {
 	    this._lightmask = new Lightmask();
@@ -567,15 +572,11 @@ var testcounter = 0;
 			// moving lightsources
 			for (var i = 0; i < $dataMap.events.length; i++) {
 	        	if ($dataMap.events[i]) {
-					//var flashlight = false;
 					for (var j = 0; j < move_event_id.length; j++) {
 						if (move_event_id[j] == i) {
 							move_event_x[j] = $dataMap.events[i].x;
 							move_event_y[j] = $dataMap.events[i].y;
 							move_event_dir[j] = 2;
-							//if ($dataMap.events[i].note == "flashlight") {
-							//	flashlight = true;
-							//}
 						}
 					}
 				}
@@ -583,7 +584,6 @@ var testcounter = 0;
 			
 			
 			if (reset_each_map == 'Yes' || reset_each_map == 'yes') {
-				//Graphics.Debug('RESET1','RESET1');	
 				// reset switches to false
 				for (var i = 0; i < $dataMap.events.length; i++) {
 	        		if ($dataMap.events[i]) {
@@ -873,50 +873,97 @@ var testcounter = 0;
 					if (daynightset == false) {
 					    if ($dataMap.note.toLowerCase() == "daynight" || note_command == "daynight" ) {
 						    daynightset = true;
+						    $gameVariables.setDayNightColorArray(daynightcolors);
 			            }
 		        	}
 	            }
 		    }
 		    		   
-		    if (tiletest === true) {
-		     
-		    // *************************** TILE TAG LIGHTSOURCES *********
+			 // *************************** TILE TAG ********************* 
+			 
+			for (var i = 0; i < tilearray.length; i++) {
+				tilestr = tilearray[i];
+				var tileargs = tilestr.split(";");
+			    var tile_type = tileargs[0];
+			    var tile_number = tileargs[1];
+			    var tile_on = tileargs[2];
+			    var tile_color = tileargs[3];
+			    var tile_radius = tileargs[4];
+			  
+			    if (tile_on == 1 ) {
+			 
+					if (tile_type >= 3 ) { 
+					    // *************************** TILE TAG LIGHTSOURCES *********
+					    for (var y = 0; y < $dataMap.height; y++) {	
+							for (var x = 0; x < $dataMap.width; x++) {
+								var tag = 0;
+								if (tile_type == 3 || tile_type == 5) { tag = $gameMap.terrainTag(x,y); }          // tile light
+						    	if (tile_type == 4 || tile_type == 6) { tag = $dataMap.data[(5 * $dataMap.height + y) * $dataMap.width + x]; }  // region light
+								if (tag == tile_number) {			    	    
+									var x1 =(pw/2)+(x-dx)*pw;
+									var y1 =(ph/2)+(y-dy)*ph;
+									
+									if ($dataMap.scrollType === 2 || $dataMap.scrollType === 3) {	
+										if (dx-5>x) {
+											var lxjump = $gameMap.width() - (dx-x);
+											x1 = (pw/2)+(lxjump*pw);
+										} 
+									}
+									if ($dataMap.scrollType === 1 || $dataMap.scrollType === 3) {
+										if (dy-5>y) {
+											var lyjump = $gameMap.height() -(dy-y);
+											y1 = (ph/2)+(lyjump*ph);
+										}
+									}									
+									
+									if (tile_type == 3 || tile_type == 4) {
+										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', false); // Light
+									} else {
+										
+										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', true);  // Fire
+									}
+					    		}
+				        	}
+			        	}
+		        	}
+				
+		    		// *************************** REDRAW MAPTILES FOR ROOFS ETC *********
+					if (tile_type == 1 || tile_type == 2) { 
+					    for (var y = 0; y < $dataMap.height; y++) {	
+							for (var x = 0; x < $dataMap.width; x++) {
+						    	//var tag = $gameMap.terrainTag(x,y);
+						    	var tag = 0;
+						    	if (tile_type == 1) { tag = $gameMap.terrainTag(x,y); }                  // tile block
+						    	if (tile_type == 2) { tag = $dataMap.data[(5 * $dataMap.height + y) * $dataMap.width + x]; }  // region block
+								if (tag == tile_number ) {
+									ctx.globalCompositeOperation =  'darker';
+									var x1 =  (x-dx)*pw;
+									var y1 =  (y-dy)*ph;
+									
+									if ($dataMap.scrollType === 2 || $dataMap.scrollType === 3) {	
+										if (dx-5>x) {
+											var lxjump = $gameMap.width() - (dx-x);
+											x1 = (lxjump*pw);
+										} 
+									}
+									if ($dataMap.scrollType === 1 || $dataMap.scrollType === 3) {
+										if (dy-5>y) {
+											var lyjump = $gameMap.height() -(dy-y);
+											y1 = (lyjump*ph);
+										}
+									}										
+									
+									this._maskBitmap.FillRect(x1,y1,pw,ph,tile_color);
+									ctx.globalCompositeOperation = 'lighter';	
+					    		}
+				        	}
+			        	}
+					}
+				}
+			}
 
-		    for (var y = 0; y < $dataMap.height; y++) {	
-				for (var x = 0; x < $dataMap.width; x++) {
-			    	var tag = $gameMap.terrainTag(x,y);
-			    	var tag2 = $dataMap.data[(5 * $dataMap.height + y) * $dataMap.width + x];
-					if (tag === 7 || tag2 == 7 ) {
-						var x1 =(pw/2)+(x-dx)*pw;
-						var y1 =(ph/2)+(y-dy)*ph;
-						
-						var light_radius = 150;
-						var colorvalue = '#ffffff'
-						this._maskBitmap.radialgradientFillRect(x1,y1, 0, light_radius , colorvalue, 'black', false); 
-		    		}
-	        	}
-        	}
-		    
-		    
-		    // *************************** REDRAW MAPTILES FOR ROOFS ETC *********
-
-		    for (var y = 0; y < $dataMap.height; y++) {	
-				for (var x = 0; x < $dataMap.width; x++) {
-			    	//var tag = $gameMap.terrainTag(x,y);
-			    	var tag = $dataMap.data[(5 * $dataMap.height + y) * $dataMap.width + x];
-					if (tag === 1 ) {
-						//ctx.globalCompositeOperation =  'source-over';
-						ctx.globalCompositeOperation =  'darker';
-						var x1 =  (x-dx)*pw;
-						var y1 =  (y-dy)*ph;
-						this._maskBitmap.FillRect(x1,y1,pw,ph,'#000000');
-						ctx.globalCompositeOperation = 'lighter';	
-		    		}
-	        	}
-        	}
-	
-    		}
         	// *********************************** DAY NIGHT CYCLE FILTER **************************
+
 			if (daynightset == true) {
 
 		        var color1 = daynightcolors[daynightcycle];
@@ -1110,7 +1157,8 @@ var testcounter = 0;
 	    
 	    // smal dim glove around player
 	   	context.save();
-	    	    
+	    y1 = y1 - flashlightoffset;
+	     
 	    r1 = 1;
 	  	r2 = 40;
 		grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
@@ -1250,7 +1298,6 @@ var testcounter = 0;
 		return this._Terrax_Lighting_FlashlightWidth || 12;
 	};
 
-	
 	Game_Variables.prototype.valueDayNightColor = function() {
 	    var default_color = [ '#FF0000', '#FF0000', '#FF0000', '#FF0000',
 	                          '#FF0000', '#FF0000', '#FF0000', '#FF0000',
@@ -1282,8 +1329,16 @@ var testcounter = 0;
 	Game_Variables.prototype.setLightArrayState = function(value) {
     	this._Terrax_Lighting_LightArrayState = value;
 	};	
+	
+	Game_Variables.prototype.valueTileArray = function() {
+	   	var default_TA = [];
+    	return this._Terrax_Lighting_TileArray || default_TA;
+	};
 
-
+	Game_Variables.prototype.setTileArray = function(value) {
+    	this._Terrax_Lighting_TileArray = value;
+	};	
+	
 	
 	function SaveLightingVariables() {
 
@@ -1327,15 +1382,10 @@ var testcounter = 0;
 			flickercolorshift = $gameVariables.valueFireColorshiftSave();
 			tint_value = $gameVariables.valueTintValueSave();
 			tint_target = $gameVariables.valueTintValueSave();
-							
+			tilearray = $gameVariables.valueTileArray();				
 	};
 	
 	
-	
-
-//Game_Variables.prototype.setDayNightColorIndex = function(value, index) {
-//    this._Terrax_Lighting_DayNightColor[index] = value;
-//};
 	
 	//****
 	// Debug

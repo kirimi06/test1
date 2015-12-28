@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) Adiciona a animação de aura e partículas nos inimigos.
+ * @plugindesc (v1.4) Adiciona a animação de aura e partículas nos inimigos.
  * @author Moghunter
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Aura Effects (v1.3) +++
+ * +++ MOG - Aura Effects (v1.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -49,6 +49,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.4) Correção de não atualizar os efeitos no efeito transformação.
  * (v1.3) Melhoria na codificação.
  * (v1.2) Correção de compatibilidade no modo Front View.
  * (v1.1) Melhoria na codificação.
@@ -65,6 +66,29 @@
 //=============================================================================
 // ** Game Battler
 //=============================================================================
+
+//==============================
+// ** iniMembers
+//==============================
+var _alias_mog_aura_gbattler_initMembers = Game_Battler.prototype.initMembers;
+Game_Battler.prototype.initMembers = function() {
+	_alias_mog_aura_gbattler_initMembers.call(this);
+	this.needRefreshAura = false;
+};
+
+//=============================================================================
+// ** Game Enemy
+//=============================================================================
+
+//==============================
+// * Transform
+//==============================
+var _alias_mog_aura_transform = Game_Enemy.prototype.transform
+Game_Enemy.prototype.transform = function(enemyId) {
+    _alias_mog_aura_transform.call(this,enemyId) 
+	this.needRefreshAura = true;	
+};
+
 
 //==============================
 // * Notetags
@@ -131,11 +155,18 @@ Aura_PlaneA.prototype.constructor = Aura_PlaneA;
 //==============================
 Aura_PlaneA.prototype.initialize = function() {
     Sprite.prototype.initialize.call(this);	
+    this.aura_clear();
+}
+
+//==============================
+// * Aura Clear
+//==============================
+Aura_PlaneA.prototype.aura_clear = function() {
 	this.opacity = 0;
 	this.visible = false;
 	this.aura_effect = [-1,"battler",255,1,true];
 	this._aura_data = [false,0,0,0,0];
-}
+};
 
 //==============================
 // * Load File
@@ -187,7 +218,8 @@ Aura_PlaneA.prototype.set_data = function(sprite) {
 //==============================
 // * Update
 //==============================
-Aura_PlaneA.prototype.update_aura = function(sprite) {	
+Aura_PlaneA.prototype.update_aura = function(sprite) {
+	if (sprite._battler && sprite._battler.needRefreshAura) {this.aura_clear()};	
     if (this.initial_check_time < 2) {this.initial_check_time += 1; return};
 	if (!this._aura_data[0]) {this.loadFiles(sprite)};
 	if (this.aura_effect[0] < 0) {return};
@@ -246,6 +278,18 @@ Aura_PlaneB.prototype.constructor = Aura_PlaneB;
 //==============================
 Aura_PlaneB.prototype.initialize = function() {
     Sprite.prototype.initialize.call(this);	
+    this.particles_clear(); 
+};
+
+//==============================
+// * Particles Clear
+//==============================
+Aura_PlaneB.prototype.particles_clear = function() {	
+	if (this._particles_sprites) {
+	for (i = 0; i < this._particles_sprites.length; i++){
+		this.removeChild(this._particles_sprites[i])
+	};
+	};
 	this.opacity = 255;
 	this.visible = true;
 	this.initial_check_time = 0
@@ -327,6 +371,9 @@ Aura_PlaneB.prototype.reset_particle = function(i,sprite,initial) {
 // * Update
 //==============================
 Aura_PlaneB.prototype.update_aura = function(sprite) {	
+	if (sprite._battler && sprite._battler.needRefreshAura) {
+		sprite._battler.needRefreshAura = false;this.particles_clear()
+	};
     if (this.initial_check_time < 2) {this.initial_check_time += 1; return};
 	if (!this._aura_data[0]) {this.loadFiles(sprite)};
 	if (this.aura_effect[0] < 0) {return};

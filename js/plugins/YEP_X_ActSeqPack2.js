@@ -11,7 +11,7 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 (Requires YEP_BattleEngineCore.js) Visual functions
+ * @plugindesc v1.07a (Requires YEP_BattleEngineCore.js) Visual functions
  * are added to the Battle Engine Core's action sequences.
  * @author Yanfly Engine Plugins
  *
@@ -424,7 +424,7 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.07:
+ * Version 1.07a:
  * - Synchronized battle animations to floating and jumping battlers.
  * 
  * Version 1.06:
@@ -1210,9 +1210,10 @@ Sprite_Animation.prototype.updateBattlerPosition = function() {
     } else {
       return;
     }
+    if (!target.bitmap) return;
+    if (target.bitmap.height <= 0) return;
     var heightRate = target.getFloatHeight() + target.getJumpHeight();
     var height = heightRate * target.bitmap.height;
-    console.log(target.bitmap.height);
     this.y -= height;
 };
 

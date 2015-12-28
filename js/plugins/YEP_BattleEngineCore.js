@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.25d Have more control over the flow of the battle system
+ * @plugindesc v1.25f Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -612,7 +612,7 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.25d:
+ * Version 1.25f:
  * - Added failsafes for Forced Action queues.
  * - Added 'Show Select Box' parameter when selecting enemies.
  * - Fixed a bug that caused End Turn events to not function properly.
@@ -620,6 +620,8 @@ Yanfly.BEC = Yanfly.BEC || {};
  * for its target sprite. However, actor sprites do not have a base bitmap and
  * therefore, battle animations, regardless of position, will always target the
  * actor sprite's feet. This update now gives actor sprites a base bitmap.
+ * - Readjusted sprite width and sprite height calculations.
+ * - Added a failsafe for when no sideview actor graphics are used.
  *
  * Version 1.24:
  * - Implemented a Forced Action queue list. This means if a Forced Action
@@ -2544,6 +2546,8 @@ Sprite_Actor.prototype.adjustAnchor = function() {
 Yanfly.BEC.Sprite_Actor_updateFrame = Sprite_Actor.prototype.updateFrame;
 Sprite_Actor.prototype.updateFrame = function() {
     Yanfly.BEC.Sprite_Actor_updateFrame.call(this);
+    if (!this._mainSprite) return;
+    if (!this._mainSprite.bitmap) return;
     if (this._mainSprite.bitmap.width > 0 && !this.bitmap) {
       var sw = this._mainSprite.bitmap.width / 9;
       var sh = this._mainSprite.bitmap.height / 6;
@@ -3232,20 +3236,20 @@ Game_Battler.prototype.spritePosY = function() {
 };
 
 Game_Battler.prototype.spriteWidth = function() {
-    if ($gameSystem.isSideView() && this.battler()) {
-      return this.battler().width;
+    if ($gameSystem.isSideView() && this.battler() && this.battler().bitmap) {
+      return this.battler().bitmap.width;
     } else if (this.battler()) {
-      return this.battler().width;
+      return this.battler().bitmap.width;
     } else {
       return 1;
     }
 };
 
 Game_Battler.prototype.spriteHeight = function() {
-    if ($gameSystem.isSideView() && this.battler()) {
-      return this.battler().height;
+    if ($gameSystem.isSideView() && this.battler() && this.battler().bitmap) {
+      return this.battler().bitmap.height;
     } else if (this.battler()) {
-      return this.battler().height;
+      return this.battler().bitmap.height;
     } else {
       return 1;
     }

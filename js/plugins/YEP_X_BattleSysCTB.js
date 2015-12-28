@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05a (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.05b (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -388,12 +388,13 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.05a:
+ * Version 1.05b:
  * - Implemented a Forced Action queue list. This means if a Forced Action
  * takes place in the middle of an action, the action will resume after the
  * forced action finishes rather than cancels it out like MV does.
  * - Fixed a graphical issue where enemies appearing midway don't have letters
  * attached to their icons.
+ * - Added a fail safe for loaded saves that did not have CTB installed before.
  *
  * Version 1.04:
  * - Added a speed position check for Instant Casts to maintain order position.
@@ -1507,6 +1508,9 @@ Game_Battler.prototype.ctbTicksToReadyActionCheck = function() {
       } else if (symbol === 'guard') {
         this._commandWindowItem = $dataSkills[this.guardSkillId()];
         return this._commandWindowItem;
+      } else {
+        this._commandWindowItem = undefined;
+        return false;
       }
     }
     if (!this.currentAction()) return false;
@@ -1784,6 +1788,7 @@ Game_Battler.prototype.ctbAlterTurnOrder = function(value) {
     index += value;
     index = index.clamp(0, max);
     var battler = BattleManager.ctbTurnOrder()[index];
+    if (!battler) battler = this;
     var ticksTarget = battler.ctbTicksToReady();
     var ticksCurrent = this.ctbTicksToReady();
     var ticksChange = ticksTarget - ticksCurrent;

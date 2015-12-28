@@ -3,8 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) O plugin adiciona uma cena de galeria de imagens.
+ * @plugindesc (v1.3) O plugin adiciona uma cena de galeria de imagens.
  * @author Moghunter
+ *
+ * @param Number of Pictures
+ * @desc Definição da quantidade de imagens.
+ * @default 3
  *
  * @param Command Menu
  * @desc Ativar o comando da cena da galeria.
@@ -57,7 +61,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG - Picture Gallery (v1.2) +++
+ * +++ MOG - Picture Gallery (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -87,6 +91,8 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (v1.3) - Correção do bug Required no modo WEB, no entanto a quantidade de pictures
+ *        deverá ser definido pelo plugin. 
  * (v1.2) - Correção de não ler os arquivos quando o sistema é convertido para
  *          outras plataformas. (Deployment) 
  * (v1.1) - Possibilidade de definir o diretório das imagens, por padrão as 
@@ -105,6 +111,7 @@
 　　var Moghunter = Moghunter || {}; 
 
   　Moghunter.parameters = PluginManager.parameters('MOG_PictureGallery');
+    Moghunter.picturegallery_picture_number = String(Moghunter.parameters['Number of Pictures'] || 3);
     Moghunter.picturegallery_command_menu = String(Moghunter.parameters['Command Menu'] || "true");
     Moghunter.picturegallery_command_name = String(Moghunter.parameters['Command Word'] || "Picture Gallery");
 	Moghunter.picturegallery_completion_word = String(Moghunter.parameters['Completion Word'] || "Completion");
@@ -130,52 +137,6 @@ ImageManager.picturegallery = function(filename) {
 };	
 
 //=============================================================================
-// ** StorageManager
-//=============================================================================	
-
-//==============================
-// * getDirectoryPath
-//==============================
-StorageManager.getDirectoryPath = function() {
-    var path = window.location.pathname.replace(/(\/www|)\/[^\/]*$/,"/");
-    if (path.match(/^\/([A-Z]\:)/)) {
-        path = path.slice(1);
-    };
-    return decodeURIComponent(path);
-};
-
-//==============================
-// * getFilesNamesInDirectory
-//==============================
-StorageManager.getFilesNamesInDirectory = function(path) {
-	var fs = require('fs');	
-	var file_list = [];
-	var full_path = this.getDirectoryPath() + path;
-	if (!fs.existsSync(full_path)) {
-    	var full_path = this.getDirectoryPath() + "www/" + path;
-	};
-	var files = fs.readdirSync(full_path);	
-	for (var i = 0; i < files.length; i++) {
-		var f = files[i].split('.');
-        if (f[0] !=  file_list[i - 1]) {file_list.push(f[0])};
-	};
-	return file_list;
-};
-
-//==============================
-// * Load File
-//==============================
-StorageManager.load_File = function(file_name,path) {
-    var data = null;
-    var fs = require('fs');
-    var filePath = this.getDirectoryPath() + path + file_name;
-    if (fs.existsSync(filePath)) {
-        return fs.readFileSync(filePath, { encoding: 'utf8' });
-    }
-    return null;
-};
-
-//=============================================================================
 // ** Game_Interpreter
 //=============================================================================	
 
@@ -198,27 +159,9 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 //==============================
 Game_System.prototype.make_picture_list = function() {
 	this._picgl_data = [];	
-	var skip_files = ["Pic_A","Pic_B"];
-	var data_list = StorageManager.getFilesNamesInDirectory(Moghunter.picturegallery_directory)
-	var data_list_temp = [];
-	for (var i = 0; i < data_list.length; i++) {
-		if (!this.need_skip_data(i,data_list,skip_files)) {
-		  if (data_list[i].indexOf(Moghunter.picturegallery_file_name) >= 0) {data_list_temp[i] = [false,data_list[i]]}
-		}		
+	for (var i = 0; i < Moghunter.picturegallery_picture_number; i++) {
+		this._picgl_data[i] = [false,String(Moghunter.picturegallery_file_name + (i + 1))]
 	};
-	for (var i = 0; i < data_list_temp.length; i++) {
-		if (data_list_temp[i]) {this._picgl_data.push(data_list_temp[i])}
-	};	
-};
-
-//==============================
-// * Need Skip data
-//==============================
-Game_System.prototype.need_skip_data = function(i,data_list,skip_files) {
-	for (var s = 0; s < skip_files.length; s++) {
-	      if (data_list[i] === skip_files[s]) {return true}
-	};
-    return false;
 };
 
 //==============================
@@ -393,6 +336,32 @@ Window_PictureList.prototype.processOk = function() {
 //==============================
 Window_PictureList.prototype.isOkEnabled = function() {
     return true;
+};
+
+//==============================
+// * Max Com
+//==============================
+Window_PictureList.prototype.maxCom = function() {
+    return this._pic_thumb.length
+};
+
+//==============================
+// * processWheel
+//==============================
+Window_PictureList.prototype.processWheel = function() {
+    if (this.isOpenAndActive()) {
+        var threshold = 20;
+        if (TouchInput.wheelY >= threshold) {
+            this._index++;
+			SoundManager.playCursor();
+			if (this._index > (this.maxCom() - 1)) {this._index = 0};			
+        };
+        if (TouchInput.wheelY <= -threshold) {
+            this._index--;
+			SoundManager.playCursor();
+			if (this._index < 0) {this._index = (this.maxCom() - 1)};
+        };
+    };
 };
 
 //=============================================================================
