@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Apresenta uma Hud com os tesouros adquiridos no jogo.
+ * @plugindesc (v1.1) Apresenta uma Hud com os tesouros adquiridos no jogo.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -44,7 +44,7 @@
  *	 
  * @help  
  * =============================================================================
- * +++ MOG Treasure Hud (v1.0) +++
+ * +++ MOG Treasure Hud (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -59,7 +59,12 @@
  *
  * show_treasure_hud
  * hide_treasure_hud
- * 
+ *
+ * =============================================================================
+ * HISTÓRICO
+ * =============================================================================
+ * (v1.1) - Correção de apresentar a hud na função equip do personagem.
+ *
  */
 
 //=============================================================================
@@ -94,7 +99,8 @@
 var _alias_mog_thud_sys_initialize = Game_System.prototype.initialize;
 Game_System.prototype.initialize = function() {
 	_alias_mog_thud_sys_initialize.call(this);
-	this._thud_visible = true;	
+	this._thud_visible = true;
+	this._thud_int = false;	
 };
 
 //=============================================================================
@@ -112,6 +118,51 @@ Game_Temp.prototype.initialize = function() {
 };
 
 //=============================================================================
+// ** Game_Interpreter
+//=============================================================================
+
+//==============================
+// * Command125
+//==============================
+var _alias_mog_thud_command125 = Game_Interpreter.prototype.command125;
+Game_Interpreter.prototype.command125 = function() {
+	$gameTemp._thud_int = true;
+    _alias_mog_thud_command125.call(this);
+    return true;
+};
+
+//==============================
+// * Command126
+//==============================
+var _alias_mog_thud_command126 = Game_Interpreter.prototype.command126;
+Game_Interpreter.prototype.command126 = function() {
+	$gameTemp._thud_int = true;
+    _alias_mog_thud_command126.call(this);
+    return true;
+};
+
+//==============================
+// * Command127
+//==============================
+var _alias_mog_thud_command127 = Game_Interpreter.prototype.command127;
+Game_Interpreter.prototype.command127 = function() {
+	$gameTemp._thud_int = true;
+    _alias_mog_thud_command127.call(this);
+    return true;
+};
+
+//==============================
+// * Command128
+//==============================
+var _alias_mog_thud_command128 = Game_Interpreter.prototype.command128;
+Game_Interpreter.prototype.command128 = function() {
+	$gameTemp._thud_int = true;
+    _alias_mog_thud_command128.call(this);
+    return true;
+};
+
+
+//=============================================================================
 // ** Game_Party
 //=============================================================================
 
@@ -121,7 +172,8 @@ Game_Temp.prototype.initialize = function() {
 var _alias_mog_thud_gparty_gainItem = Game_Party.prototype.gainItem;
 Game_Party.prototype.gainItem = function(item, amount, includeEquip) {
 	_alias_mog_thud_gparty_gainItem.call(this,item, amount, includeEquip);
-	if ($gameSystem._thud_visible && !this.inBattle()) {$gameTemp._thud_data = [true,item,amount]};
+	if ($gameSystem._thud_visible && !this.inBattle() && $gameTemp._thud_int) {$gameTemp._thud_data = [true,item,amount]};
+    $gameTemp._thud_int = false;
 };
 
 //==============================
@@ -131,8 +183,8 @@ var _alias_mog_thud_gainGold = Game_Party.prototype.gainGold;
 Game_Party.prototype.gainGold = function(amount) {
 	_alias_mog_thud_gainGold.call(this,amount);
 	if ($gameSystem._thud_visible && !this.inBattle()) {$gameTemp._thud_data = [true,"gold",amount]};
+    $gameTemp._thud_int = false;
 };
-
 
 //=============================================================================
 // ** Game_Interpreter

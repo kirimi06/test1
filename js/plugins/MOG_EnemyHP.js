@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Apresenta o HP do inimigo ao ataca-lo.
+ * @plugindesc (v1.2) Apresenta o HP do inimigo ao ataca-lo.
  * @author Moghunter
  *
  * @param EHP Fade Duration
@@ -29,7 +29,7 @@
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Enemy HP Meter (v1.1) +++
+ * +++ MOG - Enemy HP Meter (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -46,7 +46,8 @@
  * =============================================================================
  * ** Histórico **
  * =============================================================================
- * v1.1 - Melhoria na animação do medidor vermelho.
+ * (v1.2) Melhoria na codificação. 
+ * (v1.1) - Melhoria na animação do medidor vermelho.
  *      - Mudança da Tag para ocular o hp para HIDE HP.
  *      - Melhoria na codificação.
  */
@@ -100,10 +101,10 @@ Game_Enemy.prototype.setup = function(enemyId, x, y) {
 //==============================
 // * CreateLowerLayer
 //==============================
-var _alias_mog_enemyhp_createLowerLayer = Spriteset_Battle.prototype.createLowerLayer
-Spriteset_Battle.prototype.createLowerLayer = function() {
-	_alias_mog_enemyhp_createLowerLayer.call(this);
+var _alias_mog_enemyhp_createUpperLayer = Spriteset_Battle.prototype.createUpperLayer
+Spriteset_Battle.prototype.createUpperLayer = function() {
 	this.create_ehp_sprites();
+	_alias_mog_enemyhp_createUpperLayer.call(this);	
 };
 
 //==============================
@@ -134,9 +135,9 @@ Spriteset_Battle.prototype.create_ehp_sprites = function() {
 		if (!this._enemySprites[i]._battler._hp_meter) {this._ehp_sprites_a[i].visible = false};
 		this._ehp_sprites_b[i].visible = this._ehp_sprites_a[i].visible
 		this._ehp_sprites_c[i].visible = this._ehp_sprites_a[i].visible
-		this.addChild(this._ehp_sprites_a[i]);
-		this.addChild(this._ehp_sprites_b[i]);	
-		this.addChild(this._ehp_sprites_c[i]);	
+		this._battleField.addChild(this._ehp_sprites_a[i]);
+		this._battleField.addChild(this._ehp_sprites_b[i]);	
+		this._battleField.addChild(this._ehp_sprites_c[i]);	
 		this._ehp_sprites_data[i] = [this._enemySprites[i]._battler.hp,0,0,Math.max(Moghunter.enemyhp_duration,32),this._enemySprites[i]._battler.hp,];
     };
 };

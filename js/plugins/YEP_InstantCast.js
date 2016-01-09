@@ -11,7 +11,7 @@ Yanfly.Instant = Yanfly.Instant || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 Allows skills/items to be instantly cast after being
+ * @plugindesc v1.06a Allows skills/items to be instantly cast after being
  * selected in the battle menu.
  * @author Yanfly Engine Plugins
  *
@@ -148,6 +148,16 @@ Yanfly.Instant = Yanfly.Instant || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.06a:
+ * - Fixed a bug if instant casting a skill that would make an opponent battler
+ * to force an action to end incorrectly. Thanks to DoubleX for the fix.
+ *
+ * Version 1.05:
+ * - Added a fail safe to keep an action that once it's being used, it will
+ * maintain its current status of being an instant or non-instant until the
+ * action is finished to prevent inconsistencies if a skill were to change
+ * mid-action from instant to non-instant or vice versa.
  *
  * Version 1.04:
  * - Fixed a bug that would cause the game to lock up if using an Instant
@@ -291,6 +301,12 @@ BattleManager.performInstantCast = function() {
     this.startAction();
 };
 
+Yanfly.Instant.BattleManager_startAction = BattleManager.startAction;
+BattleManager.startAction = function() {
+    this._startedInstantCasting = true;
+    Yanfly.Instant.BattleManager_startAction.call(this);
+};
+
 Yanfly.Instant.BattleManager_endAction = BattleManager.endAction;
 BattleManager.endAction = function() {
     if (this._instantCasting) {
@@ -299,6 +315,7 @@ BattleManager.endAction = function() {
       this.endEnemyInstantCastAction();
       Yanfly.Instant.BattleManager_endAction.call(this);
     }
+    this._startedInstantCasting = false;
 };
 
 BattleManager.endActorInstantCast = function() {
@@ -337,6 +354,33 @@ BattleManager.addInstantCastAction = function(battler) {
     battler.makeActions();
     this.makeActionOrders();
 };
+
+if (Imported.YEP_BattleEngineCore) {
+
+Yanfly.Instant.BattleManager_savePreForceActionSettings =
+    BattleManager.savePreForceActionSettings;
+BattleManager.savePreForceActionSettings = function() {
+    Yanfly.Instant.BattleManager_savePreForceActionSettings.call(this);
+    this._instantCasting = false;
+};
+
+Yanfly.Instant.BattleManager_setPreForceActionSettings =
+BattleManager.setPreForceActionSettings;
+BattleManager.setPreForceActionSettings = function() {
+    var settings =
+      Yanfly.Instant.BattleManager_setPreForceActionSettings.call(this);
+    settings['instantCasting'] = this._instantCasting;
+    return settings;
+};
+
+Yanfly.Instant.BattleManager_resetPreForceActionSettings =
+BattleManager.resetPreForceActionSettings;
+BattleManager.resetPreForceActionSettings = function(settings) {
+    Yanfly.Instant.BattleManager_resetPreForceActionSettings.call(this, settings);
+    this._instantCasting = settings['instantCasting'];
+};
+
+} // Imported.YEP_BattleEngineCore
 
 //=============================================================================
 // Game_Battler
@@ -410,6 +454,9 @@ Game_Actor.prototype.endInstantCast = function() {
 
 Game_Actor.prototype.isInstantCast = function(item) {
     if (!item) return false;
+    if ($gameParty.inBattle() && BattleManager._startedInstantCasting) {
+      return BattleManager._instantCasting;
+    }
     if (item.instantEval.length > 0) {
       var outcome = this.performInstantEval(item);
       if (outcome === true || outcome === false) return outcome;

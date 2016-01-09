@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Apresenta a quantidade de acertos no alvo.
+ * @plugindesc (v1.2) Apresenta a quantidade de acertos no alvo.
  * @author Moghunter
  *
  * @param C HIT Layout X-Axis
@@ -22,26 +22,25 @@
  * @desc Posição Y-Axis do layout do DMG.
  * @default 90
  *
- * @param C HIT NUMBER X-Axis
+ * @param C HIT Number X-Axis
  * @desc Posição X-Axis do numero do HIT.
  * @default 115
  *
- * @param C HIT NUMBER Y-Axis
+ * @param C HIT Number Y-Axis
  * @desc Posição Y-Axis do numero do HIT.
  * @default 135
  *
- * @param C DMG NUMBER X-Axis
+ * @param C DMG Number X-Axis
  * @desc Posição X-Axis do numero do DMG.
- * @default 10
+ * @default 150
  *
- * @param C DMG NUMBER Y-Axis
+ * @param C DMG Number Y-Axis
  * @desc Posição Y-Axis do numero do DMG.
- * @default 90 
- 
+ * @default 93 
  *
  * @help  
  * =============================================================================
- * +++ MOG - Combo Counter (v1.1) +++
+ * +++ MOG - Combo Counter (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -56,6 +55,7 @@
  * =============================================================================
  * ** Histórico **
  * =============================================================================
+ * v1.2 - Correção do setup do plugin. 
  * v1.1 - Correção do glitch  de piscar o layout no começo da batalha.
  *      
  */

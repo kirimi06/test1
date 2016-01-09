@@ -11,7 +11,7 @@ Yanfly.EML = Yanfly.EML || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 Creates miniature-sized labels over events to allow
+ * @plugindesc v1.05 Creates miniature-sized labels over events to allow
  * you to insert whatever text you'd like in them.
  * @author Yanfly Engine Plugins
  *
@@ -28,6 +28,10 @@ Yanfly.EML = Yanfly.EML || {};
  * @desc What is the font size used for text inside a mini label?
  * Default: 28
  * @default 20
+ *
+ * @param X Buffer
+ * @desc Alter the X position of the label by this much.
+ * @default 0
  *
  * @param Y Buffer
  * @desc Alter the Y position of the label by this much.
@@ -59,6 +63,11 @@ Yanfly.EML = Yanfly.EML || {};
  *   <Mini Label Font Size: x>
  *   This will change the font size used for the mini label to x. If this tag
  *   isn't used, the font size will be the default value in the parameters.
+ *
+ *   <Mini Label X Buffer: +x>
+ *   <Mini Label X Buffer: -x>
+ *   This will adjust the X buffer for the mini label by x value. If this tag
+ *   isn't used, the X buffer will be the default value in the parameters.
  *
  *   <Mini Label Y Buffer: +x>
  *   <Mini Label Y Buffer: -x>
@@ -95,6 +104,11 @@ Yanfly.EML = Yanfly.EML || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Added 'X Buffer' plugin parameter and the <Mini Label X Buffer: +x> and
+ * <Mini Label X Buffer: -x> comment tags to alter the X position of the event
+ * mini label.
+ *
  * Version 1.04:
  * - Added 'RefreshMiniLabel' plugin command to allow you to manually refresh
  * all mini labels on the map.
@@ -121,6 +135,7 @@ Yanfly.Param = Yanfly.Param || {};
 Yanfly.Param.EMWDefaultShow = eval(String(Yanfly.Parameters['Default Show']));
 Yanfly.Param.EMWMinWidth = Number(Yanfly.Parameters['Minimum Width']);
 Yanfly.Param.EMWFontSize = Number(Yanfly.Parameters['Font Size']);
+Yanfly.Param.EMWBufferX = Number(Yanfly.Parameters['X Buffer']);
 Yanfly.Param.EMWBufferY = Number(Yanfly.Parameters['Y Buffer']);
 
 //=============================================================================
@@ -179,6 +194,7 @@ Window_EventMiniLabel.prototype = Object.create(Window_Base.prototype);
 Window_EventMiniLabel.prototype.constructor = Window_EventMiniLabel;
 
 Window_EventMiniLabel.prototype.initialize = function() {
+    this._bufferX = Yanfly.Param.EMWBufferX;
     this._bufferY = Yanfly.Param.EMWBufferY;
     this._fontSize = Yanfly.Param.EMWFontSize;
     this._alwaysShow = false;
@@ -206,6 +222,11 @@ Window_EventMiniLabel.prototype.windowHeight = function() {
 
 Window_EventMiniLabel.prototype.lineHeight = function() {
     return this.standardFontSize() + 8;
+};
+
+Window_EventMiniLabel.prototype.bufferX = function() {
+    if (this._bufferX !== undefined) return this._bufferX;
+    return Yanfly.Param.EMWBufferX;
 };
 
 Window_EventMiniLabel.prototype.bufferY = function() {
@@ -246,6 +267,7 @@ Window_EventMiniLabel.prototype.extractNotedata = function(comment) {
   var tag3 = /<(?:MINI WINDOW Y BUFFER|MINI LABEL Y BUFFER):[ ]([\+\-]\d+)>/i;
   var tag4 = /<(?:ALWAYS SHOW MINI WINDOW|ALWAYS SHOW MINI LABEL)>/i;
   var tag5 = /<(?:MINI WINDOW RANGE|MINI LABEL RANGE):[ ](\d+)>/i;
+  var tag6 = /<(?:MINI WINDOW X BUFFER|MINI LABEL X BUFFER):[ ]([\+\-]\d+)>/i;
   var notedata = comment.split(/[\r\n]+/);
   var text = '';
   for (var i = 0; i < notedata.length; ++i) {
@@ -260,6 +282,8 @@ Window_EventMiniLabel.prototype.extractNotedata = function(comment) {
       this._alwaysShow = true;
     } else if (line.match(tag5)) {
       this._range = parseInt(RegExp.$1);
+    } else if (line.match(tag6)) {
+      this._bufferX = parseInt(RegExp.$1);
     }
   }
   this.setText(text);
@@ -370,7 +394,7 @@ Sprite_Character.prototype.setupMiniLabel = function() {
 
 Sprite_Character.prototype.positionMiniLabel = function() {
     var win = this._miniLabel;
-    win.x = this.x + win.width / -2;
+    win.x = this.x + win.width / -2 + win.bufferX();
     win.y = this.y + (this.height * -1) - win.height + win.bufferY();
 };
 

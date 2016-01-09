@@ -1039,6 +1039,7 @@ Game_Action.prototype.applyCertainArmorScale = function(armor, target) {
       armor *= target.certainArmorReductionRate();
       armor *= 1 - this.item().armorPenetrationRate;
 			armor *= this.subject().certainArmorPenetrationRate();
+      armor -= this.item().armorPenetrationFlat;
 			armor -= Math.min(armor, this.subject().certainArmorPenetrationFlat());
 		}
 		return armor;
@@ -1051,6 +1052,7 @@ Game_Action.prototype.applyPhysicalArmorScale = function(armor, target) {
       armor *= target.physicalArmorReductionRate();
       armor *= 1 - this.item().armorPenetrationRate;
 			armor *= this.subject().physicalArmorPenetrationRate();
+      armor -= this.item().armorPenetrationFlat;
 			armor -= Math.min(armor, this.subject().physicalArmorPenetrationFlat());
 		}
 		return armor;
@@ -1063,6 +1065,7 @@ Game_Action.prototype.applyMagicalArmorScale = function(armor, target) {
 			armor *= target.magicalArmorReductionRate();
       armor *= 1 - this.item().armorPenetrationRate;
 			armor *= this.subject().magicalArmorPenetrationRate();
+      armor -= this.item().armorPenetrationFlat;
 			armor -= Math.min(armor, this.subject().magicalArmorPenetrationFlat());
 		}
 		return armor;

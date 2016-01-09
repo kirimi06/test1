@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.4) Adiciona a animação de aura e partículas nos inimigos.
+ * @plugindesc (v1.5) Adiciona a animação de aura e partículas nos inimigos.
  * @author Moghunter
  + 
  * @help  
@@ -49,6 +49,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.5) Melhoria na codificação.
  * (v1.4) Correção de não atualizar os efeitos no efeito transformação.
  * (v1.3) Melhoria na codificação.
  * (v1.2) Correção de compatibilidade no modo Front View.
@@ -110,8 +111,8 @@ Spriteset_Battle.prototype.createEnemies = function() {
 	_alias_mog_aura_effect_spriteseBattle_createEnemies.call(this)
 	this._aura_plane = [];
 	this._aura_plane_b = [];
-	for (var i = 0; i < $gameTroop.members().length; i++) {this._aura_plane[i] = new Aura_PlaneA(),this._baseSprite.addChild(this._aura_plane[i]);
-	                                                        this._aura_plane_b[i] = new Aura_PlaneB(),this._baseSprite.addChild(this._aura_plane_b[i])};
+	for (var i = 0; i < $gameTroop.members().length; i++) {this._aura_plane[i] = new Aura_PlaneA(),this._battleField.addChild(this._aura_plane[i]);
+	                                                        this._aura_plane_b[i] = new Aura_PlaneB(),this._battleField.addChild(this._aura_plane_b[i])};
 	for (var i = 0; i < this._enemySprites.length; i++) {
 		 this._enemySprites[i].add_aura_plane(this._aura_plane[i],0);
 		 this._enemySprites[i].add_aura_plane(this._aura_plane_b[i],1);

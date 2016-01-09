@@ -24,7 +24,7 @@
  *
  * @param Y-Axis Speed
  * @desc Definição da velocidade de deslize na vertical. 
- * @default -0.7
+ * @default -1
  *
  * @param Rotation Speed
  * @desc Definição da velocidade da rotação. 

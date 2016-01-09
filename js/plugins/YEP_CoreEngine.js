@@ -11,7 +11,7 @@ Yanfly.Core = Yanfly.Core || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.10 Needed for the majority of Yanfly Engine Scripts. Also
+ * @plugindesc v1.11 Needed for the majority of Yanfly Engine Scripts. Also
  * contains bug fixes found inherently in RPG Maker.
  * @author Yanfly Engine Plugins
  *
@@ -445,6 +445,13 @@ Yanfly.Core = Yanfly.Core || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.11:
+ * - Made fixes to the MV Source Code where FaceWidth was using a hard-coded
+ * 144 value regardless of what was changed for the Face Width parameter.
+ * - Fixed a notetag that wasn't working with the enemy EXP values.
+ * - Updated battler repositioning to no longer clash when entering-exiting the
+ * scene with Row Formation.
+ *
  * Version 1.10:
  * - Removed an MV bugfix that was applied through MV's newes tupdate.
  *
@@ -552,6 +559,53 @@ Yanfly.Core.Bitmap_initialize = Bitmap.prototype.initialize;
 Bitmap.prototype.initialize = function(width, height) {
   Yanfly.Core.Bitmap_initialize.call(this, width, height);
   this.fontFace = Yanfly.Param.DefaultFont;
+};
+
+Yanfly.Core.Bitmap_blt = Bitmap.prototype.blt;
+Bitmap.prototype.blt = function(source, sx, sy, sw, sh, dx, dy, dw, dh) {
+    sx = Math.floor(sx);
+    sy = Math.floor(sy);
+    sw = Math.floor(sw);
+    sh = Math.floor(sh);
+    dx = Math.floor(dx);
+    dy = Math.floor(dy);
+    dw = Math.floor(dw);
+    dh = Math.floor(dh);
+    Yanfly.Core.Bitmap_blt.call(this, source, sx, sy, sw, sh, dx, dy, dw, dh);
+};
+
+Yanfly.Core.Bitmap_fillRect = Bitmap.prototype.fillRect;
+Bitmap.prototype.fillRect = function(x, y, w, h, c) {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    w = Math.floor(w);
+    h = Math.floor(h);
+    Yanfly.Core.Bitmap_fillRect.call(this, x, y, w, h, c);
+};
+
+Yanfly.Core.Bitmap_gradientFillRect = Bitmap.prototype.gradientFillRect;
+Bitmap.prototype.gradientFillRect = function(x, y, w, h, c1, c2, ve) {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    w = Math.floor(w);
+    h = Math.floor(h);
+    Yanfly.Core.Bitmap_gradientFillRect.call(this, x, y, w, h, c1, c2, ve);
+};
+
+Yanfly.Core.Bitmap_drawCircle = Bitmap.prototype.drawCircle;
+Bitmap.prototype.drawCircle = function(x, y, r, c) {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    Yanfly.Core.Bitmap_drawCircle.call(this, x, y, r, c);
+};
+
+Yanfly.Core.Bitmap_drawText = Bitmap.prototype.drawText;
+Bitmap.prototype.drawText = function(text, x, y, mW, l, align) {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    mW = Math.floor(mW);
+    l = Math.floor(l);
+    Yanfly.Core.Bitmap_drawText.call(this, text, x, y, mW, l, align);
 };
 
 //=============================================================================
@@ -695,6 +749,10 @@ DataManager.processCORENotetags2 = function(group) {
             break;
           case 'LUK':
             obj.params[7] = value;
+            break;
+          case 'EXP':
+          case 'XP':
+            obj.exp = value;
             break;
         }
       }
@@ -896,6 +954,10 @@ if (eval(Yanfly.Param.ReposBattlers)) {
   };
 };
 
+Sprite_Actor.prototype.retreat = function() {
+    this.startMove(1200, 0, 120);
+};
+
 //=============================================================================
 // Sprite_Enemy
 //=============================================================================
@@ -904,9 +966,17 @@ if (eval(Yanfly.Param.ReposBattlers)) {
   Yanfly.Core.Sprite_Enemy_setBattler = Sprite_Enemy.prototype.setBattler;
   Sprite_Enemy.prototype.setBattler = function(battler) {
       Yanfly.Core.Sprite_Enemy_setBattler.call(this, battler);
-      this._homeY += Graphics.boxHeight - 624;
+      if (!this._enemy._alteredScreenY) {
+        this._homeY += Graphics.boxHeight - 624;
+        this._enemy._screenY = this._homeY;
+        this._enemy._alteredScreenY = true;
+      }
       if ($gameSystem.isSideView()) return;
-      this._homeX += (Graphics.boxWidth - 816) / 2;
+      if (!this._enemy._alteredScreenX) {
+        this._homeX += (Graphics.boxWidth - 816) / 2;
+        this._enemy._screenX = this._homeX;
+        this._enemy._alteredScreenX = true;
+      }
   };
 };
 
@@ -1235,7 +1305,7 @@ Window_Base.prototype.drawGauge = function(dx, dy, dw, rate, color1, color2) {
     var gaugeY = dy + this.lineHeight() - gaugeH - 2;
     this.contents.fillRect(dx, gaugeY, dw, gaugeH, color3);
   }
-    this.contents.gradientFillRect(dx, gaugeY, fillW, gaugeH, color1, color2);
+  this.contents.gradientFillRect(dx, gaugeY, fillW, gaugeH, color1, color2);
 };
 
 Window_Base.prototype.gaugeHeight = function() {
@@ -1351,6 +1421,15 @@ Window_Command.prototype.itemTextAlign = function() {
 //=============================================================================
 // Window_MenuStatus
 //=============================================================================
+
+Window_MenuStatus.prototype.drawItemImage = function(index) {
+    var actor = $gameParty.members()[index];
+    var rect = this.itemRect(index);
+    this.changePaintOpacity(actor.isBattleMember());
+    var fw = Window_Base._faceWidth;
+    this.drawActorFace(actor, rect.x + 1, rect.y + 1, fw, rect.height - 2);
+    this.changePaintOpacity(true);
+};
 
 Window_MenuStatus.prototype.drawItemStatus = function(index) {
     var actor = $gameParty.members()[index];
@@ -1528,6 +1607,14 @@ Window_ShopNumber.prototype.drawNumber = function() {
     this.resetTextColor();
     var itemNumber = Yanfly.Util.toGroup(this._number);
     this.drawText(itemNumber, x, y, width, 'right');
+};
+
+//=============================================================================
+// Window_NameEdit
+//=============================================================================
+
+Window_NameEdit.prototype.faceWidth = function() {
+    return Window_Base._faceWidth;
 };
 
 //=============================================================================

@@ -11,7 +11,7 @@ Yanfly.BSW = Yanfly.BSW || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02a A simple battle status window that shows the
+ * @plugindesc v1.04 A simple battle status window that shows the
  * faces of your party members in horizontal format.
  * @author Yanfly Engine Plugins
  *
@@ -60,6 +60,11 @@ Yanfly.BSW = Yanfly.BSW || {};
  * NO - false     YES - true
  * @default true
  *
+ * @param Allow Turn Skip
+ * @desc Allow turn skipping for Tick-Based battle systems?
+ * NO - false     YES - true
+ * @default true
+ *
  * @param ---Front View---
  * @default
  *
@@ -102,6 +107,14 @@ Yanfly.BSW = Yanfly.BSW || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04:
+ * - Added 'Allow Turn Skip' plugin parameter to let you decide if you can let
+ * the player skip turns for tick-based battle systems.
+ *
+ * Version 1.03:
+ * - Added a failsafe check to make frontview animations work regardless of
+ * having RPG Maker MV 1.0.1 update.
+ *
  * Version 1.02a:
  * - Added 'Adjust Columns' parameter.
  * - Updated functionality for 'Adjust Columns' to alter where the animations
@@ -135,6 +148,7 @@ Yanfly.Param.BSWAdjustCol = eval(String(Yanfly.Parameters['Adjust Columns']));
 
 Yanfly.Param.BSWLfRt = eval(String(Yanfly.Parameters['Left / Right']));
 Yanfly.Param.BSWPageUpDn = eval(String(Yanfly.Parameters['PageUp / PageDown']));
+Yanfly.Param.BSWTurnSkip = eval(String(Yanfly.Parameters['Allow Turn Skip']));
 
 Yanfly.Param.BSWShowAni = eval(String(Yanfly.Parameters['Show Animations']));
 Yanfly.Param.BSWShowSprite = eval(String(Yanfly.Parameters['Show Sprites']));
@@ -229,6 +243,14 @@ Game_Actor.prototype.battleStatusWindowRefresh = function() {
 //=============================================================================
 // Sprite_Actor
 //=============================================================================
+
+Yanfly.BSW.Sprite_Actor_createMainSprite =
+    Sprite_Actor.prototype.createMainSprite;
+Sprite_Actor.prototype.createMainSprite = function() {
+    Yanfly.BSW.Sprite_Actor_createMainSprite.call(this);
+    if ($gameSystem.isSideView()) return;
+    this._effectTarget = this;
+};
 
 Yanfly.BSW.Sprite_Actor_setActorHome = Sprite_Actor.prototype.setActorHome;
 Sprite_Actor.prototype.setActorHome = function(index) {
@@ -348,7 +370,9 @@ Window_ActorCommand.prototype.processLeft = function() {
 };
 
 Window_ActorCommand.prototype.processRight = function() {
-    SoundManager.playCursor();
+    if (SceneManager._scene.isAllowRightCommand()) {
+      SoundManager.playCursor();
+    }
     this.updateInputData();
     this.deactivate();
     this.callHandler('right');
@@ -578,11 +602,11 @@ Scene_Battle.prototype.createActorCommandWindow = function() {
     var win = this._actorCommandWindow;
     if (Yanfly.Param.BSWLfRt) {
       win.setHandler('left', this.selectPreviousCommand.bind(this));
-      win.setHandler('right', this.selectNextCommand.bind(this));
+      win.setHandler('right', this.selectRightCommand.bind(this));
     }
     if (Yanfly.Param.BSWPageUpDn) {
       win.setHandler('pageup', this.selectPreviousCommand.bind(this));
-      win.setHandler('pagedown', this.selectNextCommand.bind(this));
+      win.setHandler('pagedown', this.selectRightCommand.bind(this));
     };
 };
 
@@ -613,6 +637,24 @@ Yanfly.BSW.Scene_Battle_onItemCancel = Scene_Battle.prototype.onItemCancel;
 Scene_Battle.prototype.onItemCancel = function() {
     Yanfly.BSW.Scene_Battle_onItemCancel.call(this);
     this.clearInputtingAction();
+};
+
+Scene_Battle.prototype.selectRightCommand = function() {
+    if (!this.isAllowRightCommand()) {
+      return this._actorCommandWindow.activate();
+    }
+    if (Imported.YEP_BattleEngineCore && BattleManager.isTickBased()) {
+      if (BattleManager.actor()) BattleManager.actor().onTurnStart();
+    }
+    this.selectNextCommand();
+};
+
+Scene_Battle.prototype.isAllowRightCommand = function() {
+  if (Yanfly.Param.BSWTurnSkip) return true;
+  if (Imported.YEP_BattleEngineCore && BattleManager.isTickBased()) {
+    return false;
+  }
+  return true;
 };
 
 //=============================================================================

@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.4) Adiciona novos efeitos de climas.
+ * @plugindesc (v1.5) Adiciona novos efeitos de climas.
  * @author Moghunter
  *
  * @help  
  * =============================================================================
- * +++ MOG - Weather EX (v1.4) +++
+ * +++ MOG - Weather EX (v1.5) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -45,6 +45,8 @@
  * =============================================================================
  * ** Histórico **
  * =============================================================================
+ * v1.5 - Melhoria na codificação, agora é possível usar os comandos para ativar
+ *        os climas através processo paralelo.
  * v1.4 - Correção do glitch dos efeitos Wind e Snow quando  é executado o
  *        scroll down.
  * v1.3 - Melhoria na codificação.
@@ -125,6 +127,7 @@ var _alias_mog_weather_ex_system_initialize = Game_System.prototype.initialize;
 Game_System.prototype.initialize = function() {
 	_alias_mog_weather_ex_system_initialize.call(this);
 	this.weather_data = [false,[-1,0,""],[],[]];
+	this.weather_setup = [-1,0,""];
 	this.weather_ing_refresh = false;
 };
 //==============================
@@ -152,8 +155,8 @@ Game_System.prototype.record_weather = function(sprites) {
 var _alias_mog_weather_ex_pluginCommand = Game_Interpreter.prototype.pluginCommand
 Game_Interpreter.prototype.pluginCommand = function(command, args) {
 	_alias_mog_weather_ex_pluginCommand.call(this,command, args)
-	if (command === "clear_weather") { $gameSystem.weather_data = [true,[-1,0,""],[],[]];}; 
-	if (command === "weather")  { $gameSystem.weather_data = [true,[args[1], args[3], args[5]],[],[]];};
+	if (command === "clear_weather") { $gameSystem.weather_data = [false,[-1,0,""],[],[]];}; 
+	if (command === "weather")  { $gameSystem.weather_data = [false,[args[1], args[3], args[5]],[],[]];};
 	return true;
 };
 
@@ -190,7 +193,8 @@ Scene_Battle.prototype.terminate = function() {
 var _alias_mog_weather_ex_sprtbase_initialize = Spriteset_Base.prototype.initialize;
 Spriteset_Base.prototype.initialize = function() {	
 	_alias_mog_weather_ex_sprtbase_initialize.call(this);
-	if ($gameSystem.weather_data[2] != null && !$gameSystem.weather_ing_refresh) {$gameSystem.weather_data[0] = true}
+	if ($gameSystem.weather_data[2] != null && !$gameSystem.weather_ing_refresh) {$gameSystem.weather_data[0] = true;
+	$gameSystem.weather_setup[0] = -2}
 	$gameSystem.weather_ing_refresh = false;
 };
 
@@ -201,7 +205,11 @@ var _alias_mog_weather_ex_sprtbase_createToneChanger = Spriteset_Base.prototype.
 Spriteset_Base.prototype.createToneChanger = function() {
      _alias_mog_weather_ex_sprtbase_createToneChanger.call(this);
 	 this._Weather_Plane = new Weather_EX_Plane();
-	 this._baseSprite.addChild(this._Weather_Plane);
+	 if (this._battleField) {
+		 this._battleField.addChild(this._Weather_Plane);
+     } else { 
+	     this._baseSprite.addChild(this._Weather_Plane);
+     };
 };
 
 //==============================
@@ -211,9 +219,7 @@ var _alias_mog_weather_ex_sprtbase_update = Spriteset_Base.prototype.update;
 Spriteset_Base.prototype.update = function() {
      _alias_mog_weather_ex_sprtbase_update.call(this);
 	 $gameSystem.weather_type = $gameSystem.weather_data[1][0]
-     this._Weather_Plane.update();
 };
-
 
 //=============================================================================
 // * Weather EX Plane
@@ -229,7 +235,9 @@ Weather_EX_Plane.prototype.constructor = Weather_EX_Plane;
 // * Initialize
 //==============================
 Weather_EX_Plane.prototype.initialize = function() {
-    Sprite.prototype.initialize.call(this);		
+    Sprite.prototype.initialize.call(this);	
+	this.opacity = 0;
+	this._ref_time = 0;
 	this._weather_ex_sprites = [];
 };
 
@@ -237,16 +245,34 @@ Weather_EX_Plane.prototype.initialize = function() {
 // * Update
 //==============================
 Weather_EX_Plane.prototype.update = function(type) {
-    Sprite.prototype.update.call(this);
+    Sprite.prototype.update.call(this);	
 	this.anchor.x = $gameMap.displayX();
 	this.anchor.y = $gameMap.displayY();
-	if ($gameSystem.weather_data[0]) {this.refresh_weather_ex();};
+	if (this.needRefreshWeather()) {this.refresh_weather_ex();};
+	if (this._ref_time > 0) {this._ref_time -= 1}
+	if (this._ref_time === 0) {this.opacity += 15};
+};
+
+//==============================
+// * Need Refresh Weather
+//==============================
+Weather_EX_Plane.prototype.needRefreshWeather = function(type) {
+	if ($gameSystem.weather_setup[0] != $gameSystem.weather_data[1][0]) {return true};
+	if ($gameSystem.weather_setup[1] != $gameSystem.weather_data[1][1]) {return true};
+	if ($gameSystem.weather_setup[2] != $gameSystem.weather_data[1][2]) {return true};
+	if ($gameSystem.weather_data[0]) {return true};
+	return false;
 };
 
 //==============================
 // * Refresh Weather EX
 //==============================
 Weather_EX_Plane.prototype.refresh_weather_ex = function() {
+	this.opacity = 0;
+	this._ref_time = 2;
+	$gameSystem.weather_setup[0] = $gameSystem.weather_data[1][0];
+	$gameSystem.weather_setup[1] = $gameSystem.weather_data[1][1];
+	$gameSystem.weather_setup[2] = $gameSystem.weather_data[1][2];
 	$gameSystem.weather_data[0] = false;	
 	for (var i = 0; i < this._weather_ex_sprites.length; i++) {
 		this.removeChild(this._weather_ex_sprites[i]);};
@@ -331,7 +357,13 @@ Sprite_Weather_EX.prototype.set_screen_range = function() {
    	this._sc_range[2] = this.bitmap.height * 2;
 	this._sc_range[3] = Graphics.boxHeight + this._sc_range[2];
 	this._sc_range[4] = this.bitmap.width;
-	this._sc_range[5] = this.bitmap.height;	
+	this._sc_range[5] = this.bitmap.height;
+	if ($gameParty.inBattle() && Imported.MOG_BattleCamera) {
+		var nx = Graphics.boxWidth / 2 * ($gameSystem._cam_data[1] / 100);
+		var ny = Graphics.boxHeight / 2 * ($gameSystem._cam_data[1] / 100);
+	    this._sc_range[1] += nx + 32;
+		this._sc_range[3] += ny + 32;
+    };
 	this._first_setup = true;
 };
 
@@ -485,6 +517,7 @@ Sprite_Weather_EX.prototype.setup_wind = function() {
 	this.rotation = Math.random(360)
 	this._n_rotation = Math.min(Math.max((Math.random() * 0.01),0.005),0.01);
 	this.random_zoom();
+	this.opacity = 0;
 	this.anchor.x = 1.0;
 	this.anchor.y = 1.0;	
 };
@@ -542,6 +575,7 @@ Sprite_Weather_EX.prototype.setup_snow = function() {
 	this.rotation = Math.random(360);
 	this._n_rotation = Math.min(Math.max((Math.random() * 0.03),0.01),0.03);
 	this.random_zoom();
+	this.opacity = 0;
 	this.anchor.x = 0.8;
 	this.anchor.y = 0.8;	
 };
@@ -564,6 +598,7 @@ Sprite_Weather_EX.prototype.setup_rain = function() {
 	};
 	this._n_sx = 0;
 	this._n_sy = Math.min(Math.max((Math.random() * 9),6),9);
+	this.opacity = 0;
 	this.random_zoom();
 };
 
@@ -593,6 +628,7 @@ Sprite_Weather_EX.prototype.update_wind = function() {
   this.rotation += this._n_rotation;
   this.anchor.x -= 0.01;
   this.anchor.y -= 0.01;
+  this.opacity += 25;
 };
 
 //==============================
@@ -602,6 +638,7 @@ Sprite_Weather_EX.prototype.update_snow = function() {
   this._n_x += this._n_sx;
   this._n_y += this._n_sy;
   this.rotation += this._n_rotation;
+  this.opacity += 25;
 };
 
 //==============================
@@ -628,6 +665,7 @@ Sprite_Weather_EX.prototype.update_cloud = function() {
 //==============================
 Sprite_Weather_EX.prototype.update_rain = function() {
   this._n_y += this._n_sy;
+  this.opacity += 50;
 };
 
 //==============================

@@ -1364,7 +1364,7 @@ Window_Time_Status.prototype.refresh = function() {
 };
 
 //==============================
-// * Initialize
+// * Update
 //==============================
 Window_Time_Status.prototype.update = function() {
 	Window_Base.prototype.update.call(this);

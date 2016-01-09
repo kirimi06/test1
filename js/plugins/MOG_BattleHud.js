@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v2.0) Permite customizar o layout de batalha.
+ * @plugindesc (v2.1) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -594,7 +594,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v2.0) +++
+ * +++ MOG_BattleHud (v2.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -634,6 +634,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (2.1) - Compatibilidade com MOG Battle Cursor no modo Front View. 
  * (2.0) - Faces como actors no modo Frontview. 
  *       - Opção de definir a quantidade battlers na batalha.
  * (1.5) - Correção no setup do ângulo dos medidores. 
@@ -828,7 +829,6 @@
 	for (var i = 0; i < 8; i++) {
 		Moghunter.bhud_custom_pos[i] = (Moghunter.parameters['Custom Position ' + String(i + 1)] || null);
 	};
-
 
 //=============================================================================
 // ** ImageManager
@@ -1256,17 +1256,22 @@ Sprite_Actor.prototype.setupDamagePopup = function() {
 //==============================
 // ** createWindowLayer
 //==============================
-var _alias_mog_bhud_createWindowLayer = Scene_Battle.prototype.createWindowLayer
-Scene_Battle.prototype.createWindowLayer = function() {
+var _alias_mog_bhud_createUpperLayer = Spriteset_Battle.prototype.createUpperLayer
+Spriteset_Battle.prototype.createUpperLayer = function() {
 	this.create_battle_hud() 	
-	_alias_mog_bhud_createWindowLayer.call(this);
-	if (!$gameSystem.isSideView()) {this.createActors()};
+	_alias_mog_bhud_createUpperLayer.call(this);
+	if (!$gameSystem.isSideView()) {this.createActorsF()};
 };
 
 //==============================
-// ** createActors
+// ** createActorsF
 //==============================
-Scene_Battle.prototype.createActors = function() {
+Spriteset_Battle.prototype.createActorsF = function() {
+	if (this._actorSprites) {
+		for (var i = 0; i < this._actorSprites.length; i++) {
+		    this._battleField.removeChild(this._actorSprites[i]);
+		};
+	};
     this._actorSprites = [];
     for (var i = 0; i < $gameParty.maxBattleMembers(); i++) {
         this._actorSprites[i] = new Sprite_Actor();
@@ -1275,19 +1280,9 @@ Scene_Battle.prototype.createActors = function() {
 };
 
 //==============================
-// ** updateActors
-//==============================
-Scene_Battle.prototype.updateActors = function() {
-    var members = $gameParty.battleMembers();
-    for (var i = 0; i < this._actorSprites.length; i++) {
-        this._actorSprites[i].setBattler(members[i]);
-    }
-};
-
-//==============================
 // ** create Battle Hud
 //==============================
-Scene_Battle.prototype.create_battle_hud = function() {
+Spriteset_Battle.prototype.create_battle_hud = function() {
 	if (String(Moghunter.bhud_screen_layout) === "true") {this.create_screen_layout();};
 	$gameTemp.refresh_Bhud = false;
 	$gameTemp._battleEnd = false;
@@ -1296,14 +1291,13 @@ Scene_Battle.prototype.create_battle_hud = function() {
 	for (var i = 0; i < $gameParty.maxBattleMembers(); i++) {
 		this._battle_hud[i] = new Battle_Hud(i);
 		this.addChild(this._battle_hud[i]);
-	};		
-	this.create_layout_window();
+	};	
 };
 
 //==============================
 // * Create Screen Layout
 //==============================
-Scene_Battle.prototype.create_screen_layout = function() {	
+Spriteset_Battle.prototype.create_screen_layout = function() {	
 	this._screen_layout = new Sprite(ImageManager.loadBHud("Layout_Screen"));
 	this._screen_layout.opacity = 0;
     this.addChild(this._screen_layout);
@@ -1312,7 +1306,7 @@ Scene_Battle.prototype.create_screen_layout = function() {
 //==============================
 // * Update Hud visible
 //==============================
-Scene_Battle.prototype.update_hud_visible = function() {
+Spriteset_Battle.prototype.update_hud_visible = function() {
 	if (this.is_hud_visible()) {this._screen_layout.opacity += 10}	 
 	else {this._screen_layout.opacity -= 10};
 };
@@ -1320,7 +1314,7 @@ Scene_Battle.prototype.update_hud_visible = function() {
 //==============================
 // * Is Hud Visible
 //==============================
-Scene_Battle.prototype.is_hud_visible = function() {
+Spriteset_Battle.prototype.is_hud_visible = function() {
 	if ($gameMessage.isBusy()) {return false};
 	if ($gameTemp._battleEnd) {return false};
 	return true
@@ -1329,18 +1323,17 @@ Scene_Battle.prototype.is_hud_visible = function() {
 //==============================
 // ** Update
 //==============================
-var _alias_mog_bhud_scbat_update = Scene_Battle.prototype.update
-Scene_Battle.prototype.update = function() {
+var _alias_mog_bhud_scbat_update = Spriteset_Battle.prototype.update
+Spriteset_Battle.prototype.update = function() {
 	_alias_mog_bhud_scbat_update.call(this);
 	if (this._screen_layout) {this.update_hud_visible()};
-	if (this._actorSprites) {this.updateActors()};
 	if ($gameTemp._refresh_Bhud) {this.refresh_battle_hud()};
 }
 
 //==============================
 // ** Refresh Battle Hud
 //==============================
-Scene_Battle.prototype.refresh_battle_hud = function() {
+Spriteset_Battle.prototype.refresh_battle_hud = function() {
 	if (!this._battle_hud) {return};
 	$gameTemp._refresh_Bhud = false;
 	for (var i = 0; i < $gameParty.maxBattleMembers(); i++) {
@@ -1348,6 +1341,14 @@ Scene_Battle.prototype.refresh_battle_hud = function() {
 	};		
 };
 
+//==============================
+// ** createWindowLayer
+//==============================
+var _alias_mog_bhud_createWindowLayer = Scene_Battle.prototype.createWindowLayer
+Scene_Battle.prototype.createWindowLayer = function() {
+	this.create_layout_window();	
+	_alias_mog_bhud_createWindowLayer.call(this);
+};
 
 //==============================
 // ** createAllWindows

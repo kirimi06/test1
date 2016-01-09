@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.08 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -388,6 +388,14 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Fixed a bug where changing back and forth between the Fight/Escape window
+ * would prompt on turn start effects.
+ *
+ * Version 1.07:
+ * - Made a mechanic change so that turn 0 ends immediately upon battle start
+ * rather than requiring a full turn to end.
+ *
  * Version 1.06:
  * - Fixed a bug that would cause a crash when a party member leaves the party.
  *
@@ -699,7 +707,7 @@ BattleManager.startCTB = function() {
       this._ctbMinimumSpeed = Math.max(1, eval(Yanfly.Param.CTBMinSpeed));
       this._ctbMaximumSpeed = Math.max(1, eval(Yanfly.Param.CTBMaxSpeed));
     }
-    this._ctbTicks = 0;
+    this._ctbTicks = this._ctbFullTurn;
     this._ctbReadySound = {
       name: Yanfly.Param.CTBReadyName,
       volume: Yanfly.Param.CTBReadyVol,
@@ -1050,6 +1058,7 @@ BattleManager.playCTBReadySound = function() {
 
 BattleManager.startCTBAction = function(battler) {
     this._subject = battler;
+    battler.onTurnStart();
     var action = this._subject.currentAction();
     if (action && action.isValid()) {
       this.startAction();
@@ -1567,6 +1576,8 @@ Game_Battler.prototype.setCTBCharge = function(value) {
 };
 
 Game_Battler.prototype.setupCTBCharge = function() {
+    if (BattleManager._subject !== this) return;
+    if (BattleManager._bypassCtbEndTurn) return;
     if (!this.currentAction()) this.makeActions();
     if (this.currentAction()) {
       var item = this.currentAction().item();
@@ -1583,7 +1594,6 @@ Game_Battler.prototype.setupCTBCharge = function() {
       this._ctbChargeMod = 0;
     }
     this.setActionState('waiting');
-    if (BattleManager.isTickBased()) this.onTurnStart();
 };
 
 Yanfly.CTB.Game_Battler_updateTick = Game_Battler.prototype.updateTick;

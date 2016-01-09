@@ -11,7 +11,7 @@ Yanfly.SCD = Yanfly.SCD || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 (Requires YEP_SkillCore.js) Cooldowns can be applied
+ * @plugindesc v1.07 (Requires YEP_SkillCore.js) Cooldowns can be applied
  * to skills to prevent them from being used continuously.
  * @author Yanfly Engine Plugins
  *
@@ -163,6 +163,7 @@ Yanfly.SCD = Yanfly.SCD || {};
  *   cooldown will drop by 1.
  *
  *   <Skill x Cooldown: y>
+ *   <Skill name Cooldown: y>
  *   When using this skill, after paying the skill cost, skill x will have a
  *   linked cooldown of y turns. This value will take priority over Skill Type
  *   Cooldowns and Global Cooldowns.
@@ -185,6 +186,8 @@ Yanfly.SCD = Yanfly.SCD || {};
  * Skill and Item Notetags:
  *   <Skill x Cooldown: +y>
  *   <Skill x Cooldown: -y>
+ *   <Skill name Cooldown: +y>
+ *   <Skill name Cooldown: -y>
  *   Targets hit by this skill will have skill x's cooldown adjusted by y.
  *   This does not apply to the user and applies only to the targets.
  *
@@ -203,6 +206,7 @@ Yanfly.SCD = Yanfly.SCD || {};
  * Actor, Class, Enemy, Weapon, Armor, and State Notetags:
  *
  *   <Skill x Cooldown Duration: y%>
+ *   <Skill name Cooldown Duration: y%>
  *   Alters the cooldown duration of skill x to y% when the cooldown cost is
  *   applied. This effect only applies to skill x.
  *
@@ -215,6 +219,7 @@ Yanfly.SCD = Yanfly.SCD || {};
  *   is applied.
  *
  *   <Skill x Cooldown Rate: y%>
+ *   <Skill name Cooldown Rate: y%>
  *   Sets the cooldown rate for skill x to y% when the cooldown counter goes
  *   down. This effect only applies to skill x.
  *
@@ -228,6 +233,8 @@ Yanfly.SCD = Yanfly.SCD || {};
  *
  *   <Skill x Cooldown: +y>
  *   <Skill x Cooldown: -y>
+ *   <Skill name Cooldown: +y>
+ *   <Skill name Cooldown: -y>
  *   If the user performs skill x, it will have an increased or decreased
  *   cooldown value as long as the user is the actor, class, enemy, or has the
  *   weapon or armor equipped, or is affected by the state with this notetag.
@@ -252,6 +259,8 @@ Yanfly.SCD = Yanfly.SCD || {};
  *
  *   <Skill x Warmup: +y>
  *   <Skill x Warmup: -y>
+ *   <Skill name Warmup: +y>
+ *   <Skill name Warmup: -y>
  *   At the start of battle, skill x will have an increased or decreased warmup
  *   value as long as the user is the actor, class, enemy, or has the weapon or
  *   armor equipped, or is affected by the state with this notetag. These flat
@@ -349,9 +358,16 @@ Yanfly.SCD = Yanfly.SCD || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06:
+ * Version 1.07:
+ * - Named versions of these notetags have been added:
+ * <Skill x Cooldown: y>, <Skill x Cooldown: +/-y>,
+ * <Skill x Cooldown Duration: y%>, <Skill x Cooldown: +/-y>,
+ * <Skill x Warmup: +/-y>
+ *
+ * Version 1.06a:
  * - Fixed a bug with cooldown duration modifiers not modifying by the correct
  * value indicated.
+ * - Added a fail safe for when there are no targets.
  *
  * Version 1.05:
  * - Fixed a bug that prevented <Cooldown Eval> from running properly.
@@ -409,6 +425,7 @@ Yanfly.Icon.Warmup = Number(Yanfly.Parameters['Warmup Icon']);
 Yanfly.SCD.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
     if (!Yanfly.SCD.DataManager_isDatabaseLoaded.call(this)) return false;
+    this.processSCDNotetagsS($dataSkills);
 		this.processSCDNotetags1($dataSkills);
 		this.processSCDNotetags2($dataSkills);
 		this.processSCDNotetags2($dataItems);
@@ -425,6 +442,16 @@ DataManager.isDatabaseLoaded = function() {
 		this.processSCDNotetags3($dataArmors);
 		this.processSCDNotetags3($dataStates);
 		return true;
+};
+
+DataManager.processSCDNotetagsS = function(group) {
+  if (Yanfly.SkillIdRef) return;
+  Yanfly.SkillIdRef = {};
+  for (var n = 1; n < group.length; n++) {
+    var obj = group[n];
+    if (obj.name.length <= 0) continue;
+    Yanfly.SkillIdRef[obj.name.toUpperCase()] = n;
+  }
 };
 
 DataManager.processSCDNotetags1 = function(group) {
@@ -455,7 +482,15 @@ DataManager.processSCDNotetags1 = function(group) {
 				obj.warmup = parseInt(RegExp.$1);
 			} else if (line.match(/<(?:SKILL)[ ](\d+)[ ](?:COOLDOWN):[ ](\d+)>/i)) {
 				obj.cooldown[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
-			} else if (line.match(/<(?:STYPE)[ ](\d+)[ ](?:COOLDOWN):[ ](\d+)>/i)) {
+			} else if (line.match(/<(?:SKILL)[ ](.*)[ ](?:COOLDOWN):[ ](\d+)>/i)) {
+        var name = String(RegExp.$1).toUpperCase();
+        if (Yanfly.SkillIdRef[name]) {
+          var id = Yanfly.SkillIdRef[name];
+        } else {
+          continue;
+        }
+        obj.cooldown[id] = parseInt(RegExp.$2);
+      } else if (line.match(/<(?:STYPE)[ ](\d+)[ ](?:COOLDOWN):[ ](\d+)>/i)) {
 				obj.stypeCooldown[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
 			} else if (line.match(/<(?:GLOBAL COOLDOWN):[ ](\d+)>/i)) {
 				obj.globalCooldown = parseInt(RegExp.$1);
@@ -481,9 +516,11 @@ DataManager.processSCDNotetags1 = function(group) {
 
 DataManager.processSCDNotetags2 = function(group) {
 	var note1 = /<(?:SKILL)[ ](\d+)[ ](?:COOLDOWN):[ ]([\+\-]\d+)>/i;
+  var note1a = /<(?:SKILL)[ ](.*)[ ](?:COOLDOWN):[ ]([\+\-]\d+)>/i;
 	var note2 = /<(?:STYPE)[ ](\d+)[ ](?:COOLDOWN):[ ]([\+\-]\d+)>/i;
 	var note3 = /<(?:GLOBAL COOLDOWN):[ ]([\+\-]\d+)>/i;
 	var note4 = /<(?:SKILL)[ ](\d+)[ ](?:WARMUP):[ ]([\+\-]\d+)>/i;
+  var note4a = /<(?:SKILL)[ ](.*)[ ](?:WARMUP):[ ]([\+\-]\d+)>/i;
 	var note5 = /<(?:STYPE)[ ](\d+)[ ](?:WARMUP):[ ]([\+\-]\d+)>/i;
 	var note6 = /<(?:GLOBAL WARMUP):[ ]([\+\-]\d+)>/i;
 	for (var n = 1; n < group.length; n++) {
@@ -501,13 +538,29 @@ DataManager.processSCDNotetags2 = function(group) {
 			var line = notedata[i];
 			if (line.match(note1)) {
 				obj.cooldownChange[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
-			} else if (line.match(note2)) {
+			} else if (line.match(note1a)) {
+        var name = String(RegExp.$1).toUpperCase();
+        if (Yanfly.SkillIdRef[name]) {
+          var id = Yanfly.SkillIdRef[name];
+        } else {
+          continue;
+        }
+        obj.cooldownChange[id] = parseInt(RegExp.$2);
+      } else if (line.match(note2)) {
 				obj.stypeCooldownChange[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
 			} else if (line.match(note3)) {
 				obj.globalCooldownChange = parseInt(RegExp.$1);
 			} else if (line.match(note4)) {
 				obj.warmupChange[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
-			} else if (line.match(note5)) {
+			} else if (line.match(note4a)) {
+        var name = String(RegExp.$1).toUpperCase();
+        if (Yanfly.SkillIdRef[name]) {
+          var id = Yanfly.SkillIdRef[name];
+        } else {
+          continue;
+        }
+        obj.warmupChange[id] = parseInt(RegExp.$2);
+      } else if (line.match(note5)) {
 				obj.stypeWarmupChange[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
 			} else if (line.match(note6)) {
 				obj.globalWarmupChange = parseInt(RegExp.$1);
@@ -518,9 +571,11 @@ DataManager.processSCDNotetags2 = function(group) {
 
 DataManager.processSCDNotetags3 = function(group) {
 	var note1 = /<(?:SKILL)[ ](\d+)[ ](?:COOLDOWN DURATION):[ ](\d+)([%％])>/i;
+  var note1a = /<(?:SKILL)[ ](.*)[ ](?:COOLDOWN DURATION):[ ](\d+)([%％])>/i;
 	var note2 = /<(?:STYPE)[ ](\d+)[ ](?:COOLDOWN DURATION):[ ](\d+)([%％])>/i;
 	var note3 = /<(?:GLOBAL COOLDOWN DURATION):[ ](\d+)([%％])>/i;
 	var note4 = /<(?:SKILL)[ ](\d+)[ ](?:COOLDOWN RATE):[ ](\d+)([%％])>/i;
+  var note4a = /<(?:SKILL)[ ](.*)[ ](?:COOLDOWN RATE):[ ](\d+)([%％])>/i;
 	var note5 = /<(?:STYPE)[ ](\d+)[ ](?:COOLDOWN RATE):[ ](\d+)([%％])>/i;
 	var note6 = /<(?:GLOBAL COOLDOWN RATE):[ ](\d+)([%％])>/i;
 	for (var n = 1; n < group.length; n++) {
@@ -539,14 +594,30 @@ DataManager.processSCDNotetags3 = function(group) {
 			if (line.match(note1)) {
 				obj.cooldownDuration[parseInt(RegExp.$1)] = 
           parseFloat(RegExp.$2) * 0.01;
-			} else if (line.match(note2)) {
+			} else if (line.match(note1a)) {
+        var name = String(RegExp.$1).toUpperCase();
+        if (Yanfly.SkillIdRef[name]) {
+          var id = Yanfly.SkillIdRef[name];
+        } else {
+          continue;
+        }
+        obj.cooldownDuration[id] = parseFloat(RegExp.$2) * 0.01;
+      } else if (line.match(note2)) {
 				obj.stypeCooldownDuration[parseInt(RegExp.$1)] = 
           parseFloat(RegExp.$2) * 0.01;
 			} else if (line.match(note3)) {
 				obj.globalCooldownDuration = parseFloat(RegExp.$1 * 0.01);
 			} else if (line.match(note4)) {
 				obj.cooldownRate[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
-			} else if (line.match(note5)) {
+			} else if (line.match(note4a)) {
+        var name = String(RegExp.$1).toUpperCase();
+        if (Yanfly.SkillIdRef[name]) {
+          var id = Yanfly.SkillIdRef[name];
+        } else {
+          continue;
+        }
+        obj.cooldownRate[id] = parseInt(RegExp.$2);
+      } else if (line.match(note5)) {
 				obj.stypeCooldownRate[parseInt(RegExp.$1)] = parseInt(RegExp.$2);
 			} else if (line.match(note6)) {
 				obj.globalCooldownRate = parseFloat(RegExp.$1 * 0.01);
@@ -1289,7 +1360,7 @@ Yanfly.SCD.Game_Action_applyItemUserEffect =
 		Game_Action.prototype.applyItemUserEffect;
 Game_Action.prototype.applyItemUserEffect = function(target) {
     Yanfly.SCD.Game_Action_applyItemUserEffect.call(this, target);
-		target.applyCooldownEffect(this.item());
+    if (target) target.applyCooldownEffect(this.item());
 };
 
 //=============================================================================

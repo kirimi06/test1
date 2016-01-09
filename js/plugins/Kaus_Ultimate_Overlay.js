@@ -1,17 +1,17 @@
 //=============================================================================
 // Kaus Ultimate Overlay
 // Kaus_Ultimate_Overlay.js
-// Version: 1.10
+// Version: 1.11
 // Date Created: October 31, 2015
 // Scripted By: Kaus
 //=============================================================================
 
 var Imported = Imported || {};
-Imported.Kaus_Ultimate_Overlay = 1.10;
+Imported.Kaus_Ultimate_Overlay = 1.11;
 
 //=============================================================================
 /*:
- * @plugindesc v1.10 Adds Overlay Images on the Map. (Ground,Parallax,Shadow,Light,Fog)
+ * @plugindesc v1.11 Adds Overlay Images on the Map. (Ground,Parallax,Shadow,Light,Fog)
  * @author Kaus
  *
  * @param -F I L E  N A M E S-
@@ -116,12 +116,25 @@ Imported.Kaus_Ultimate_Overlay = 1.10;
  *  <light>             display light layer.
  *  <shadow>            display shadow layer.
  *  <fogName:filename>  display the chosen fog.
- *  <fogOpacity:number> display the chosen fog in this opacity. (0-255)
+ *  <fogOpacity:number> display the fog in this opacity level.
  *  <fogBlend:number>   (OPTIONAL) changes the blend type of fog 0:NORMAL 1:ADD
  *  <fogDuration:number>(OPTIONAL) makes a transition depending on value = frames.before completing opacity.
  *  <xMove:number>      (OPTIONAL) moves the fog left or right (+ moves right, - moves left)
  *  <yMove:number>      (OPTIONAL) moves the fog up or down (+ moves down, - moves up)
  *
+ * NEW: fog notetags variable use.
+ * You can use Variables to fill in your notetags instead of fix value.
+ * To do this simply put a '$' at the start of the value followed by the variable's id.
+ * Example:
+ * <fogName:$1>         This will display the fog of the value of the variable 1. 
+ * <fogOpacity:$2>      This will set the opacity of the fog to the value of variable 2.
+ * <xMove:$3>           This will set the x Movement of the fog to the value of variable 3.
+ * <yMove:$4>           This will set the y Movement of the fog to the value of variable 4.
+ * <fogBlend:$5>        This will set the Blend Mode of the fog to the value of variable 5.
+ * 
+ * You can use this script command to set a variable into text:
+ * $gameVariables.setValue(id,"your_text")
+ * so you can have a text value instead of a number.
  *
  * LAYERS:
  * Light Layer    is the highest layer and used for creating Light Effects such as Sunlight Rays, or Street Lights, etc.
@@ -169,8 +182,6 @@ Imported.Kaus_Ultimate_Overlay = 1.10;
  *            Overlay addfog mist1 0 155 0 1 1       //Adds 'mist1' fog with ID set to 0 and Opacity 155 w/ Additive Blend
  *            Overlay addfog shade 3 125 1 1         //Adds 'shade' fog with ID set to 3 and Opacity 125 in Normal Blend.
  *            Overlay addfog water 2 255 -0.1 0 0 0  //Adds 'water' fog with ID set to 2 and Opacity 255 display under all overlays (0 Depth)
- *
- * ADDED NOTE: MAKE SURE YOU PUT AN EVENT COMMAND WAIT 1 FRAME BETWEEN addfog lines if you're going to call multiple addfog at a time.
  *
  * 1.09 Depth Properties:
  * Depth Layer 
@@ -505,12 +516,32 @@ Spriteset_Map.prototype.updateLightMap = function() {
 Spriteset_Map.prototype.createFogMap = function() {
     map = $dataMap;
     this._fogMap = new TilingSprite();
+    fogfileUse = map.meta.fogName;
+    fogOpacityUse = map.meta.fogOpacity;
+    fogxMove = map.meta.xMove || 0;
+    fogyMove = map.meta.yMove || 0;
+    fogBlendUse = map.meta.fogBlend;
+        if(map.meta.fogName){
+            if(map.meta.fogName.charAt(0)=='$') fogfileUse = $gameVariables.value(map.meta.fogName.substring(1));
+        }
+        if(map.meta.fogOpacity){
+            if(map.meta.fogOpacity.charAt(0)=='$') fogOpacityUse = $gameVariables.value(map.meta.fogOpacity.substring(1));
+        }
+        if(map.meta.xMove){
+            if(map.meta.xMove.charAt(0)=='$') fogxMove = $gameVariables.value(map.meta.xMove.substring(1));
+        }
+        if(map.meta.yMove){
+            if(map.meta.yMove.charAt(0)=='$') fogyMove = $gameVariables.value(map.meta.yMove.substring(1));
+        }
+        if(map.meta.fogBlend){
+            if(map.meta.fogBlend.charAt(0)=='$') fogBlendUse = $gameVariables.value(map.meta.fogBlend.substring(1));
+        }
     if(map.meta.fogName){
-        if(useFolder) this._fogMap.bitmap = ImageManager.loadBitmap('img/overlays/fogs/',map.meta.fogName);
-        else this._fogMap.bitmap = ImageManager.loadParallax(map.meta.fogName);
+        if(useFolder) this._fogMap.bitmap = ImageManager.loadBitmap('img/overlays/fogs/',fogfileUse);
+        else this._fogMap.bitmap = ImageManager.loadParallax(fogfileUse);
     };
     this._fogMap.move(0, 0, Graphics.width, Graphics.height);
-    this._fogMap.blendMode = Number(map.meta.fogBlend) || 0;
+    this._fogMap.blendMode = Number(fogBlendUse) || 0;
     this._fogMap.opacity = 0;
     this._fogMap.origin.x =  $gameMap.displayX() * $gameMap.tileWidth();
     this._fogMap.origin.y =  $gameMap.displayY() * $gameMap.tileHeight();
@@ -524,9 +555,9 @@ Spriteset_Map.prototype.updateFogMap = function() {
         map = $dataMap;
         if(overlayBlend!=0) this._fogMap.blendMode = 1;
         if(overlayxMove!=0){ newX += Number(overlayxMove); }
-         else newX += Number(map.meta.xMove) || 0;
+         else newX += Number(fogxMove) || 0;
         if(overlayyMove!=0){ newY += Number(overlayyMove); }
-         else newY += Number(map.meta.yMove) || 0;
+         else newY += Number(fogyMove) || 0;
         if(newX!=0) this._fogMap.origin.x =  ($gameMap.displayX() * $gameMap.tileWidth()) - newX;
          else this._fogMap.origin.x =  ($gameMap.displayX() * $gameMap.tileWidth());
         if(newY!=0) this._fogMap.origin.y =  ($gameMap.displayY() * $gameMap.tileHeight()) - newY;
@@ -536,7 +567,7 @@ Spriteset_Map.prototype.updateFogMap = function() {
          if(overlayOpacity!=0){ //if plugin call opacity exist
           defOpacity = Number(overlayOpacity); }
           else{ //if not
-           defOpacity = Number(map.meta.fogOpacity); }
+           defOpacity = Number(fogOpacityUse); }
          if(overlayDuration){ //if plugin call duration exist
              fogDuration = overlayDuration; }
           else{ //if not
@@ -568,6 +599,7 @@ Spriteset_Map.prototype.updateFogMap = function() {
     Game_Interpreter.prototype.pluginCommand = function (command, args) {
       _GameInterpreter_pluginCommand.call(this, command, args);
   	if (command == "Overlay") {
+      this._waitCount = 0.1;
   	  if (args[0] == "fog") { //Fog Call
   	  	if (args[1]) { //filename
   	  	  if (args[2]){ //opacity

@@ -11,7 +11,7 @@ Yanfly.ASP1 = Yanfly.ASP1 || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.09 (Requires YEP_BattleEngineCore.js) Basic functions are
+ * @plugindesc v1.10 (Requires YEP_BattleEngineCore.js) Basic functions are
  * added to the Battle Engine Core's action sequences.
  * @author Yanfly Engine Plugins
  *
@@ -706,6 +706,9 @@ Yanfly.ASP1 = Yanfly.ASP1 || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.10:
+ * - Changed the 'Change Variable' action sequence to read more effectively.
+ *
  * Version 1.09:
  * - Fixed a bug that didn't allow for HP and MP buff/debuff removal.
  *
@@ -1113,7 +1116,7 @@ BattleManager.actionChangeSwitch = function(actionName, actionArgs) {
 BattleManager.actionChangeVariable = function(actionName) {
   var cV1 =
   /CHANGE[ ](?:VARIABLE|VAR)[ ](\d+)[ ](.*)[ ](?:VARIABLE|VAR)[ ](\d+)/i;
-  var cV2 = /CHANGE[ ](?:VARIABLE|VAR)[ ](\d+)[ ](.*)[ ](.*)/i;
+  var cV2 = /CHANGE[ ](?:VARIABLE|VAR)[ ](\d+)[ ](.*?)[ ](.*)/i;
   var subject = this._subject;
   var user = this._subject;
   var target = this._targets[0];

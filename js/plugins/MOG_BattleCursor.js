@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.1) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -48,7 +48,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cursor (v1.0) +++
+ * +++ MOG - Battle Cursor (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -70,8 +70,11 @@
  * 
  * Arrow Offset: 25:30
  *
- * =============================================================================
- * 
+ * ============================================================================
+ * HISTÓRICO
+ * ============================================================================
+ * (v1.1) - Correção na definição Offset das Tags.
+ *        - Melhoria na codificação.
  */
 
 //=============================================================================
@@ -177,8 +180,8 @@ Game_Battler.prototype.initMembers = function() {
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //==============================
@@ -202,11 +205,11 @@ Game_Enemy.prototype.setup = function(enemyId, x, y) {
 //=============================================================================	
 
 //==============================
-// * CreateLowerLayer
+// * CreateUpperLayer
 //==============================
-var _alias_mog_battlecursor_createLowerLayer = Spriteset_Battle.prototype.createLowerLayer
-Spriteset_Battle.prototype.createLowerLayer = function() {
-	_alias_mog_battlecursor_createLowerLayer.call(this);
+var _alias_mog_battlecursor_createUpperLayer = Spriteset_Battle.prototype.createUpperLayer;
+Spriteset_Battle.prototype.createUpperLayer = function() {
+	_alias_mog_battlecursor_createUpperLayer.call(this);
 	this.create_battle_cursor();
 };	
 
@@ -233,6 +236,8 @@ Spriteset_Battle.prototype.create_battle_cursor = function() {
   this._arrow_float_effect = false;
   this._arrow_name_visible = false;
   this._touch_selection = false;
+  this._cursor_plane = new Sprite();
+  this.addChild(this._cursor_plane);
   if (String(Moghunter.bcursor_touch_selection) === "true") {this._touch_selection = true};
   if (String(Moghunter.bcursor_sort_x) === "true") {
 	  $gameTroop.members().sort(function(a, b){return a._screenX-b._screenX});
@@ -253,14 +258,14 @@ Spriteset_Battle.prototype.create_arrow_actor = function() {
 	   this._actor_arrow[i].anchor.y = 0.5;
 	   this._actor_arrow[i].opacity = 0;
 	   this._arrow_pos[1] = [0,0];
-	   this.addChild(this._actor_arrow[i]);
+	   this._cursor_plane.addChild(this._actor_arrow[i]);
 	   if (this._arrow_name_visible) {
 		   this._actor_name[i] = new Sprite(new Bitmap(120,32));
 		   this._actor_name[i].anchor.x = 0.5;
 		   this._actor_name[i].anchor.y = 0.5;	
 		   this._actor_name[i].opacity = 100;
 		   this._actor_name[i].bitmap.fontSize = Moghunter.bcursor_fontSize;
-		   this.addChild(this._actor_name[i]);
+		   this._cursor_plane.addChild(this._actor_name[i]);
 	   };
    };	
 };
@@ -275,14 +280,14 @@ Spriteset_Battle.prototype.create_arrow_enemy = function() {
 	   this._enemy_arrow[i].anchor.y = 0.5;
 	   this._enemy_arrow[i].opacity = 0;
 	   this._arrow_pos[0] = [0,0];
-	   this.addChild(this._enemy_arrow[i]);
+	   this._cursor_plane.addChild(this._enemy_arrow[i]);
 	   if (this._arrow_name_visible) {
 		   this._enemy_name[i] = new Sprite(new Bitmap(120,32));
 		   this._enemy_name[i].anchor.x = 0.5;
 		   this._enemy_name[i].anchor.y = 0.5;	
 		   this._enemy_name[i].opacity = 100;
 		   this._enemy_name[i].bitmap.fontSize = Moghunter.bcursor_fontSize;
-		   this.addChild(this._enemy_name[i]);	
+		   this._cursor_plane.addChild(this._enemy_name[i]);	
 	   };
    };
 };
@@ -300,6 +305,8 @@ Spriteset_Battle.prototype.refresh_arrow_name = function(battler,sprite) {
 // * Update Battle Cursor
 //==============================
 Spriteset_Battle.prototype.update_battle_cursor = function() {
+	this._cursor_plane.x = this._battleField.x;
+	this._cursor_plane.y = this._battleField.y;
 	for (var i = 0; i < this._enemySprites.length; i++) {
 		var battler = this._enemySprites[i]._battler;
 		var sprite = this._enemy_arrow[i];
@@ -339,16 +346,16 @@ Spriteset_Battle.prototype.isTouchOnTarget = function(sprite,battler,type) {
 	if (type === 0 && !battler.isAlive()) {return false};
  	if (type === 0 && battler.isDead()) {return false};
 	if (sprite.bitmap) {
-		if (TouchInput.x < sprite.x - (sprite.bitmap.width / 2)) {return false};
-		if (TouchInput.x > sprite.x + (sprite.bitmap.width / 2)) {return false};
-		if (TouchInput.y > sprite.y) {return false};
-		if (TouchInput.y < sprite.y - (sprite.bitmap.height)) {return false};
+		if (TouchInput.x < this._battleField.x + sprite.x - (sprite.bitmap.width / 2)) {return false};
+		if (TouchInput.x > this._battleField.x + sprite.x + (sprite.bitmap.width / 2)) {return false};
+		if (TouchInput.y > this._battleField.y + sprite.y) {return false};
+		if (TouchInput.y < this._battleField.y + sprite.y - (sprite.bitmap.height)) {return false};
 		return true;
 	} else if (sprite._mainSprite) {
-		if (TouchInput.x < sprite.x - (sprite._mainSprite.width / 2)) {return false};
-		if (TouchInput.x > sprite.x + (sprite._mainSprite.width / 2)) {return false};
-		if (TouchInput.y > sprite.y) {return false};
-		if (TouchInput.y < sprite.y - (sprite._mainSprite.height)) {return false};	
+		if (TouchInput.x < this._battleField.x + sprite.x - (sprite._mainSprite.width / 2)) {return false};
+		if (TouchInput.x > this._battleField.x + sprite.x + (sprite._mainSprite.width / 2)) {return false};
+		if (TouchInput.y > this._battleField.y + sprite.y) {return false};
+		if (TouchInput.y < this._battleField.y + sprite.y - (sprite._mainSprite.height)) {return false};	
 		return true;
 	};
 	return false;
@@ -371,9 +378,11 @@ Spriteset_Battle.prototype.update_arrow_name = function(sprite,target,battler,ty
 //==============================
 Spriteset_Battle.prototype.update_arrow = function(sprite,target,battler,type) {
 	if (!this.isArrowVisible(sprite,target,battler,type)) {this.hide_arrow(sprite,type);return};
-	sprite.opacity = target.opacity; 
-	sprite.visible = target.visible;
-	if (type === 0) {var yf = target.height / 2} else {var yf = target._mainSprite.height};
+	sprite.opacity = 255//target.opacity; 
+	sprite.visible = true//target.visible;
+	if (type === 0) {var yf = target.height / 2} else {
+		if (target._mainSprite) {var yf = target._mainSprite.height} else {var yf = 0};
+	};
 	this._arrow_pos[type] = [
 	      target.x + Moghunter.bcursor_x + battler._arrowX,
 		  target.y - yf + this._arrow_s[2] + Moghunter.bcursor_y + battler._arrowY

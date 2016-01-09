@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Apresenta a imagem do personagem durante a seleção de comandos.
+ * @plugindesc (v1.2) Apresenta a imagem do personagem durante a seleção de comandos.
  * @author Moghunter
  *
  * @param CM 1 Visible
@@ -32,7 +32,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Actor Picture CM (v1.1) +++
+ * +++ MOG - Actor Picture CM (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -62,6 +62,7 @@
  * ============================================================================= 
  * HISTÓRICOS
  * =============================================================================
+ * (v1.2) - Compatibilidade com MOG Battle Cursor no modo Front View.
  * (v1.1) - Adicionado a imagem secundária do personagem.
  */
 
@@ -85,22 +86,35 @@
     Moghunter.actor_cm2_y = Number(Moghunter.parameters['CM 2 Y-Axis'] || 0);
 	
 //=============================================================================
+// ** Game_Temp
+//=============================================================================
+
+//==============================
+// * Initialize
+//==============================
+var _alias_mog_actorcm_temp_initialize = Game_Temp.prototype.initialize;
+Game_Temp.prototype.initialize = function() {
+	_alias_mog_actorcm_temp_initialize.call(this);
+    this._actor_cm_visible = false;
+};	
+	
+//=============================================================================
 // ** Scene Battle
 //=============================================================================
 
 //==============================
 // * CreateSpriteset
 //==============================
-var _alias_mog_actorcm_createSpriteset = Scene_Battle.prototype.createSpriteset;
-Scene_Battle.prototype.createSpriteset = function() {
-    _alias_mog_actorcm_createSpriteset.call(this);
+var _alias_mog_actorcm_createLowerLayer = Spriteset_Battle.prototype.createLowerLayer;
+Spriteset_Battle.prototype.createLowerLayer = function() {
+   _alias_mog_actorcm_createLowerLayer.call(this);
    this.create_actors_cm();
 };
 
 //==============================
 // * Create Actors CM
 //==============================	
-Scene_Battle.prototype.create_actors_cm = function() {
+Spriteset_Battle.prototype.create_actors_cm = function() {
     this.load_actor_cm_pictures();
 	if (String(Moghunter.actor_cm2_visible) === "true") {
   	   this._sprite_actor_cm_lay = new Sprite();
@@ -121,7 +135,7 @@ Scene_Battle.prototype.create_actors_cm = function() {
 //==============================
 // * Load Actor CM Pictures
 //==============================	
-Scene_Battle.prototype.load_actor_cm_pictures = function() {
+Spriteset_Battle.prototype.load_actor_cm_pictures = function() {
 	this._sprite_actor_cm_data = [Graphics.width,0,0]
 	this._actor_cm_data = [null,Moghunter.actor_cm_x,Moghunter.actor_cm_y];
 	this._actor_cm_data[3] = this._actor_cm_data[1] - 100;
@@ -143,18 +157,17 @@ Scene_Battle.prototype.load_actor_cm_pictures = function() {
 //==============================
 // * Update
 //==============================
-var _alias_mog_actorcm_update = Scene_Battle.prototype.update;
-Scene_Battle.prototype.update = function() {
+var _alias_mog_actorcm_update = Spriteset_Battle.prototype.update;
+Spriteset_Battle.prototype.update = function() {
 	_alias_mog_actorcm_update.call(this);
 	this.update_actor_cm();
 };
 
-
 //==============================
 // * Update Actor CM
 //==============================
-Scene_Battle.prototype.update_actor_cm = function() {
-	if (this.sprite_actor_cm_visible()) {
+Spriteset_Battle.prototype.update_actor_cm = function() {
+	if ($gameTemp._actor_cm_visible) {
 		if (this._actor_cm_data[0] != BattleManager.actor()) {this.actor_cm_refresh()};	
         if (this._sprite_actor_cm) {this.update_actor_cm_show()};
 		if (this._sprite_actor_cm_lay) {this.update_actor_cm_lay_show()};
@@ -167,7 +180,7 @@ Scene_Battle.prototype.update_actor_cm = function() {
 //==============================
 // * Update Actor CM Show
 //==============================
-Scene_Battle.prototype.update_actor_cm_show = function() {	
+Spriteset_Battle.prototype.update_actor_cm_show = function() {	
 	this._sprite_actor_cm.opacity += 15;
 	if (this._sprite_actor_cm.x < this._actor_cm_data[1])
 	   {this._sprite_actor_cm.x += 7;
@@ -178,7 +191,7 @@ Scene_Battle.prototype.update_actor_cm_show = function() {
 //==============================
 // * Update Actor CM Hide
 //==============================
-Scene_Battle.prototype.update_actor_cm_hide = function() {
+Spriteset_Battle.prototype.update_actor_cm_hide = function() {
 	this._sprite_actor_cm.opacity -= 15;
 	if ( (this._sprite_actor_cm.x > this._actor_cm_data[3])) {
 		this._sprite_actor_cm.x -= 7;
@@ -189,7 +202,7 @@ Scene_Battle.prototype.update_actor_cm_hide = function() {
 //==============================
 // * Update Actor CM Lay Show
 //==============================
-Scene_Battle.prototype.update_actor_cm_lay_show = function() {	
+Spriteset_Battle.prototype.update_actor_cm_lay_show = function() {	
     this._sprite_actor_cm_lay.opacity += 15;
 	if (this._sprite_actor_cm_lay.x > this._sprite_actor_cm_data[0])
 	   {this._sprite_actor_cm_lay.x -= this._sprite_actor_cm_data[1];
@@ -200,7 +213,7 @@ Scene_Battle.prototype.update_actor_cm_lay_show = function() {
 //==============================
 // * Update Actor CM Lay Hide
 //==============================
-Scene_Battle.prototype.update_actor_cm_lay_hide = function() {
+Spriteset_Battle.prototype.update_actor_cm_lay_hide = function() {
 	this._sprite_actor_cm_lay.opacity -= 15;
 	if ( (this._sprite_actor_cm_lay.x < Graphics.boxWidth)) {
 		this._sprite_actor_cm_lay.x += this._sprite_actor_cm_data[1];
@@ -211,7 +224,7 @@ Scene_Battle.prototype.update_actor_cm_lay_hide = function() {
 //==============================
 // * Actor CM Refresh
 //==============================
-Scene_Battle.prototype.actor_cm_refresh = function() {
+Spriteset_Battle.prototype.actor_cm_refresh = function() {
 	this._actor_cm_data[0] = BattleManager.actor();
 	var actor_id = this._actor_cm_data[0]._actorId
 	if (this._sprite_actor_cm) {
@@ -238,6 +251,15 @@ Scene_Battle.prototype.actor_cm_refresh = function() {
 		this._sprite_actor_cm_lay.opacity = 0;
 		this._sprite_actor_cm_lay.visible = true;
 	};
+};
+
+//==============================
+// * Update
+//==============================
+var _alias_mog_actorcm_scbat_update = Scene_Battle.prototype.update;
+Scene_Battle.prototype.update = function() {
+	_alias_mog_actorcm_scbat_update.call(this);
+	$gameTemp._actor_cm_visible = this.sprite_actor_cm_visible();
 };
 
 //==============================

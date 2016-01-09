@@ -11,7 +11,7 @@ Yanfly.BSC = Yanfly.BSC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Alter the basic mechanics behind buffs and states
+ * @plugindesc v1.04 Alter the basic mechanics behind buffs and states
  * that aren't adjustable within the RPG Maker editor.
  * @author Yanfly Engine Plugins
  *
@@ -255,7 +255,7 @@ Yanfly.BSC = Yanfly.BSC || {};
  *    code
  *   </Custom Apply Effect>
  *   The code in between these notetags will run when the state is added onto
- *   a battler. The code will process before the state is actually applied.
+ *   a battler. The code will process after the state is actually applied.
  *
  *   <Custom Remove Effect>
  *    code
@@ -263,15 +263,15 @@ Yanfly.BSC = Yanfly.BSC || {};
  *   </Custom Remove Effect>
  *   The code in between these notetags will run when the state is removed from
  *   a battler either manually or due to turn decay. The code will process
- *   before the state is actually removed but before <Custom Leave Effect>.
+ *   after the state is actually removed but before <Custom Leave Effect>.
  *
  *   <Custom Leave Effect>
  *    code
  *    code
  *   </Custom Leave Effect>
  *   The code in between these notetags will run when the state is removed from
- *   a battler due to turn decay. The code will process before the state is
- *   actually removed but after <Custom Remove Effect>.
+ *   a battler due to turn decay. The code will process after the state is
+ *   actually removed and after <Custom Remove Effect>.
  *
  *   <Custom Turn Start Effect>
  *    code
@@ -407,10 +407,22 @@ Yanfly.BSC = Yanfly.BSC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.01:
+ * Version v1.04:
+ * - Changed timing of when Add/Remove/Leave Lunatic Effects occur to add more
+ * flexibility in custom effects.
+ * - Added a fail safe for when there are no targets to modify.
+ * - Fixed a bug with reapply ignore states.
+ *
+ * Version v1.03a:
+ * - Fixed a bug that would cause NaN to show up in state turns.
+ *
+ * Version v1.02:
+ * - Synched up <Custom Turn End Effect> with tick-based battle systems.
+ *
+ * Version v1.01:
  * - Fixed a bug that didn't reset the font settings with the battle status.
  *
- * Version 1.00:
+ * Version v1.00:
  * - Finished Plugin!
  */
 //=============================================================================
@@ -925,6 +937,10 @@ Game_BattlerBase.prototype.resetStateCounts = function(stateId) {
       this._stateTurns[stateId] = this._stateTurns[stateId] || 0;
       var variance = 1 + Math.max(state.maxTurns - state.minTurns, 0);
       this._stateTurns[stateId] += state.minTurns + Math.randomInt(variance);
+    } else if (state.reapplyRules === 0 && state.minTurns) {
+      if (this._stateTurns[stateId] === undefined) {
+        Yanfly.BSC.Game_BattlerBase_resetStateCounts.call(this, stateId);
+      }
     }
 };
 
@@ -938,6 +954,7 @@ Game_Battler.prototype.customEffectEval = function(stateId, type) {
     if (state.customEffectEval[type] === '') return;
     var a = this;
     var user = this;
+    var target = this;
     var origin = this.stateOrigin(stateId);
     var s = $gameSwitches._data;
     var v = $gameVariables._data;
@@ -946,11 +963,12 @@ Game_Battler.prototype.customEffectEval = function(stateId, type) {
 
 Yanfly.BSC.Game_Battler_addState = Game_Battler.prototype.addState;
 Game_Battler.prototype.addState = function(stateId) {
-    if (this.isStateAddable(stateId)) {
+    var addable = this.isStateAddable(stateId);
+    Yanfly.BSC.Game_Battler_addState.call(this, stateId);
+    if (addable) {
       this.setStateOrigin(stateId);
       this.addStateEffects(stateId);
     }
-    Yanfly.BSC.Game_Battler_addState.call(this, stateId);
 };
 
 Game_Battler.prototype.addStateEffects = function(stateId) {
@@ -959,11 +977,12 @@ Game_Battler.prototype.addStateEffects = function(stateId) {
 
 Yanfly.BSC.Game_Battler_removeState = Game_Battler.prototype.removeState;
 Game_Battler.prototype.removeState = function(stateId) {
-    if (this.isStateAffected(stateId)) {
+    var affected = this.isStateAffected(stateId);
+    Yanfly.BSC.Game_Battler_removeState.call(this, stateId);
+    if (affected) {
       this.removeStateEffects(stateId);
       this.clearStateOrigin(stateId);
     }
-    Yanfly.BSC.Game_Battler_removeState.call(this, stateId);
 };
 
 Game_Battler.prototype.removeStateEffects = function(stateId) {
@@ -1010,7 +1029,20 @@ Game_Battler.prototype.turnEndStateEffects = function(stateId) {
 Yanfly.BSC.Game_Battler_onTurnEnd = Game_Battler.prototype.onTurnEnd;
 Game_Battler.prototype.onTurnEnd = function() {
     Yanfly.BSC.Game_Battler_onTurnEnd.call(this);
-    this.onTurnEndStateEffects();
+    if (this.meetTurnEndStateEffectsConditions()) this.onTurnEndStateEffects();
+};
+
+Game_Battler.prototype.meetTurnEndStateEffectsConditions = function() {
+    if (Imported.YEP_BattleEngineCore) {
+      if (BattleManager.isTurnBased()) {
+        return true;
+      } else if (BattleManager.isTickBased() && !BattleManager.isTurnEnd()) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return true;
 };
 
 Game_Battler.prototype.onRegenerateStateEffects = function() {
@@ -1059,8 +1091,14 @@ Game_BattlerBase.prototype.updateStateTurnTiming = function(timing) {
 Yanfly.BSC.Game_Battler_onTurnStart =
     Game_Battler.prototype.onTurnStart;
 Game_Battler.prototype.onTurnStart = function() {
-    Yanfly.BSC.Game_Battler_onTurnStart.call(this);
+  Yanfly.BSC.Game_Battler_onTurnStart.call(this);
+  if (this.meetTurnStartStateEffectsConditions()) {
     this.onTurnStartStateEffects();
+  }
+};
+
+Game_Battler.prototype.meetTurnStartStateEffectsConditions = function() {
+    return true;
 };
 
 }; // Imported.YEP_BattleEngineCore
@@ -1149,6 +1187,7 @@ Yanfly.BSC.Game_Action_applyItemUserEffect =
     Game_Action.prototype.applyItemUserEffect;
 Game_Action.prototype.applyItemUserEffect = function(target) {
     Yanfly.BSC.Game_Action_applyItemUserEffect.call(this, target);
+    if (!target) return;
     this.applyModifyBuffTurns(target);
     this.applyModifyDebuffTurns(target);
     this.applyModifyStateTurns(target);
@@ -1428,7 +1467,9 @@ Window_Base.prototype.drawActorIconsTurns = function(actor, wx, wy, ww) {
 
 Window_Base.prototype.drawStateTurns = function(actor, state, wx, wy) {
     if (!state.showTurns) return;
-    var turns = Yanfly.Util.toGroup(Math.ceil(actor.stateTurns(state.id)));
+    var turns = actor.stateTurns(state.id);
+    if (turns !== 0 && !turns) return;
+    var turns = Yanfly.Util.toGroup(Math.ceil(turns));
     wx += state.turnBufferX;
     wy += state.turnBufferY;
     this.changePaintOpacity(true);

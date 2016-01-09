@@ -11,7 +11,7 @@ Yanfly.Party = Yanfly.Party || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 Replaces the default 'Formation' command with a new
+ * @plugindesc v1.07 Replaces the default 'Formation' command with a new
  * menu for players to easily change party formations.
  * @author Yanfly Engine Plugins
  *
@@ -209,6 +209,10 @@ Yanfly.Party = Yanfly.Party || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.07:
+ * - Fixed a bug that caused music to not replay properly when accessing the
+ * Party change menu from battle.
  *
  * Version 1.06:
  * - Fixed a bug with certain actors not drawing properly.
@@ -1299,7 +1303,7 @@ BattleManager.playBattleBgm = function() {
     }
     if (Yanfly.Party.SavedBattleBgs) {
       AudioManager.playBgs(Yanfly.Party.SavedBattleBgs);
-      Yanfly.Party.SavedBattleBgm = undefined;
+      Yanfly.Party.SavedBattleBgs = undefined;
       restartBgm = false;
     }
     if (restartBgm) Yanfly.Party.BattleManager_playBattleBgm.call(this);

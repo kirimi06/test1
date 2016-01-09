@@ -11,7 +11,7 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 This plugin allows you to structure battle A.I.
+ * @plugindesc v1.04 This plugin allows you to structure battle A.I.
  * patterns with more control.
  * @author Yanfly Engine Plugins
  *
@@ -371,6 +371,9 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.04:
+ * - Fixed a bug that would cause a crash with the None scope for skills.
  *
  * Version 1.03:
  * - Fixed a bug that returned the wrong MP% rate.
@@ -796,6 +799,7 @@ AIManager.getActionGroup = function() {
 AIManager.setProperTarget = function(group) {
     var action = this.action();
     var randomTarget = group[Math.floor(Math.random() * group.length)];
+    if (!randomTarget) return action.setTarget(0);
     if (group.length <= 0) return action.setTarget(randomTarget.index());
     var line = this._aiTarget.toUpperCase();
     if (line.match(/FIRST/i)) {

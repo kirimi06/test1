@@ -11,7 +11,7 @@ Yanfly.ATB = Yanfly.ATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.15 (Requires YEP_BattleEngineCore.js) Add ATB (Active
+ * @plugindesc v1.18 (Requires YEP_BattleEngineCore.js) Add ATB (Active
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -433,7 +433,19 @@ Yanfly.ATB = Yanfly.ATB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
- * 
+ *
+ * Version 1.18:
+ * - Fixed a bug where changing back and forth between the Fight/Escape window
+ * would prompt on turn start effects.
+ *
+ * Version 1.17:
+ * - Made a mechanic change so that turn 0 ends immediately upon battle start
+ * rather than requiring a full turn to end.
+ *
+ * Version 1.16:
+ * - Added a fail safe setting up ATB Charges when the Cannot Move restriction
+ * is imposed upon an actor.
+ *
  * Verison 1.15:
  * - Implemented a Forced Action queue list. This means if a Forced Action
  * takes place in the middle of an action, the action will resume after the
@@ -803,7 +815,7 @@ BattleManager.startATB = function() {
       this._atbMinimumSpeed = Math.max(1, eval(Yanfly.Param.ATBMinSpeed));
       this._atbMaximumSpeed = Math.max(1, eval(Yanfly.Param.ATBMaxSpeed));
     }
-    this._atbTicks = 0;
+    this._atbTicks = this._atbFullTurn;
     this._atbReadySound = {
       name: Yanfly.Param.ATBReadyName,
       volume: Yanfly.Param.ATBReadyVol,
@@ -1067,10 +1079,12 @@ BattleManager.selectPreviousCommand = function() {
     if (this.isATB()) {
       var actorIndex = this._actorIndex;
       var scene = SceneManager._scene;
+      this._bypassAtbEndTurn = true;
       scene.startPartyCommandSelection();
       this._actorIndex = actorIndex;
       BattleManager.actor().setActionState('undecided');
       BattleManager.actor().requestMotionRefresh();
+      this._bypassAtbEndTurn = undefined;
     } else {
       Yanfly.ATB.BattleManager_selectPreviousCommand.call(this);
     }
@@ -1120,6 +1134,7 @@ BattleManager.playATBReadySound = function() {
 
 BattleManager.startATBAction = function(battler) {
     this._subject = battler;
+    battler.onTurnStart();
     var action = this._subject.currentAction();
     if (action && action.isValid()) {
       this.startAction();
@@ -1574,17 +1589,21 @@ Game_Battler.prototype.setATBCharge = function(value) {
 };
 
 Game_Battler.prototype.setupATBCharge = function() {
+    if (this._bypassAtbEndTurn) return;
     this.setATBCharging(true);
     if (!this.currentAction()) this.makeActions();
-    var item = this.currentAction().item();
-    if (item) {
-      this._atbChargeMod = item.speed;
+    if (this.currentAction()) {
+      var item = this.currentAction().item();
+      if (item) {
+        this._atbChargeMod = item.speed;
+      } else {
+        this._atbChargeMod = 0;
+      }
     } else {
       this._atbChargeMod = 0;
-    }
+    }    
     this.setATBCharge(0);
     this.setActionState('waiting');
-    if (BattleManager.isTickBased()) this.onTurnStart();
 };
 
 Yanfly.ATB.Game_Battler_updateTick = Game_Battler.prototype.updateTick;
@@ -2202,10 +2221,12 @@ Yanfly.ATB.Scene_Battle_startActorCommandSelection =
 Scene_Battle.prototype.startActorCommandSelection = function() {
     Yanfly.ATB.Scene_Battle_startActorCommandSelection.call(this);
     if (BattleManager.isATB()) {
+      BattleManager._bypassAtbEndTurn = true;
       BattleManager.actor().spriteStepForward();
       BattleManager.actor().setActionState('undecided');
       BattleManager.actor().requestMotionRefresh();
       BattleManager.actor().makeActions();
+      BattleManager._bypassAtbEndTurn = undefined;
     }
 };
 

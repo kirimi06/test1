@@ -178,15 +178,6 @@ Game_Battler.prototype.set_battler_motion_data = function() {
 	};	
 };
 
-//=============================================================================
-// ** Game_Enemy
-//=============================================================================
-var _alias_mog_bmotion_genmy_setup = Game_Enemy.prototype.setup
-Game_Enemy.prototype.setup = function(enemyId, x, y) {
-	_alias_mog_bmotion_genmy_setup.call(this,enemyId, x, y);
-	this.set_motion_data();
-};
-
 //==============================
 // ** OnBattleStart
 //==============================
@@ -262,6 +253,15 @@ Game_Battler.prototype.motion_shake = function() {
 //=============================================================================
 // ** Game Enemy
 //=============================================================================
+
+//==============================
+// * Setup
+//==============================
+var _alias_mog_bmotion_genmy_setup = Game_Enemy.prototype.setup
+Game_Enemy.prototype.setup = function(enemyId, x, y) {
+	_alias_mog_bmotion_genmy_setup.call(this,enemyId, x, y);
+	this.set_motion_data();
+};
 
 //==============================
 // * Transform

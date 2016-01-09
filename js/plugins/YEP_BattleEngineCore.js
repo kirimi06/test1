@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.25f Have more control over the flow of the battle system
+ * @plugindesc v1.28 Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -186,12 +186,12 @@ Yanfly.BEC = Yanfly.BEC || {};
  * @param Timed States
  * @desc If the battle system is Tick-based, use time instead of
  * turns for states? NO - false   YES - true
- * @default true
+ * @default false
  *
  * @param Timed Buffs
  * @desc If the battle system is Tick-based, use time instead of
  * turns for buffs? NO - false   YES - true
- * @default true
+ * @default false
  *
  * @param Turn Time
  * @desc How many ticks must past to equal 1 turn?
@@ -237,6 +237,11 @@ Yanfly.BEC = Yanfly.BEC || {};
  *
  * @param ---Selection Help---
  * @default
+ *
+ * @param Mouse Over
+ * @desc Allows you to mouse over the enemies to auto-select them.
+ * OFF - false     ON - true
+ * @default true
  *
  * @param Select Help Window
  * @desc When selecting actors and enemies, show the help window?
@@ -612,6 +617,22 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.28:
+ * - Fixed a bug if instant casting a skill that would make an opponent battler
+ * to force an action to end incorrectly. Thanks to DoubleX for the fix.
+ *
+ * Version 1.27:
+ * - Mechanic change. This will only affect those using turn-based state timing
+ * mechanics. Turn End state updates are now shifted from Turn End to occur at
+ * Regeneration timing to have a more synchronized aspect. The timings are very
+ * close so there's next to no notice in difference. Buff turn updates are also
+ * moved to the regeneration timing, too.
+ *
+ * Version 1.26:
+ * - Added 'Mouse Over' parameter to Selection Help. This parameter enables
+ * mouse users to simply hover over the enemy to select them rather than having
+ * to click an enemy twice to select them.
+ *
  * Version 1.25f:
  * - Added failsafes for Forced Action queues.
  * - Added 'Show Select Box' parameter when selecting enemies.
@@ -820,6 +841,7 @@ Yanfly.Param.BECTimeBuffs = String(Yanfly.Parameters['Timed Buffs']);
 Yanfly.Param.BECTurnTime = Number(Yanfly.Parameters['Turn Time']);
 Yanfly.Param.BECAISelfTurn = eval(String(Yanfly.Parameters['AI Self Turns']));
 Yanfly.Param.BECLowerWindows = String(Yanfly.Parameters['Lower Windows']);
+Yanfly.Param.BECSelectMouseOver = eval(String(Yanfly.Parameters['Mouse Over']));
 Yanfly.Param.BECEnemySelect = String(Yanfly.Parameters['Visual Enemy Select']);
 Yanfly.Param.BECActorSelect = String(Yanfly.Parameters['Visual Actor Select']);
 Yanfly.Param.BECWindowRows = String(Yanfly.Parameters['Window Rows']);
@@ -1182,6 +1204,17 @@ DataManager.processBECNotetags6 = function(group) {
 };
 
 //=============================================================================
+// TouchInput
+//=============================================================================
+
+Yanfly.BEC.TouchInput_onMouseMove = TouchInput._onMouseMove;
+TouchInput._onMouseMove = function(event) {
+    Yanfly.BEC.TouchInput_onMouseMove.call(this, event);
+    this._mouseOverX = Graphics.pageToCanvasX(event.pageX);
+    this._mouseOverY = Graphics.pageToCanvasY(event.pageY);
+};
+
+//=============================================================================
 // BattleManager
 //=============================================================================
 
@@ -1489,7 +1522,12 @@ BattleManager.createForceActionFailSafes = function() {
 };
 
 BattleManager.savePreForceActionSettings = function() {
-    var settings = {
+    var settings = this.setPreForceActionSettings();
+    this._forceActionQueue.push(settings);
+};
+
+BattleManager.setPreForceActionSettings = function() {
+    return {
       subject: this._subject,
       action: JsonEx.makeDeepCopy(this._action),
       actionList: JsonEx.makeDeepCopy(this._actionList),
@@ -1502,27 +1540,30 @@ BattleManager.savePreForceActionSettings = function() {
       conditionFlags: JsonEx.makeDeepCopy(this._conditionFlags),
       trueFlags: JsonEx.makeDeepCopy(this._trueFlags)
     }
-    this._forceActionQueue.push(settings);
 };
 
 BattleManager.loadPreForceActionSettings = function() {
     var settings = this._forceActionQueue.shift();
     if (settings) {
-      this._subject = settings['subject'];
-      this._action = settings['action'];
-      this._actionList = settings['actionList'];
-      this._targets = settings['targets'];
-      this._allTargets = settings['allTargets'];
-      this._individualTargets = settings['indTargets'];
-      this._phaseSteps = settings['phaseSteps'];
-      this._returnPhase = settings['returnPhase'];
-      this._conditionFlags = settings['conditionFlags'];
-      this._trueFlags = settings['trueFlags'];
-      this._phase = settings['phase'];
+      this.resetPreForceActionSettings(settings);
       return true;
     } else {
       return false;
     }    
+};
+
+BattleManager.resetPreForceActionSettings = function(settings) {
+    this._subject = settings['subject'];
+    this._action = settings['action'];
+    this._actionList = settings['actionList'];
+    this._targets = settings['targets'];
+    this._allTargets = settings['allTargets'];
+    this._individualTargets = settings['indTargets'];
+    this._phaseSteps = settings['phaseSteps'];
+    this._returnPhase = settings['returnPhase'];
+    this._conditionFlags = settings['conditionFlags'];
+    this._trueFlags = settings['trueFlags'];
+    this._phase = settings['phase'];   
 };
 
 Yanfly.BEC.BattleManager_processForcedAction =
@@ -2966,6 +3007,11 @@ Yanfly.BEC.Game_Battler_regenerateAll = Game_Battler.prototype.regenerateAll;
 Game_Battler.prototype.regenerateAll = function() {
     var lifeState = this.isAlive();
     Yanfly.BEC.Game_Battler_regenerateAll.call(this);
+    if (!BattleManager.timeBasedStates()) this.updateStateTurns();
+    if (!BattleManager.timeBasedBuffs()) {
+      this.updateBuffTurns();
+      this.removeBuffsAuto();
+    }
     if (this.isDead() && lifeState === true) {
       this.performCollapse();
     }
@@ -3372,8 +3418,6 @@ Game_Battler.prototype.onTurnEnd = function() {
     } else if (BattleManager.isTickBased() && !BattleManager.isTurnEnd()) {
       this.regenerateAll();
     }
-    if (!BattleManager.timeBasedStates()) this.updateStateTurns();
-    if (!BattleManager.timeBasedBuffs()) this.updateBuffTurns();
     this.removeStatesAuto(2);
 };
 
@@ -3942,6 +3986,13 @@ Window_BattleActor.prototype.processTouch = function() {
           }
         }
       }
+      if (Yanfly.Param.BECSelectMouseOver) {
+        var index = this.getMouseOverActor();
+        if (index >= 0 && this.index() !== index) {
+          SoundManager.playCursor();
+          return this.select(index);
+        }
+      }
     }
     Yanfly.BEC.Window_BattleActor_processTouch.call(this);
 };
@@ -3965,6 +4016,34 @@ Window_BattleActor.prototype.isClickedActor = function(actor) {
     if (!actor.isAppeared()) return false;
     var x = TouchInput.x;
     var y = TouchInput.y;
+    var rect = new Rectangle();
+    rect.width = actor.spriteWidth();
+    rect.height = actor.spriteHeight();
+    rect.x = actor.spritePosX() - rect.width / 2;
+    rect.y = actor.spritePosY() - rect.height;
+    return (x >= rect.x && y >= rect.y && x < rect.x + rect.width &&
+      y < rect.y + rect.height);
+};
+
+Window_BattleActor.prototype.getMouseOverActor = function() {
+    for (var i = 0; i < $gameParty.battleMembers().length; ++i) {
+      var actor = $gameParty.battleMembers().reverse()[i];
+      if (!actor) continue;
+      if (this.isMouseOverActor(actor)) {
+        if (this._selectDead && !actor.isDead()) continue;
+        if (this._inputLock && actor.index() !== this.index()) continue;
+        return actor.index();
+      }
+    }
+    return -1;
+};
+
+Window_BattleActor.prototype.isMouseOverActor = function(actor) {
+    if (!actor) return false;
+    if (!actor.isSpriteVisible()) return false;
+    if (!actor.isAppeared()) return false;
+    var x = TouchInput._mouseOverX;
+    var y = TouchInput._mouseOverY;
     var rect = new Rectangle();
     rect.width = actor.spriteWidth();
     rect.height = actor.spriteHeight();
@@ -4063,6 +4142,13 @@ Window_BattleEnemy.prototype.processTouch = function() {
           }
         }
       }
+      if (Yanfly.Param.BECSelectMouseOver) {
+        var index = this.getMouseOverEnemy();
+        if (index >= 0 && this.index() !== index) {
+          SoundManager.playCursor();
+          return this.select(index);
+        }
+      }
     };
     Yanfly.BEC.Window_BattleEnemy_processTouch.call(this);
 };
@@ -4086,6 +4172,34 @@ Window_BattleEnemy.prototype.isClickedEnemy = function(enemy) {
     if (!enemy.isSpriteVisible()) return false;
     var x = TouchInput.x;
     var y = TouchInput.y;
+    var rect = new Rectangle();
+    rect.width = enemy.spriteWidth();
+    rect.height = enemy.spriteHeight();
+    rect.x = enemy.spritePosX() - rect.width / 2;
+    rect.y = enemy.spritePosY() - rect.height;
+    return (x >= rect.x && y >= rect.y && x < rect.x + rect.width &&
+      y < rect.y + rect.height);
+};
+
+Window_BattleEnemy.prototype.getMouseOverEnemy = function() {
+    for (var i = 0; i < this._enemies.length; ++i) {
+      var enemy = this._enemies[i];
+      if (!enemy) continue;
+      if (this.isClickedEnemy(enemy)) {
+        if (this._selectDead && !enemy.isDead()) continue;
+        var index = this._enemies.indexOf(enemy)
+        if (this._inputLock && index !== this.index()) continue;
+        return index;
+      }
+    }
+    return -1;
+};
+
+Window_BattleEnemy.prototype.isClickedEnemy = function(enemy) {
+    if (!enemy) return false;
+    if (!enemy.isSpriteVisible()) return false;
+    var x = TouchInput._mouseOverX;
+    var y = TouchInput._mouseOverY;
     var rect = new Rectangle();
     rect.width = enemy.spriteWidth();
     rect.height = enemy.spriteHeight();
