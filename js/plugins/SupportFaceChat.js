@@ -1,5 +1,5 @@
 //=============================================================================
-// 【フェイスチャット補助】　Version: 1.11
+// 【フェイスチャット補助】　Version: 1.14
 //
 // ここからリスポーン: http://respawnfromhere.blog.fc2.com/
 // Twitter: https://twitter.com/ibakip
@@ -42,10 +42,15 @@
  *　空文字の場合は高さを自動取得して計算。
  * @default
  *
+ * @param ChangeTone
+ * @desc FaceChat Ready実行時に画面の色調変更を行うか指定。
+ * true:行う false:行わない
+ * @default true
+ *
  * @help
  *
  * //=============================================================================
- * // 【フェイスチャット補助】　Version: 1.11
+ * // 【フェイスチャット補助】　Version: 1.14
  * //
  * // ここからリスポーン: http://respawnfromhere.blog.fc2.com/
  * // Twitter: https://twitter.com/ibakip
@@ -69,10 +74,8 @@
  * 【更新履歴】
  *  ○ Ver 1.01 （2015/11/21）
  *   ・チャットが空の時にもウィンドウが表示される問題を修正
- *
  *  ○ Ver 1.02 （2015/11/21）
  *   ・ウィンドウに余白ができるとレイアウトが崩れる問題を修正
- *
  *  ○ Ver 1.10 (2015/11/26)
  *   ・フキダシアイコン描画の機能追加
  *   ・サイドビューステート描画の機能追加
@@ -80,7 +83,6 @@
  *   ・顔グラ相対移動の機能追加
  *   ・ゲームパッドの操作に対応
  *   ・再起動すると追加していたチャットが消える問題を修正
- *
  *  ○ Ver 1.11 (2015/12/10)
  *   ・フキダシアイコンとサイドビューステートが
  *     正しく描画されない問題を修正
@@ -88,6 +90,14 @@
  *     開くのが一瞬見えてしまう問題を修正
  *   ・FaceChat ChangeFaceでエラーが出る問題を修正
  *   ・他プラグインとの競合対策を追加
+ *  ○ Ver 1.12 (2015/12/31)
+ *   ・動作の軽量化
+ *  ○ Ver 1.13 (2015/1/2)
+ *   ・いくつかの問題点を修正
+ *  ○ Ver 1.14 (2015/1/3)
+ *   ・FaceChat Ready実行時に色調変化を行うかを指定できる
+ *     プラグインパラメータを追加
+ *   ・コンテニュー時にチャット起動が正しく行えなくなるバグを修正
  *
  */
  //=============================================================================
@@ -125,6 +135,7 @@ Input.gamepadMapper[8] = 'FaceChat';
  var CIW_icon   = Math.floor(Number(Parameters['IconNumber'])) || 0;
  var C_color = Math.floor(Number(Parameters['[C]color'])) || 0;
  var SFC_MsgWinHeight = Math.floor(Number(Parameters['MsgWindowHeight'])) || Window_Base.prototype.fittingHeight(4);
+ var ChangeTone = !Parameters['ChangeTone'].match(/^\s*(false)\s*$/i);
 //----------------------------------------------------------------------------
 
 
@@ -142,6 +153,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
             }
         );
         currentDisplayID = 0;
+        currentFaceChatID = FaceChatArray[currentDisplayID][0];
     }
     if (command === 'deleteFaceChat') {
         if( FaceChatArray.length !== 0 ){
@@ -151,6 +163,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
                     currentDisplayID = 0;
                 }
             }
+            currentFaceChatID = FaceChatArray[currentDisplayID][0];
         }
     }
     if (command === 'FaceChatWindow'){
@@ -169,20 +182,20 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     if ( command === 'FaceChat' ){
         switch (args[0]) {
             case 'Ready':
-                var tone = [-120,-120,-120,128];
-                var frame = 30;
-                var wait = true;
-                $gameScreen.startTint( tone , frame );
-                if ( wait ) {
-                    this.wait( frame );
+                if(ChangeTone){
+                    currentTone = [$gameScreen.tone()[0],$gameScreen.tone()[1],$gameScreen.tone()[2],$gameScreen.tone()[3]];
+                    var tone = [currentTone[0]-120,currentTone[1]-120,currentTone[2]-120,currentTone[3]];
+                    var frame = 30;
+                    var wait = true;
+                    $gameScreen.startTint( tone , frame );
+                    if ( wait ) {
+                        this.wait( frame );
+                    }
                 }
                 showTitle = true;
                 break;
             case 'Finish':
                 showTitle = false;
-                var tone = [0,0,0,0];
-                var frame = 30;
-                var wait = true;
                 for(var i=0;i<BalloonAndState.length;i++){
                     Face[i][1] = 0;
                     BalloonAndState[i][1] = 0;
@@ -190,9 +203,13 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
                 for(var loop=25;loop>=10;loop--){
                     $gameScreen.erasePicture(loop);
                 }
-                $gameScreen.startTint( tone , frame );
-                if ( wait ) {
-                    this.wait( frame );
+                if(ChangeTone){
+                    var frame = 30;
+                    var wait = true;
+                    $gameScreen.startTint( currentTone , frame );
+                    if ( wait ) {
+                        this.wait( frame );
+                    }
                 }
                 break;
             case 'addFace':
@@ -498,6 +515,8 @@ var _DataManager_makeSaveContents = DataManager.makeSaveContents;
 DataManager.makeSaveContents = function() {
     var contents = _DataManager_makeSaveContents();
     contents.FaceChatArray = FaceChatArray;
+    contents.currentDisplayID = currentDisplayID;
+    contents.currentFaceChatID = currentFaceChatID;
     return contents;
 };
 
@@ -505,6 +524,8 @@ var _DataManager_extractSaveContents = DataManager.extractSaveContents;
 DataManager.extractSaveContents = function(contents) {
     _DataManager_extractSaveContents(contents);
     FaceChatArray = contents.FaceChatArray;
+    currentDisplayID = contents.currentDisplayID;
+    currentFaceChatID = contents.currentFaceChatID;
 };
 
 
@@ -525,15 +546,14 @@ Window_ChatTitle.prototype.initialize = function(x, y, width, height) {
 };
 
 Window_ChatTitle.prototype.refresh = function(){
-    this.contents.clear();
-    var y = (this.contentsHeight() - Window_Base.prototype.lineHeight() ) / 2;
-    this.contents.fillRect(0, 0, this.contentsWidth(), this.contentsHeight(), '#0c0c0c' );
-    this.drawText(titleText, 0, y, this.contentsWidth(), 'center' );
-};
-
-Window_ChatTitle.prototype.update = function(){
-    Window_Base.prototype.update.call(this);
-    this.refresh();
+    if(this.visible){
+        var y = (this.contentsHeight() - Window_Base.prototype.lineHeight() ) / 2;
+        this.contents.fillRect(0, 0, this.contentsWidth(), this.contentsHeight(), '#0c0c0c' );
+        this.drawText(titleText, 0, y, this.contentsWidth(), 'center' );
+    }
+    else{
+        this.contents.clear();
+    }
 };
 
 Window_ChatTitle.prototype.contentsWidth = function() {
@@ -561,12 +581,14 @@ Window_ChatInfo.prototype.constructor = Window_ChatInfo;
 
 Window_ChatInfo.prototype.initialize = function(x, y, width, height) {
     Window_Base.prototype.initialize.call(this, x, y, width, height);
+    this.currentTitle = '';
 };
 
 Window_ChatInfo.prototype.refresh = function(){
     this.contents.clear();
     if( FaceChatArray.length !== 0 && FaceChatArray[currentDisplayID] !== null){
         titleText = $dataCommonEvents[ FaceChatArray[currentDisplayID][0] ].name;
+        this.currentTitle = titleText;
     }
     var x = this.textPadding()*2;
     var xPlus = 0;
@@ -592,15 +614,18 @@ Window_ChatInfo.prototype.update = function(){
             if( currentDisplayID < 0 ){
                 currentDisplayID = FaceChatArray.length - 1;
             }
+            currentFaceChatID = FaceChatArray[currentDisplayID][0];
         }
         else if( this.isNextChatCalled() ){
             currentDisplayID = currentDisplayID + 1;
             if( currentDisplayID > FaceChatArray.length - 1 ){
                 currentDisplayID = 0;
             }
+            currentFaceChatID = FaceChatArray[currentDisplayID][0];
         }
-    currentFaceChatID = FaceChatArray[currentDisplayID][0];
-    this.refresh();
+        if(this.currentTitle !== $dataCommonEvents[ FaceChatArray[currentDisplayID][0] ].name){
+            this.refresh();
+        }
     }
 };
 
@@ -629,6 +654,17 @@ Window_ChatInfo.prototype.isPreviousChatCalled = function() {
 };
 
 window.Window_ChatInfo = Window_ChatInfo;
+
+
+//-----------------------------------------------------------------------------
+// Scene_Title
+//-----------------------------------------------------------------------------
+//ニューゲーム時にフェイスチャットのリストをリセット
+var SFC_scene_title_commandNewGame = Scene_Title.prototype.commandNewGame;
+Scene_Title.prototype.commandNewGame = function() {
+    FaceChatArray = new Array();
+    SFC_scene_title_commandNewGame.call(this);
+};
 
 
 //-----------------------------------------------------------------------------
@@ -665,6 +701,7 @@ Scene_Map.prototype.createChatTitleWindow = function(){
     this.ChatTitleWindow.setBackgroundType(2);
     this.ChatTitleWindow.padding = 0;
     this.ChatTitleWindow.openness = 0;
+    this.ChatTitleWindow.visible = false;
     this.addWindow(this.ChatTitleWindow);
 };
 
@@ -678,12 +715,15 @@ Scene_Map.prototype.createAllWindows = function() {
 var SFC_scene_map_update = Scene_Map.prototype.update;
 Scene_Map.prototype.update = function() {
     SFC_scene_map_update.call(this);
-
     if( showTitle && !this.titleWindowOpened ){
         this.ChatTitleWindow.open();
+        this.ChatTitleWindow.visible = true;
+        this.ChatTitleWindow.refresh();
         this.titleWindowOpened = true;
     } else if( !showTitle && this.titleWindowOpened ){
         this.ChatTitleWindow.close();
+        this.ChatTitleWindow.visible = false;
+        this.ChatTitleWindow.refresh();
         this.titleWindowOpened = false;
     }
 
@@ -714,6 +754,11 @@ Scene_Map.prototype.update = function() {
         this._mapNameWindow.hide();
         FaceChatArray.splice(currentDisplayID,1);
         currentDisplayID = 0;
+        if(FaceChatArray.length !== 0){
+            currentFaceChatID = FaceChatArray[currentDisplayID][0];
+        }else{
+            currentFaceChatID = 0;
+        }
     }
 };
 
@@ -731,7 +776,6 @@ Scene_Map.prototype.isFaceChatCalled = function() {
 Scene_Map.prototype.isTitleWindowOpened = function() {
     return this.titleWindowOpened;
 };
-
 
 
 //-----------------------------------------------------------------------------
