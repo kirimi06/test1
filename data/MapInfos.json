@@ -10,7 +10,7 @@ null,
 {"id":8,"expanded":false,"name":"畑：休憩小屋","order":12,"parentId":7,"scrollX":567,"scrollY":356.4},
 {"id":9,"expanded":true,"name":"畑：自宅","order":8,"parentId":0,"scrollX":464.5,"scrollY":297},
 {"id":10,"expanded":false,"name":"畑：室内","order":9,"parentId":9,"scrollX":464.5,"scrollY":327},
-{"id":11,"expanded":true,"name":"森","order":10,"parentId":9,"scrollX":832,"scrollY":640},
+{"id":11,"expanded":true,"name":"森","order":10,"parentId":9,"scrollX":585,"scrollY":356.4},
 {"id":12,"expanded":true,"name":"???","order":13,"parentId":0,"scrollX":585,"scrollY":356.4},
 {"id":13,"expanded":false,"name":"客室2","order":7,"parentId":4,"scrollX":585,"scrollY":356.4}
 ]
