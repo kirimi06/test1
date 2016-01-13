@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.2.0
+// Version: 1.2.3
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -11,7 +11,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.2.0 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.2.3 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -44,6 +44,21 @@
  * Default: 0
  * @default 0 
  *
+ * @param Screensize X
+ * @desc Increase if your using a higher screen resolution then the default
+ * Default : 866
+ * @default 866
+ *
+ * @param Screensize Y
+ * @desc Increase if your using a higher screen resolution then the default
+ * Default : 630
+ * @default 630
+ *
+ * @param Kill Switch
+ * @desc Possible values A,B,C,D. If Selfswitch X is switched ON, the events lightsource will be disabled.
+ * Default : No
+ * @default No
+ *
  * @help
  * To activate the script in an area, do the following:
  * 1. Put an event switch into the map.
@@ -54,6 +69,14 @@
  * - #FFFFFF is the lightcolor (white in this case)
  * 3. You're done, its that simple.
  *
+ * You can add two optional commands for brightness and direction
+ * Light 200 #FFFFFF B50 increases the brightness with 50%. Value between 0 and 99.
+ * Light 200 #FFFFFF D1 will give half a lightglobe for lightsources placed on walls.
+ * 1. For lights on north walls, light will face down.
+ * 2. For lights on east walls, light will face west.
+ * 3. For lights on south walls, light will face north.
+ * 4. For lights on west walls, light will face east.
+ *
  * To alter the player radius in game use the following plugin command : 
  * Light radius 200 #FFFFFF  (to change the radius and the color)
  * If you want to change the player radius slowly over time (like a dying torch)
@@ -62,11 +85,13 @@
  * To turn on and off lightsources in the game, do the following:
  * Give the lightsource the normal def :  Light 250 #FFFFFF and an extra number 
  * so it becomes 'Light 250 #FFFFFF 1'
+ * (If your using the optional brightness and direction place it after those (Light 250 #FFFFFF B50 D2 1)
  * To turn on this light use plugin command : 'Light on 1'.
  * The plugin command will also trigger SelfSwitch 'D' on the targeted light(s).
  * To turn off the light use plugin command : 'Light off 1'.
  * You can reset the switches each map with the option or manualy by
  * the plugin command 'Light switch reset' 
+ * You can also turn off lights with the kill-selfswitch defined in the parameters.
  *
  * Replacing the 'Light' keyworld with 'Fire' will give the lights a subtle flicker
  * You can configure the fire effect with the plugin command 'SetFire 7 10'
@@ -110,6 +135,7 @@
  * To create lightsources without using events you can use the following plugin command.
  * TileLight 1 ON #FFFFFF 150  Will create a lightsource (color #FFFFFF radius 150) on all tiles with tile-tag 1.
  * TileRegion 1 ON #FFFFFF 150 Will create a lightsource on all tiles with region-number 1.
+ * You can increase the brightness of a lightsource with the optional TileRegion 1 ON #FFFFFF 150 B50  (for 50% increased brightness)
  * TileLight 1 OFF will turn off the lights on tile-tag 1 again 
  * TileRegion 1 OFF will turn off the lights on region-number 1 again  
  * TileFire and RegionFire works the same as TileLight, but with fire effect.
@@ -136,6 +162,14 @@
 // object orientated programming bugs the hell out of me.
 var Imported = Imported || {};
 Imported.TerraxLighting = true;
+
+	// These are global variables so they can be used by other daynight plugins
+ 
+	var Terrax_tint_speed = 60;
+	var Terrax_tint_target = '#000000';
+	
+	// Global so it can be called from other plugins (compatability)
+	
 
 (function() {
 	var lightarray_id = [];
@@ -173,12 +207,17 @@ Imported.TerraxLighting = true;
 	var daynightsavemin = Number(parameters['Save DaynightMinutes'] || 11);
 	var daynightsavesec = Number(parameters['Save DaynightSeconds'] || 12);
 	var flashlightoffset = Number(parameters['Flashlight offset'] || 0);
+	var killswitch = parameters['Kill Switch'] || No;
+	
+	var maxX = Number(parameters['Screensize X'] || 866);
+	var maxY = Number(parameters['Screensize Y'] || 630);
+	
 	var daynightdebug = false;
 	
 	var tint_value = '#000000';
 	var tint_timer = 0;
-	var tint_speed = 60;
-	var tint_target = '#000000';
+	//var tint_speed = 60;
+	//var tint_target = '#000000';
 	var tint_oldseconds = 0;
 	
 	var move_event_x = [];
@@ -221,6 +260,8 @@ Imported.TerraxLighting = true;
 			}
 			var tileradius = 100;
 			if (args.length > 3) { tileradius = args[3]; }
+			var tilebrightness = 0.0;
+			if (args.length > 4) { tilebrightness = args[4]; }
 			var tilefound = false;
 			
 			for (var i = 0; i < tilearray.length; i++) {
@@ -228,13 +269,13 @@ Imported.TerraxLighting = true;
 				var tileargs = tilestr.split(";");
 				if (tileargs[0] == tiletype && tileargs[1] == tilenumber ) {
 					tilefound = true;
-					tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius;
+					tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
 					//Graphics.Debug('Set',tilearray[i]);
 				}
 			}
 			
 			if (tilefound === false) {
-				var tiletag =  tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius;
+				var tiletag =  tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
 				tilearray.push(tiletag);	
 				//Graphics.Debug('Push',tiletag);			
 			}	 
@@ -252,9 +293,9 @@ Imported.TerraxLighting = true;
 	        	$gameVariables.setTintValue(tint_value);
         	}  
         	if (args[0] === 'fade') { 
-	        	tint_target = args[1];
-	        	tint_speed = args[2];
-	        	$gameVariables.setTintValue(tint_target);
+	        	Terrax_tint_target = args[1];
+	        	Terrax_tint_speed = args[2];
+	        	$gameVariables.setTintValue(Terrax_tint_target);
         	}	      
         	
             //Graphics.Debug('TINT',tint_value+' '+tint_target+' '+tint_speed);	
@@ -520,14 +561,11 @@ Imported.TerraxLighting = true;
 						
 
 	}
-	
 
-    
 	Spriteset_Map.prototype.createLightmask = function() {
 	    this._lightmask = new Lightmask();
 	    this.addChild(this._lightmask);
 	};
-	
 	
 	function Lightmask() {
 	    this.initialize.apply(this, arguments);
@@ -553,7 +591,7 @@ Imported.TerraxLighting = true;
 	//@method _createBitmaps
 	
 	Lightmask.prototype._createBitmap = function() {
-	    this._maskBitmap = new Bitmap(2500,1500);   // one big bitmap to fill the intire screen with black
+	    this._maskBitmap = new Bitmap(maxX,maxY);   // one big bitmap to fill the intire screen with black
 	    var canvas = this._maskBitmap.canvas;
 	};
 	
@@ -655,7 +693,7 @@ Imported.TerraxLighting = true;
 		
 		    var canvas = this._maskBitmap.canvas;
 		   	var ctx = canvas.getContext("2d");
-		    this._maskBitmap.fillRect(0, 0, 2500, 1500, 'black');
+		    this._maskBitmap.fillRect(0, 0, maxX, maxY, 'black');
 		  
 			//ctx.globalCompositeOperation = 'lighten';
 			ctx.globalCompositeOperation = 'lighter';
@@ -772,7 +810,7 @@ Imported.TerraxLighting = true;
 					        flashwidth = Number(note_args.shift());
 					        if (flashlength == 0) { flashlightlenth = 8 }
 	    					if (flashwidth == 0) { flashlightlenth = 12 }
-				    	} else {
+				    	} else {				    	
 			        		light_radius = note_args.shift();
 		        		}        	
 			        	// light radius
@@ -783,11 +821,36 @@ Imported.TerraxLighting = true;
 				        	var isValidColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(colorvalue) 	    
 				            if (!isValidColor) {
 					        	colorvalue = '#FFFFFF'    
-				            }   				            
-			            				  		
-				            // conditional lighting
+				            }   	
 				            
-						    var lightid = note_args.shift();
+				            // brightness and direction 
+				            
+				            var brightness = 0.0;
+					    	var direction = 0;
+					    	var next_arg = note_args.shift();
+					       
+						    if (typeof next_arg != 'undefined') {
+						    	var key = next_arg.substring(0,1);
+						    	if (key == 'b' || key == 'B') {
+							    	brightness = Number(next_arg.substring(1))/100;
+							    	next_arg = note_args.shift();
+							    	if (typeof next_arg != 'undefined') {
+						    			key = next_arg.substring(0,1);
+					    			}
+						    	}
+						    	if (key == 'd' || key == 'D') {
+							    	direction = next_arg.substring(1);
+							    	next_arg = note_args.shift();
+							    }			            
+		            		}	
+		            			  		
+				            // conditional lighting
+				            if (typeof next_arg != 'undefined') {
+			           			var lightid = next_arg;
+					        }else {
+					        	var lightid = 0;
+			           		}
+						    //var lightid = note_args.shift();
 						    
 						    var state = true;
 				        	if (lightid > 0) {
@@ -809,7 +872,16 @@ Imported.TerraxLighting = true;
 									}
 								}
 							}  
-								        	
+							
+							// kill switch 
+		            		if (killswitch == 'A' || killswitch == 'B' || killswitch == 'C' || killswitch == 'D') {
+								key = [$gameMap.mapId(),$dataMap.events[i].id,killswitch];
+								if ($gameSelfSwitches.value(key) == true) {	
+									state = false;
+									//Graphics.Debug('Deathswitch',killswitch);	
+								}
+	            			}
+							      	
 				        	// show light
 				            if (state == true) {
 				        				        	
@@ -862,7 +934,7 @@ Imported.TerraxLighting = true;
 								if (flashlight == true) {
 									this._maskBitmap.radialgradientFillRect2(lx1,ly1, 0, light_radius , colorvalue, 'black', ldir, flashlength, flashwidth);
 								} else {
-					            	this._maskBitmap.radialgradientFillRect(lx1,ly1, 0, light_radius , colorvalue, 'black', objectflicker); 
+					            	this._maskBitmap.radialgradientFillRect(lx1,ly1, 0, light_radius , colorvalue, 'black', objectflicker, brightness, direction); 
 								}
 					        }
 		            	}
@@ -889,6 +961,14 @@ Imported.TerraxLighting = true;
 			    var tile_on = tileargs[2];
 			    var tile_color = tileargs[3];
 			    var tile_radius = tileargs[4];
+			    var brightness = 0.0;
+				var b_arg = tileargs[5];
+				if (typeof b_arg != 'undefined') {
+				    var key = b_arg.substring(0,1);
+					if (key == 'b' || key == 'B') {
+						brightness = Number(b_arg.substring(1))/100;	
+					}	
+	    		}
 			  
 			    if (tile_on == 1 ) {
 			 
@@ -917,10 +997,10 @@ Imported.TerraxLighting = true;
 									}									
 									
 									if (tile_type == 3 || tile_type == 4) {
-										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', false); // Light
+										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', false, brightness); // Light
 									} else {
 										
-										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', true);  // Fire
+										this._maskBitmap.radialgradientFillRect(x1,y1, 0, tile_radius , tile_color, 'black', true, brightness);  // Fire
 									}
 					    		}
 				        	}
@@ -994,7 +1074,7 @@ Imported.TerraxLighting = true;
     			}		    					    			
 	  			color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 					
-				this._maskBitmap.FillRect(0,0,2500,1500,color1);
+				this._maskBitmap.FillRect(0,0,maxX,maxY,color1);
             }
 
 		    // *********************************** TINT **************************
@@ -1002,7 +1082,7 @@ Imported.TerraxLighting = true;
 		    if (daynightset == false) {
 		    			
 				color1 = tint_value;
-			    if (tint_value != tint_target) {
+			    if (tint_value != Terrax_tint_target) {
 	
 					var tintdatenow = new Date();
 					var tintseconds = Math.floor(tintdatenow.getTime()/10); 
@@ -1015,13 +1095,13 @@ Imported.TerraxLighting = true;
 					var g = hexToRgb(tint_value).g;
 					var b = hexToRgb(tint_value).b;
 						    			
-					var r2 = hexToRgb(tint_target).r;
-					var g2 = hexToRgb(tint_target).g;
-					var b2 = hexToRgb(tint_target).b;		    			
+					var r2 = hexToRgb(Terrax_tint_target).r;
+					var g2 = hexToRgb(Terrax_tint_target).g;
+					var b2 = hexToRgb(Terrax_tint_target).b;		    			
 						    			
-					var stepR = (r2-r)/(60*tint_speed);
-					var stepG = (g2-g)/(60*tint_speed);
-					var stepB = (b2-b)/(60*tint_speed);
+					var stepR = (r2-r)/(60*Terrax_tint_speed);
+					var stepG = (g2-g)/(60*Terrax_tint_speed);
+					var stepB = (b2-b)/(60*Terrax_tint_speed);
 						    						    					    			
 					r3 = Math.floor(r + (stepR * tint_timer));
 					g3 = Math.floor(g + (stepG * tint_timer));
@@ -1054,7 +1134,7 @@ Imported.TerraxLighting = true;
 						bluedone = true;	
 					}					
 					if (reddone == true && bluedone == true && greendone == true) {
-						tint_value = tint_target;
+						tint_value = Terrax_tint_target;
 					}
 					color1 = "#" + ((1 << 24) + (r3 << 16) + (g3 << 8) + b3).toString(16).slice(1);	    						    			
 				} else {
@@ -1062,7 +1142,7 @@ Imported.TerraxLighting = true;
 				}		    					    			
 				
 			    				
-				this._maskBitmap.FillRect(0,0,2500,1500,color1);
+				this._maskBitmap.FillRect(0,0,maxX,maxY,color1);
 	    	}
 	    	
 			// reset drawmode to normal
@@ -1119,7 +1199,9 @@ Imported.TerraxLighting = true;
 	// *******************  NORMAL LIGHT SHAPE ***********************************
 	// Fill gradient circle
 	
-	Bitmap.prototype.radialgradientFillRect = function(x1, y1, r1, r2, color1, color2, flicker) {
+	Bitmap.prototype.radialgradientFillRect = function(x1, y1, r1, r2, color1, color2, flicker, brightness, direction) {
+		if (!brightness) { brightness = 0.0; }
+		if (!direction) {direction = 0; }
 	    var context = this._context;
 	    var grad;	  
 	    var wait = Math.floor((Math.random()*8)+1); 
@@ -1138,12 +1220,37 @@ Imported.TerraxLighting = true;
 		  	color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 		    r2 = r2 - gradrnd;  
   		}
+  		
 	  	grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
-	    grad.addColorStop(0, color1);
-	    grad.addColorStop(1, color2);
+	    grad.addColorStop(0, '#FFFFFF');
+	    grad.addColorStop(brightness, color1);
+	   	grad.addColorStop(1, color2);
+
 	    context.save();
 	    context.fillStyle = grad;
-	    context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
+	    direction = Number(direction);
+	    var pw = $gameMap.tileWidth()/2;
+	    var ph = $gameMap.tileHeight()/2;
+	    switch(direction) {
+	    	case 0:
+	    		context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
+	       	    break;
+	   		case 1:
+	   			context.fillRect(x1-r2, y1-ph, r2*2, r2*2);
+	       	    break;
+	   		case 2:
+	   			context.fillRect(x1-r2, y1-r2, r2*1+pw, r2*2);
+	       	    break;
+	        case 3:
+	            context.fillRect(x1-r2, y1-r2, r2*2, r2*1+ph);
+	       	    break;
+	        case 4:
+	            context.fillRect(x1-pw, y1-r2, r2*2, r2*2);
+	       	    break;	       	    
+		} 
+	    
+	    
+	    // context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
 	    context.restore();
 	    this._setDirty();
 	};
@@ -1340,6 +1447,7 @@ Imported.TerraxLighting = true;
 	};	
 	
 	
+	
 	function SaveLightingVariables() {
 
 			var storeddata = $gameVariables.valueRadiusSave();
@@ -1381,11 +1489,11 @@ Imported.TerraxLighting = true;
 			flickerradiusshift = $gameVariables.valueFireRadiusSave();
 			flickercolorshift = $gameVariables.valueFireColorshiftSave();
 			tint_value = $gameVariables.valueTintValueSave();
-			tint_target = $gameVariables.valueTintValueSave();
+			Terrax_tint_target = $gameVariables.valueTintValueSave();
 			tilearray = $gameVariables.valueTileArray();				
 	};
 	
-	
+
 	
 	//****
 	// Debug
@@ -1412,7 +1520,8 @@ Imported.TerraxLighting = true;
 	    this.createWeather();
 	
 	}
-	
+
+		
 	//****
 	// These functions are overwritten from objects/sprites/scenes.
 	//****
@@ -1482,7 +1591,5 @@ Imported.TerraxLighting = true;
 	}
 
 
-	
-	
-
 })();
+
