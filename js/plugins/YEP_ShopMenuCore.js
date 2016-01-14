@@ -11,7 +11,7 @@ Yanfly.Shop = Yanfly.Shop || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 Revamps the shop menu appearance and provides the
+ * @plugindesc v1.01 Revamps the shop menu appearance and provides the
  * framework for many new shop options.
  * @author Yanfly Engine Plugins
  *
@@ -162,6 +162,18 @@ Yanfly.Shop = Yanfly.Shop || {};
  *
  *   <Can Sell>
  *   This makes it so that the item can be sold even if it is at 0 gold.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Disabled LEFT/RIGHT movement from the status window while inputting an
+ * item quantity to buy.
+ * - Added a font reset on the number window upon refresh.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -552,6 +564,8 @@ Window_ShopNumber.prototype.windowWidth = function() {
 
 Window_ShopNumber.prototype.refresh = function() {
     this.contents.clear();
+    this._index = 0;
+    this.resetFontSettings();
     this.drawItemName(this._item, 0, this.lineHeight(), this.contents.width);
     this.drawMultiplicationSign();
     this.drawNumber();
@@ -608,6 +622,20 @@ Window_ShopNumber.prototype.drawTotalAfter = function(ww, wy) {
 Window_ShopNumber.prototype.isSelling = function() {
     var scene = SceneManager._scene;
     return scene.isSelling();
+};
+
+Window_ShopNumber.prototype.cursorWidth = function() {
+    this.resetFontSettings();
+    var item = this._item
+    if (this._item && this._item.proxyBuy) {
+      var id = this._item.proxyBuy;
+      if (DataManager.isItem(this._item)) item = $dataItems[id];
+      if (DataManager.isWeapon(this._item)) item = $dataWeapons[id];
+      if (DataManager.isArmor(this._item)) item = $dataArmors[id];
+    }
+    var value = $gameParty.maxItems(item);
+    var digitWidth = this.textWidth(Yanfly.Util.toGroup(value));
+    return digitWidth + this.textPadding() * 2;
 };
 
 //=============================================================================
@@ -680,7 +708,9 @@ Window_ShopBuy.prototype.drawBuyItem = function(item, rect) {
 };
 
 Window_ShopBuy.prototype.drawBuyPrice = function(item, rect) {
-    this.contents.fontSize = Yanfly.Param.GoldFontSize;
+    if (Imported.YEP_CoreEngine) {
+      this.contents.fontSize = Yanfly.Param.GoldFontSize;
+    }
     var itemPrice = Yanfly.Util.toGroup(this.price(item));
     this.drawCurrencyValue(itemPrice, this.currencyUnit(), rect.x, rect.y,
         rect.width);
@@ -718,6 +748,7 @@ Window_ShopSell.prototype.updateHelp = function() {
 Yanfly.Shop.Window_ShopSell_isEnabled = Window_ShopSell.prototype.isEnabled;
 Window_ShopSell.prototype.isEnabled = function(item) {
     if (item) {
+      if ($gamePlayer.isDebugThrough()) return true;
       if (item.cannotSell) return false;
       if (item.canSell) return true;
     }
@@ -920,11 +951,11 @@ Window_ShopStatus.prototype.isUpdateTrigger = function() {
 
 Window_ShopStatus.prototype.updateParamSwitch = function() {
     if (!this.isEquipItem()) return;
-    if (Input.isRepeated('left') || this.isTouched(-1)) {
+    if (this.isTouched(-1) || this.getInput('left')) {
       SoundManager.playCursor();
       this.adjustLeft();
       this.refresh();
-    } else if (Input.isRepeated('right') || this.isTouched(1)) {
+    } else if (this.isTouched(1) || this.getInput('right')) {
       SoundManager.playCursor();
       this.adjustRight();
       this.refresh();
@@ -933,6 +964,11 @@ Window_ShopStatus.prototype.updateParamSwitch = function() {
       this.adjustMode();
       this.refresh();
     }
+};
+
+Window_ShopStatus.prototype.getInput = function(input) {
+    if (SceneManager._scene._numberWindow.active) return false;
+    return Input.isRepeated(input)
 };
 
 Window_ShopStatus.prototype.adjustLeft = function() {
@@ -1109,6 +1145,37 @@ Scene_Shop.prototype.onBuyCancel = function() {
     Yanfly.Shop.Scene_Shop_onBuyCancel.call(this);
     this._statusWindow.show();
     this._infoWindow.setItem(null);
+};
+
+Scene_Shop.prototype.doBuy = function(number) {
+    if (Imported.YEP_ItemCore) $gameTemp.enableVarianceStock();
+    this.doBuyGold(number);
+    this.doBuyItem(number);
+    if (Imported.YEP_ItemCore) $gameTemp.disableVarianceStock();
+};
+
+Scene_Shop.prototype.doBuyGold = function(number) {
+    $gameParty.loseGold(number * this.buyingPrice());
+};
+
+Scene_Shop.prototype.doBuyItem = function(number) {
+    $gameParty.gainItem(this._item, number);
+};
+
+Scene_Shop.prototype.doSell = function(number) {
+    this.doSellGold(number);
+    this.doSellItem(number);
+    if (!Imported.YEP_ItemCore) return;
+    if (!DataManager.isIndependent(this._item)) return;
+    DataManager.removeIndependentItem(this._item);
+};
+
+Scene_Shop.prototype.doSellGold = function(number) {
+    $gameParty.gainGold(number * this.sellingPrice());
+};
+
+Scene_Shop.prototype.doSellItem = function(number) {
+    $gameParty.loseItem(this._item, number);
 };
 
 Yanfly.Shop.Scene_Shop_activateSellWindow = 

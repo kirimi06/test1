@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.28 Have more control over the flow of the battle system
+ * @plugindesc v1.28c Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -617,9 +617,13 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.28:
+ * Version 1.28c:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
  * to force an action to end incorrectly. Thanks to DoubleX for the fix.
+ * - Fixed a bug with mouse over not working properly.
+ * - Fixed a bug regarding forced actions that will cause the battle to freeze
+ * if the forced action causes the main active subject to leave the battle.
+ * - Fixed a bug with timed states not updating their turns properly.
  *
  * Version 1.27:
  * - Mechanic change. This will only affect those using turn-based state timing
@@ -1543,10 +1547,11 @@ BattleManager.setPreForceActionSettings = function() {
 };
 
 BattleManager.loadPreForceActionSettings = function() {
-    var settings = this._forceActionQueue.shift();
+    var settings = this._forceActionQueue[0];
     if (settings) {
+      this._forceActionQueue.shift();
       this.resetPreForceActionSettings(settings);
-      return true;
+      return this._subject && this._subject.isAppeared();
     } else {
       return false;
     }    
@@ -2877,6 +2882,7 @@ Game_BattlerBase.prototype.completetStatusRefreshRequest = function() {
 };
 
 Game_BattlerBase.prototype.updateStateTicks = function() {
+    var needRefresh = false;
     for (var i = 0; i < this._states.length; ++i) {
       var stateId = this._states[i];
       var state = $dataStates[stateId];
@@ -2884,9 +2890,13 @@ Game_BattlerBase.prototype.updateStateTicks = function() {
       if (state.autoRemovalTiming !== 2) continue;
       if (!this._stateTurns[stateId]) continue;
       var value = BattleManager.tickRate() / Yanfly.Param.BECTurnTime;
+      var shown1 = Math.ceil(this._stateTurns[stateId]);
       this._stateTurns[stateId] -= value;
+      var shown2 = Math.ceil(this._stateTurns[stateId]);
+      if (shown1 !== shown2) needRefresh = true;
       if (this._stateTurns[stateId] <= 0) this.removeState(stateId);
     }
+    if (needRefresh) this.refresh();
 };
 
 Game_BattlerBase.prototype.isBypassUpdateTurns = function() {
@@ -2933,12 +2943,17 @@ Game_BattlerBase.prototype.updateStateTurnEnd = function() {
 };
 
 Game_BattlerBase.prototype.updateBuffTicks = function() {
+    var needRefresh = false;
     for (var i = 0; i < this._buffTurns.length; i++) {
       if (this._buffTurns[i] <= 0) continue;
       var value = BattleManager.tickRate() / Yanfly.Param.BECTurnTime;
+      var shown1 = Math.ceil(this._buffTurns[i]);
       this._buffTurns[i] -= value;
+      var shown2 = Math.ceil(this._buffTurns[i]);
+      if (shown1 !== shown2) needRefresh = true;
       if (this._buffTurns[i] <= 0) this.removeBuff(i);
     }
+    if (needRefresh) this.refresh();
 };
 
 Game_BattlerBase.prototype.timedTick = function() {
@@ -4185,7 +4200,7 @@ Window_BattleEnemy.prototype.getMouseOverEnemy = function() {
     for (var i = 0; i < this._enemies.length; ++i) {
       var enemy = this._enemies[i];
       if (!enemy) continue;
-      if (this.isClickedEnemy(enemy)) {
+      if (this.isMouseOverEnemy(enemy)) {
         if (this._selectDead && !enemy.isDead()) continue;
         var index = this._enemies.indexOf(enemy)
         if (this._inputLock && index !== this.index()) continue;
@@ -4195,7 +4210,7 @@ Window_BattleEnemy.prototype.getMouseOverEnemy = function() {
     return -1;
 };
 
-Window_BattleEnemy.prototype.isClickedEnemy = function(enemy) {
+Window_BattleEnemy.prototype.isMouseOverEnemy = function(enemy) {
     if (!enemy) return false;
     if (!enemy.isSpriteVisible()) return false;
     var x = TouchInput._mouseOverX;

@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.04 (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -701,19 +701,23 @@ Yanfly.SVE = Yanfly.SVE || {};
  * Changelog
  * ============================================================================
  *
- * Version v1.03:
+ * Version 1.04:
+ * - Fixed a bug with Sprite Smoothing disabled on Shadows.
+ * - Fixed a bug with the anchor Y positions being overwritten.
+ *
+ * Version 1.03:
  * - Fixed a bug that would cause <Sideview Width: x> & <Sideview Height: x>
  * notetags to crash the game.
  *
- * Version v1.02:
+ * Version 1.02:
  * - Synchronized state icons and overlays with floating enemies.
  *
- * Version v1.01:
+ * Version 1.01:
  * - Added 'HP Link Breathing' plugin parameter. If enabled, the lower the HP,
  * the slower the enemy breathes.
  * - Added <Enable HP Link Breathing> and <Disable HP Link Breathing> notetags.
  *
- * Version v1.00:
+ * Version 1.00:
  * - Finished plugin! Hooray!
  */
 //=============================================================================
@@ -1095,6 +1099,16 @@ Game_Enemy.prototype.sideviewAnchorY = function() {
     return this.enemy().sideviewAnchorY;
 };
 
+Game_Enemy.prototype.anchorX = function() {
+    if (this.hasSVBattler()) return this.sideviewAnchorX();
+    return Game_Battler.prototype.anchorX.call(this);
+};
+
+Game_Enemy.prototype.anchorY = function() {
+    if (this.hasSVBattler()) return this.sideviewAnchorY();
+    return Game_Battler.prototype.anchorY.call(this);
+};
+
 Game_Enemy.prototype.sideviewWidth = function() {
     return this.enemy().sideviewWidth;
 };
@@ -1292,7 +1306,11 @@ Sprite_Enemy.prototype.createMainSprite = function() {
 
 Sprite_Enemy.prototype.createShadowSprite = function() {
     this._shadowSprite = new Sprite();
-    this._shadowSprite.bitmap = ImageManager.loadSystemSmooth('Shadow2');
+    if (Yanfly.Param.SVESmoothing) {
+      this._shadowSprite.bitmap = ImageManager.loadSystemSmooth('Shadow2');
+    } else {
+      this._shadowSprite.bitmap = ImageManager.loadSystem('Shadow2');
+    }    
     this._shadowSprite.anchor.x = 0.5;
     this._shadowSprite.anchor.y = 0.5;
     this._shadowSprite.y = -2;
@@ -1410,6 +1428,7 @@ Sprite_Enemy.prototype.updateBitmap = function() {
     Yanfly.SVE.Sprite_Enemy_updateBitmap.call(this);
     if (!this._svBattlerEnabled) this.updateScale();
     this.updateSVBitmap();
+    this.adjustAnchor();
 };
 
 Sprite_Enemy.prototype.updateSVBitmap = function() {
@@ -1434,8 +1453,6 @@ Sprite_Enemy.prototype.updateSVBitmap = function() {
 
 Sprite_Enemy.prototype.adjustAnchor = function() {
     if (!this._mainSprite) return;
-    if (this._createdAnchorSettings) return;
-    this._createdAnchorSettings = true;
 		this._mainSprite.anchor.x = this._enemy.sideviewAnchorX();
     this._mainSprite.anchor.y = this._enemy.sideviewAnchorY();
 };

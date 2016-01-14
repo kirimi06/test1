@@ -11,7 +11,7 @@ Yanfly.IUS = Yanfly.IUS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 (Requires YEP_ItemCore.js) Allows independent items to
+ * @plugindesc v1.04 (Requires YEP_ItemCore.js) Allows independent items to
  * be upgradeable and gain better stats.
  * @author Yanfly Engine Plugins
  *
@@ -158,6 +158,7 @@ Yanfly.IUS = Yanfly.IUS || {};
  *   Stat: -x              - Decreases 'Stat' by x. *Note1
  *   Stat: -x%             - Decreases 'Stat' by x% of base stat. *Note1
  *   Suffix: x             - Changes item's suffix to x. *Note2
+ *   Text Color: x         - Changes item's text color to x.
  *
  * Note1: 'Stat' is to be replaced by 'MaxHP', 'MaxMP', 'ATK', 'DEF', 'MAT',
  * 'MDF', 'AGI', 'LUK', 'SLOTS', 'ALL' or 'CURRENT'. 'ALL' affects all stats.
@@ -189,6 +190,10 @@ Yanfly.IUS = Yanfly.IUS || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.04:
+ * - Added 'Text Color: x' upgrade effect to allow you to change the text color
+ * of independent items.
  *
  * Version 1.03:
  * - Fixed a bug that caused slot variance to not calculate correctly.
@@ -455,6 +460,11 @@ ItemManager.processIUSEffect = function(line, mainItem, effectItem) {
     if (line.match(/RESET[ ](.*)/i)) {
       var stat = String(RegExp.$1).toUpperCase();
       return this.effectIUSResetStat(mainItem, stat);
+    }
+    // TEXT COLOR: X
+    if (line.match(/TEXT COLOR:[ ](\d+)/i)) {
+      var value = parseInt(RegExp.$1);
+      return this.effectIUSTextColor(mainItem, value);
     }
     // STAT: +/-X%
     if (line.match(/(.*):[ ]([\+\-]\d+)([%％])/i)) {
@@ -838,6 +848,10 @@ ItemManager.effectIUSSuffix = function(item, value) {
     this.updateItemName(item);
 };
 
+ItemManager.effectIUSTextColor = function(item, value) {
+    item.textColor = value;
+};
+
 //=============================================================================
 // Game_System
 //=============================================================================
@@ -962,7 +976,11 @@ Window_ItemActionCommand.prototype.addUpgradeCommand = function() {
     if (eval(Yanfly.Param.IUSShowOnly) && !enabled) return;
     if (!$gameSystem.itemUpgradeEnabled()) enabled = false;
     var fmt = Yanfly.Param.IUSUpgradeCmd;
-    text = '\\i[' + this._item.iconIndex + ']' + this._item.name;
+    text = '\\i[' + this._item.iconIndex + ']';
+    if (this._item.textColor !== undefined) {
+      text += '\\c[' + this._item.textColor + ']';
+    }
+    text += this._item.name;
     text = fmt.format(text);
     this.addCommand(text, 'upgrade', enabled);
 };

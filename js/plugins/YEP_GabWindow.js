@@ -589,7 +589,6 @@ Window_Gab.prototype.startCountdown = function() {
     this._showCount = Yanfly.Param.GabBaseTime;
     var text = this._text.replace(/\\(.*?)\[(.*?)\]/gi, '');
     this._showCount += text.length * Yanfly.Param.GabTimePerChar;
-    console.log(this._showCount);
 };
 
 Window_Gab.prototype.drawGabBackground = function() {

@@ -11,7 +11,7 @@ Yanfly.ECP = Yanfly.ECP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 When a player is in the proximity of a certain event,
+ * @plugindesc v1.01 When a player is in the proximity of a certain event,
  * the event will start chasing or fleeing from the player.
  * @author Yanfly Engine Plugins
  *
@@ -72,6 +72,9 @@ Yanfly.ECP = Yanfly.ECP || {};
  *  this._seePlayer = false    Doesn't require event to be able to see player.
  *  this._alertBalloon = x     This balloon will play when player is seen.
  *  this._alertSound = x       This sound will play when player is seen.
+ *  this._alertSoundVol = x    The volume used by the alert sound.
+ *  this._alertSoundPitch = x  The pitch used by the alert sound.
+ *  this._alertSoundPan = x    The pan used by the alert sound.
  *  this._alertCommonEvent = x This event will play when player is seen.
  *
  * It is best to play this inside of a custom move route for the event at a
@@ -79,6 +82,17 @@ Yanfly.ECP = Yanfly.ECP || {};
  * is made and ran, which means upon loading a map, if the event with a low
  * frequency hasn't loaded up 'this._chaseRange = x' in its movement queue yet,
  * the event will not chase the player just yet.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Added 'this._alertSoundPitch' 'this._alertSoundVol' 'this._alertSoundPan'
+ * to the settings you can alter to adjust the alert sound.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -112,6 +126,9 @@ Game_Event.prototype.clearChaseSettings = function() {
   this._alertLock = 0;
   this._alertPlayer = false;
   this._alertSound = Yanfly.Param.ECPAlertSound;
+  this._alertSoundVol = 100;
+  this._alertSoundPitch = 100;
+  this._alertSoundPan = 0;
   this._alertTimer = 0;
   this._chasePlayer = false;
   this._chaseRange = 0;
@@ -238,9 +255,9 @@ Game_Event.prototype.playAlertSound = function() {
     if (this._alertSound === '') return;
     var sound = {
       name:   this._alertSound,
-      volume: 100,
-      pitch:  100,
-      pan:    100
+      volume: this._alertSoundVol,
+      pitch:  this._alertSoundPitch,
+      pan:    this._alertSoundPan
     };
     AudioManager.playSe(sound);
 };

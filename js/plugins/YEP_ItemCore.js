@@ -11,7 +11,7 @@ Yanfly.Item = Yanfly.Item || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.16 Changes the way Items are handled for your game
+ * @plugindesc v1.17 Changes the way Items are handled for your game
  * and the Item Scene, too.
  * @author Yanfly Engine Plugins
  *
@@ -187,6 +187,10 @@ Yanfly.Item = Yanfly.Item || {};
  *   This sets the item, weapon, or armor's priority name to its database
  *   entry so that name schemes cannot affect the item.
  *
+ *   <Text Color: x>
+ *   This sets the text color of this item, weapon, or armor to use text color
+ *   x from the window skin.
+ *
  * ============================================================================
  * Plugin Commands
  * ============================================================================
@@ -292,6 +296,9 @@ Yanfly.Item = Yanfly.Item || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.17:
+ * - Added <Text Color: x> notetag for items, weapons, and armors.
  *
  * Version 1.16:
  * - Fixed a bug that made mid-game actor initialization not display items
@@ -413,6 +420,8 @@ DataManager.processItemCoreNotetags = function(group) {
     var notedata = obj.note.split(/[\r\n]+/);
 
     obj.randomVariance = Yanfly.Param.ItemRandomVariance;
+    obj.textColor = 0;
+    if (Imported.YEP_CoreEngine) obj.textColor = Yanfly.Param.ColorNormal;
     obj.nonIndepdent = false;
     obj.setPriorityName = false;
     obj.infoEval = '';
@@ -448,6 +457,8 @@ DataManager.processItemCoreNotetags = function(group) {
       } else if (evalMode === 'info text bottom') {
         if (obj.infoTextBottom !== '') obj.infoTextBottom += '\n';
         obj.infoTextBottom = obj.infoTextBottom + line;
+      } else if (line.match(/<(?:TEXT COLOR):[ ](\d+)>/i)) {
+        obj.textColor = parseInt(RegExp.$1);
       }
     }
   }
@@ -1132,6 +1143,33 @@ Game_Interpreter.prototype.gameDataOperand = function(type, param1, param2) {
 };
 
 //=============================================================================
+// Window_Base
+//=============================================================================
+
+Yanfly.Item.Window_Base_drawItemName = Window_Base.prototype.drawItemName;
+Window_Base.prototype.drawItemName = function(item, wx, wy, ww) {
+    ww = ww || 312;
+    this.setItemTextColor(item);
+    Yanfly.Item.Window_Base_drawItemName.call(this, item, wx, wy, ww);
+    this._resetTextColor = undefined;
+    this.resetTextColor();
+};
+
+Window_Base.prototype.setItemTextColor = function(item) {
+    if (!item) return;
+    if (item.textColor === undefined) return;
+    this._resetTextColor = item.textColor;
+};
+
+Yanfly.Item.Window_Base_normalColor = Window_Base.prototype.normalColor;
+Window_Base.prototype.normalColor = function() {
+    if (this._resetTextColor !== undefined) {
+      return this.textColor(this._resetTextColor);
+    }
+    return Yanfly.Item.Window_Base_normalColor.call(this);
+};
+
+//=============================================================================
 // Window_ItemList
 //=============================================================================
 
@@ -1800,7 +1838,11 @@ Window_ItemActionCommand.prototype.makeCommandList = function() {
 Window_ItemActionCommand.prototype.addUseCommand = function() {
     var enabled = this.isEnabled(this._item);
     var fmt = Yanfly.Param.ItemUseCmd;
-    text = '\\i[' + this._item.iconIndex + ']' + this._item.name;
+    text = '\\i[' + this._item.iconIndex + ']';
+    if (this._item.textColor !== undefined) {
+      text += '\\c[' + this._item.textColor + ']';
+    }
+    text += this._item.name;
     text = fmt.format(text);
     this.addCommand(text, 'use', enabled);
 };

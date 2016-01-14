@@ -11,7 +11,7 @@ Yanfly.BSC = Yanfly.BSC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 Alter the basic mechanics behind buffs and states
+ * @plugindesc v1.05a Alter the basic mechanics behind buffs and states
  * that aren't adjustable within the RPG Maker editor.
  * @author Yanfly Engine Plugins
  *
@@ -407,22 +407,26 @@ Yanfly.BSC = Yanfly.BSC || {};
  * Changelog
  * ============================================================================
  *
- * Version v1.04:
+ * Version 1.05a:
+ * - Fixed a bug with the 'Show Turns' parameter not working properly.
+ * - Fixed a bug with math issues for timed states.
+ *
+ * Version 1.04:
  * - Changed timing of when Add/Remove/Leave Lunatic Effects occur to add more
  * flexibility in custom effects.
  * - Added a fail safe for when there are no targets to modify.
  * - Fixed a bug with reapply ignore states.
  *
- * Version v1.03a:
+ * Version 1.03a:
  * - Fixed a bug that would cause NaN to show up in state turns.
  *
- * Version v1.02:
+ * Version 1.02:
  * - Synched up <Custom Turn End Effect> with tick-based battle systems.
  *
- * Version v1.01:
+ * Version 1.01:
  * - Fixed a bug that didn't reset the font settings with the battle status.
  *
- * Version v1.00:
+ * Version 1.00:
  * - Finished Plugin!
  */
 //=============================================================================
@@ -434,7 +438,7 @@ Yanfly.BSC = Yanfly.BSC || {};
 Yanfly.Parameters = PluginManager.parameters('YEP_BuffsStatesCore');
 Yanfly.Param = Yanfly.Param || {};
 
-Yanfly.Param.BSCShowTurns = String(Yanfly.Parameters['Show Turns']);
+Yanfly.Param.BSCShowTurns = eval(String(Yanfly.Parameters['Show Turns']));
 Yanfly.Param.BSCFontSize = String(Yanfly.Parameters['Font Size']);
 Yanfly.Param.BSCTurnAlign = String(Yanfly.Parameters['Turn Alignment']);
 Yanfly.Param.BSCTurnBufferX = Number(Yanfly.Parameters['Turn Buffer X']);
@@ -860,7 +864,10 @@ Game_BattlerBase.prototype.stateTurns = function(stateId) {
 };
 
 Game_BattlerBase.prototype.setStateTurns = function(stateId, turns) {
-    this._stateTurns[stateId] = Math.floor(turns);
+    if (Imported.YEP_BattleEngineCore && !eval(Yanfly.Param.BECTimeStates)) {
+      turns = Math.floor(turns);
+    }
+    this._stateTurns[stateId] = turns;
 };
 
 Game_BattlerBase.prototype.buffTurns = function(paramId) {
@@ -868,7 +875,10 @@ Game_BattlerBase.prototype.buffTurns = function(paramId) {
 };
 
 Game_BattlerBase.prototype.setBuffTurns = function(paramId, turns) {
-    this._buffTurns[paramId] = Math.floor(turns);
+    if (Imported.YEP_BattleEngineCore && !eval(Yanfly.Param.BECTimeBuffs)) {
+      turns = Math.floor(turns);
+    }
+    this._buffTurns[paramId] = turns;
 };
 
 Game_BattlerBase.prototype.paramBuffRate = function(paramId) {

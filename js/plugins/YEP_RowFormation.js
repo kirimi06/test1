@@ -11,7 +11,7 @@ Yanfly.Row = Yanfly.Row || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 Places party members into row formations to give
+ * @plugindesc v1.05 Places party members into row formations to give
  * them distinct advantages based on row location.
  * @author Yanfly Engine Plugins
  *
@@ -670,6 +670,9 @@ Yanfly.Row = Yanfly.Row || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Fixed a bug with user row changing notetags not working properly.
+ *
  * Version 1.04:
  * - Fixed a bug with the SetPartyRow slotId x plugin command.
  * - Added 'Adjust Relative' plugin parameter for enemy rows.
@@ -1256,7 +1259,7 @@ Yanfly.Row.Game_Action_apply = Game_Action.prototype.apply;
 Game_Action.prototype.apply = function(target) {
     if ($gameTroop.turnCount() <= 0) target._allowRowReposition = true;
     Yanfly.Row.Game_Action_apply.call(this, target);
-    if ($gameParty.inBattle() && !this.item()) {
+    if ($gameParty.inBattle() && this.item()) {
       this.applyUserItemRowEffect(target);
     }
 };
@@ -1553,13 +1556,6 @@ Sprite_Enemy.prototype.setEnemyHome = function(index) {
     if (this.isNotChangeRowPosition()) {
       this._homeX = this._enemy.screenX();
       this._homeY = this._enemy.screenY();
-      /*
-      if (Imported.YEP_CoreEngine && eval(Yanfly.Param.ReposBattlers)) {
-        this._homeY += Graphics.boxHeight - 624;
-        if ($gameSystem.isSideView()) return;
-        this._homeX += (Graphics.boxWidth - 816) / 2;
-      }
-      */
       if (!BattleManager._bypassMoveToStartLocation) {
         return this.setRowHomePosition();
       }
@@ -1595,13 +1591,6 @@ Sprite_Enemy.prototype.alterEnemyHome = function(index) {
     var homeY = eval(Yanfly.Param.RowEnemyY);
     this._homeX = homeX;
     this._homeY = homeY;
-    /*
-    if (Imported.YEP_CoreEngine && eval(Yanfly.Param.ReposBattlers)) {
-      this._homeY += Graphics.boxHeight - 624;
-      if ($gameSystem.isSideView()) return;
-      this._homeX += (Graphics.boxWidth - 816) / 2;
-    }
-    */
 };
 
 //=============================================================================
@@ -2107,6 +2096,14 @@ Scene_Battle.prototype.prepareBackground = function() {
 };
 
 }; // Imported.YEP_BattleEngineCore
+
+//=============================================================================
+// Utilities
+//=============================================================================
+
+Yanfly.Util.onlyUnique = function(value, index, self) {
+    return self.indexOf(value) === index;
+};
 
 //=============================================================================
 // End of File

@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.08 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.08a (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -388,9 +388,11 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.08:
+ * Version 1.08a:
  * - Fixed a bug where changing back and forth between the Fight/Escape window
  * would prompt on turn start effects.
+ * - Made an update where if using Battle Engine Core's "Lower Windows" to
+ * false, the icons no longer show above the windows.
  *
  * Version 1.07:
  * - Made a mechanic change so that turn 0 ends immediately upon battle start
@@ -2064,6 +2066,7 @@ Window_CTBIcon.prototype.initialize = function(mainSprite) {
     this._redraw = false;
     this._position = Yanfly.Param.CTBTurnPosX.toLowerCase();
     this._direction = Yanfly.Param.CTBTurnDirection.toLowerCase();
+    this._lowerWindows = eval(Yanfly.Param.BECLowerWindows);
     Window_Base.prototype.initialize.call(this, 0, 0, width, height);
     this.opacity = 0;
     this.contentsOpacity = 0;
@@ -2373,9 +2376,7 @@ Window_CTBIcon.prototype.opacityFadeRate = function() {
 Window_CTBIcon.prototype.updateOpacity = function() {
     var rate = this.opacityFadeRate();
     if (this._foreverHidden) return this.reduceOpacity();
-    if (this._windowLayer && this._windowLayer.x !== 0) {
-      return this.reduceOpacity();
-    }
+    if (this.isReduceOpacity()) return this.reduceOpacity();
     if (BattleManager._victoryPhase) {
       this._foreverHidden = true;
       return this.reduceOpacity();
@@ -2389,6 +2390,19 @@ Window_CTBIcon.prototype.updateOpacity = function() {
       if (index < 0) return this.reduceOpacity();
     }
     this.contentsOpacity += rate;
+};
+
+Window_CTBIcon.prototype.isReduceOpacity = function() {
+    if (!this._lowerWindows) {
+      if (this.isLargeWindowShowing()) return true;
+    }
+    return this._windowLayer && this._windowLayer.x !== 0;
+};
+
+Window_CTBIcon.prototype.isLargeWindowShowing = function() {
+    if (SceneManager._scene._itemWindow.visible) return true;
+    if (SceneManager._scene._skillWindow.visible) return true;
+    return false;
 };
 
 Window_CTBIcon.prototype.reduceOpacity = function() {
