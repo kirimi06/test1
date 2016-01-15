@@ -151,6 +151,6 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Storage","status":true,"description":"シンプルな預かり所を追加します。","parameters":{"預かり数":"999","倉庫リストの区切り位置":"000","預けるコマンドの名称":"預ける","引き出すコマンドの名称":"引き出す","大事な物カテゴリ表示フラグ":"false","数値ウィンドウ横幅":"400","数値ウィンドウ縦幅":"76","数値ウィンドウ縦位置補正":"24"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"AutoTroopMaker","status":true,"description":"敵グループ（トループ）を自動生成するプラグインです。","parameters":{}},
+{"name":"AutoTroopMaker","status":false,"description":"敵グループ（トループ）を自動生成するプラグインです。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
