@@ -540,7 +540,7 @@ var UCHU_MobileOperation = {};
 			Scene_Map_createMessageWindows.call(this);
 			var oldStartMessage = this._messageWindow.startMessage;
 			var oldTerminateMessage = this._messageWindow.terminateMessage;
-			var scene = this;
+			<!--var scene = this;
 			
 			this._messageWindow.startMessage = function() {	
 				oldStartMessage.apply(this, arguments);
@@ -571,7 +571,7 @@ var UCHU_MobileOperation = {};
 				oldTerminateMessage.apply(this, arguments);
 				Btn_hide=false;
 				setTimeout("Scene_Base.prototype.showUserInterface();", 200);
-			};
+			};-->
 		};
 	}
 
