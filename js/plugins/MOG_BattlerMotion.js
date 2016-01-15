@@ -4,7 +4,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Adiciona efeitos animados nos battlers.
+ * @plugindesc (v1.3) Adiciona efeitos animados nos battlers.
  * @author Moghunter
  *
  * @param Shake Effect Actor
@@ -21,7 +21,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battler Motion (v1.2) +++
+ * +++ MOG - Battler Motion (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -50,6 +50,7 @@
  * =============================================================================
  * Histórico.
  * =============================================================================
+ * (1.3) Correção do Crash relativo as Notetags.  
  * (1.2) - Correção de não atualizar o efeito ao transformar o inimigo.
  *       - Correção do efeito tremer ao reviver o aliado.
  * (1.1) - Melhoria na animação de ação.
@@ -101,6 +102,7 @@ Game_Action.prototype.prepare = function() {
 // * Set Bmotion Action
 //==============================
 Game_Action.prototype.set_bmotion_action = function() {	
+    if (!this._item || !this._item.object()) {return};
 	var item_notes = this._item.object().note.split(/[\r\n]+/);
     item_notes.forEach(function(note) {
          var note_data = note.split(': ')
@@ -129,8 +131,8 @@ Game_Battler.prototype.initMembers = function() {
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //==============================

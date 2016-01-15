@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Minigame baseado no jogo Final Fantasy Theatrhythm.
+ * @plugindesc (v1.2) Minigame baseado no jogo Final Fantasy Theatrhythm.
  * @author Moghunter
  *
  * @param >> MAIN ===================
@@ -220,7 +220,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Theatrhythm (v1.1) +++
+ * +++ MOG - Theatrhythm (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -250,6 +250,7 @@
  * =============================================================================
  * HITSTÓRICO
  * =============================================================================
+ * (v1.2) - Correção do Crash relativo as Tags.
  * (v1.1) - Correção de prosseguir os comandos de eventos antes da cena do
  *          Theatrhythm terminar.
  *        - Adicionado a switch de resultado do minigame. 
@@ -406,8 +407,8 @@ Game_System.prototype.theatrhythm = function() {
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //==============================

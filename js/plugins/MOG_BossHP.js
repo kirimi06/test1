@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Apresenta um medidor de HP para os chefes.
+ * @plugindesc (v1.3) Apresenta um medidor de HP para os chefes.
  * @author Moghunter
  *
  * @param BHP Shake Effect
@@ -52,7 +52,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Boss HP Meter (v1.2) +++
+ * +++ MOG - Boss HP Meter (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -91,6 +91,7 @@
  * -----------------------------------------------------------------------------
  * HISTÓRICO
  * -----------------------------------------------------------------------------
+ * v1.3 Correção do Crash relativo as Notetags. 
  * v1.2 - Melhoria na codificação.
  * v1.1 - Correção de não atualizar o medidor vermelho em danos de itens.
  *
@@ -198,8 +199,8 @@ BattleManager.processDefeat = function() {
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //=============================================================================

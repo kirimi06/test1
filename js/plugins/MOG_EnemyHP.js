@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Apresenta o HP do inimigo ao ataca-lo.
+ * @plugindesc (v1.3) Apresenta o HP do inimigo ao ataca-lo.
  * @author Moghunter
  *
  * @param EHP Fade Duration
@@ -29,7 +29,7 @@
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Enemy HP Meter (v1.2) +++
+ * +++ MOG - Enemy HP Meter (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -46,6 +46,7 @@
  * =============================================================================
  * ** Histórico **
  * =============================================================================
+ * (v1.3) Correção do Crash relativo as Notetags.  
  * (v1.2) Melhoria na codificação. 
  * (v1.1) - Melhoria na animação do medidor vermelho.
  *      - Mudança da Tag para ocular o hp para HIDE HP.
@@ -74,8 +75,8 @@
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //=============================================================================

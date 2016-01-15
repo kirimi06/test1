@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.5) Adiciona a animação de aura e partículas nos inimigos.
+ * @plugindesc (v1.6) Adiciona a animação de aura e partículas nos inimigos.
  * @author Moghunter
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Aura Effects (v1.4) +++
+ * +++ MOG - Aura Effects (v1.6) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -49,6 +49,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.6) Correção do Crash relativo as Notetags.
  * (v1.5) Melhoria na codificação.
  * (v1.4) Correção de não atualizar os efeitos no efeito transformação.
  * (v1.3) Melhoria na codificação.
@@ -95,8 +96,8 @@ Game_Enemy.prototype.transform = function(enemyId) {
 // * Notetags
 //==============================
 Game_Battler.prototype.notetags = function() {
-	if (this.isEnemy) {return this.enemy().note.split(/[\r\n]+/)};
-	if (this.isActor) {return this.actor().note.split(/[\r\n]+/)};
+	if (this.isEnemy()) {return this.enemy().note.split(/[\r\n]+/)};
+	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
 //=============================================================================
