@@ -1,83 +1,62 @@
 /*:
-
  PH - Quest Book
  @plugindesc This plugin allows the creation and management of a quest book via a Common Event and Plugin Commands.
  @author PrimeHover
- @version 1.2.0
- @date 11/19/2015
-
+ @version 1.3.1
+ @date 01/11/2016
  ---------------------------------------------------------------------------------------
  This work is licensed under the Creative Commons Attribution 4.0 International License.
  To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
  ---------------------------------------------------------------------------------------
-
  @param ---Screen Options---
  @default
-
  @param Show in Menu
  @desc Allows having access of the quest book via menu (1: true, 0: false) (Ignore it if you are using Yanfly Main Menu Manager)
  @default 1
-
  @param Name in Menu
  @desc Changes the name of the quest book on the menu (Ignore it if you are using Yanfly Main Menu Manager)
  @default Quest Book
-
  @param Display Type
  @desc Changes the position of the window (0: top view, 1: side view)
  @default 1
-
  @param Show Icons
  @desc Show an icon before the name of the quest (1: yes, 0: no)
  @default 1
-
+ @param Background Image
+ @desc Image for background of the quest book (PNG image only; Leave it in blank to have the default background)
+ @default
  @param ---Icon Options---
  @default
-
  @param Icon Primary Quest
  @desc ID of the icon to be displayed in case the quest is primary
  @default 312
-
  @param Icon Secondary Quest
  @desc ID of the icon to be displayed in case the quest is secondary
  @default 310
-
  @param Icon Completed Quest
  @desc ID of the icon to be displayed in case the quest is completed
  @default 311
-
  @param Icon Failed Quest
  @desc ID of the icon to be displayed in case the quest is failed
  @default 308
-
  @param ---Vocabulary Options---
  @default
-
  @param Text Primary
  @desc Vocabulary for "Primary"
  @default Primary
-
  @param Text Secondary
  @desc Vocabulary for "Secondary"
  @default Secondary
-
  @param Text Complete
  @desc Vocabulary for "Complete"
  @default Complete
-
  @param Text Fail
  @desc Vocabulary for "Fail"
  @default Fail
-
  @param Text No Quests
  @desc Text to be shown when no quests are available
  @default No Quests Available
-
- @param Text Page
- @desc Vocabulary for "Page"
- @default Page
-
  @help
-
  Plugin Command:
     PHQuestBook add Title_of_the_quest          # Add a quest in the book
     PHQuestBook remove Title_of_the_quest       # Remove a quest from the book
@@ -86,45 +65,34 @@
     PHQuestBook complete Title_of_the_quest     # Complete a quest and changes its icon
     PHQuestBook fail Title_of_the_quest         # Fail a quest and changes its icon
     PHQuestBook update Title_of_the_quest       # Updates an existent quest
-
  ========================================
-
  How to Use:
-
     - Open the database and go to the section "Common Events"
     - Create a common event with the name "PHQuestBook" (without quotation marks)
     - Create one or several comments to create quests.
     - The comments need to follow a pattern:
-
         {Example of Quest Title [primary:iconID]}
         Description of the Quest.
-
     - The [primary] is optional. The quest can be [primary], [secondary], [complete] or [fail]. If you don't specify the priority of the quest, it will be [primary] by default.
     - The "iconID" is also optional. You can put the ID of the icon you want to show for this quest. If you don't specify an item, the quest will get the default for its priority.
     - You are allowed to have several comments meaning one quest (you don't need to use just the 6 lines for comments, you can add a new comment right below and keep going).
     - You are allowed to write control characters in the description of the quest (such as \C[n], \I[n], \V[n]).
     - You are allowed to use the tag [br] to break a line in the text.
-    - You can also create pages in the quest. So, in order to separate a quest and create a new page, use the tag [break]. It's important to point out that this command needs to be alone in just one line!
+    - You are allowed to use some special tags to get the name of an item, weapon, armor, enemy or actor. When you are writing the description of a quest, use the tags <enemy:ID>, <actor:ID>, <item:ID>, <weapon:ID> and <armor:ID> to print the name of the particular item on the description. Substitute ID for the corresponding number you want.
     - There is also a tag called [break-on-update] . This command works in the same way as [break], but it has a small difference: The content placed after [break-on-update] will just appear in the quest book when you call the plugin command "PHQuestBook update Title_of_the_quest".
       You are allowed to have as many [break-on-update] as you want. And always when you call the plugin command for updating, it will allow the player to see a new part of the quest.
       (This is a good feature if you want to have a "step-by-step" quest, where each time the player completes the quest, the same quest is updated and new things have to be done).
-
     - To register a quest in the book, create an event in the map, go to "Plugin Command" and type the command for adding the quest
         Ex.: PHQuestBook add Example of Quest Title
     - To check the status or priority of the quest, you can use these Script commands:
-
     PHPlugins.PHQuests.isActive("Title of the Quest");
     PHPlugins.PHQuests.isComplete("Title of the Quest");
     PHPlugins.PHQuests.isSecondary("Title of the Quest");
     PHPlugins.PHQuests.isPrimary("Title of the Quest");
     PHPlugins.PHQuests.isFail("Title of the Quest");
-
  ========================================
-
  Notes:
-
  "Example of Quest Title" does not need to be a single word or between quotation marks, it can be several words meaning one title.
-
  */
 
 /* Global variable for PH Plugins */
@@ -139,6 +107,7 @@ PHPlugins.PHQuests = null;
 PHPlugins.Params.PHQuestAddToMenu = Number(PHPlugins.Parameters['Show in Menu']);
 PHPlugins.Params.PHQuestMenuText = String(PHPlugins.Parameters['Name in Menu']);
 PHPlugins.Params.PHQuestDisplayType = Number(PHPlugins.Parameters['Display Type']);
+PHPlugins.Params.PHQuestBackgroundImage = String(PHPlugins.Parameters['Background Image']);
 
 PHPlugins.Params.PHQuestDisplayIcon = Number(PHPlugins.Parameters['Show Icons']);
 PHPlugins.Params.PHQuestIconPrimary = Number(PHPlugins.Parameters['Icon Primary Quest']);
@@ -151,7 +120,6 @@ PHPlugins.Params.PHQuestTextSecondary = String(PHPlugins.Parameters['Text Second
 PHPlugins.Params.PHQuestTextComplete = String(PHPlugins.Parameters['Text Complete']);
 PHPlugins.Params.PHQuestTextFail = String(PHPlugins.Parameters['Text Fail']);
 PHPlugins.Params.PHQuestTextNoQuest = String(PHPlugins.Parameters['Text No Quests']);
-PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
 
 (function() {
 
@@ -192,7 +160,7 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
         this.quests = [];
 
         for (var i = 0; i < questVar.length; i++) {
-            if (questVar[i].parameters[0]) {
+            if (typeof questVar[i].parameters[0] !== 'undefined') {
                 str = questVar[i].parameters[0].trim();
                 if (this.checkTitle(str)) {
                     header = this.separateTitleAndType(str);
@@ -202,7 +170,8 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
                             icon: header[1],
                             type: header[2],
                             descriptions: [''],
-                            updates: [],
+                            reward: [],
+                            updates: 0,
                             active: false
                         }
                     );
@@ -210,19 +179,64 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
                     index++;
                 } else if (this.quests[index]) {
                     str = str.replace(/\[br\]/g, "\n");
+                    str = this.replaceVariants(str);
                     checkPage = this.checkPageBreak(str);
                     if (checkPage == 0) {
-                        this.quests[index].descriptions[descriptionIndex] += str + "\n";
+                        this.quests[index].descriptions[descriptionIndex] += str + '\n';
                     } else if (checkPage == 1) {
                         descriptionIndex++;
                         this.quests[index].descriptions[descriptionIndex] = '';
-                    } else if (checkPage == 2) {
-                        descriptionIndex++;
-                        this.quests[index].descriptions[descriptionIndex] = '';
-                        this.quests[index].updates.push(descriptionIndex);
                     }
                 }
             }
+        }
+    };
+
+    /* Replaces the variant tags for enemies, items, etc */
+    PHQuestBook.prototype.replaceVariants = function(str) {
+
+        var variants = ['enemy', 'item', 'weapon', 'armor', 'actor', 'skill'];
+        var variantIndex = -1;
+
+        var originalStr = '';
+        var regex = /\<(.*?)\>/g;
+        var matches = null;
+
+        while ((matches = regex.exec(str)) != null) {
+            originalStr = matches[0];
+            matches = matches[1];
+            matches = matches.split(':');
+            variantIndex = variants.indexOf(matches[0]);
+            if (variantIndex > -1 && typeof matches[1] !== 'undefined') {
+                str = str.replace(originalStr, this.getVariantName(variants[variantIndex], parseInt(matches[1])));
+            }
+        }
+
+        return str;
+
+    };
+
+    /* Gets the real name of the variant */
+    PHQuestBook.prototype.getVariantName = function(type, id) {
+        switch (type) {
+            case 'enemy':
+                return (typeof $dataEnemies[id] !== 'undefined' ? $dataEnemies[id].name : '');
+                break;
+            case 'item':
+                return (typeof $dataItems[id] !== 'undefined' ? $dataItems[id].name : '');
+                break;
+            case 'weapon':
+                return (typeof $dataWeapons[id] !== 'undefined' ? $dataWeapons[id].name : '');
+                break;
+            case 'armor':
+                return (typeof $dataArmors[id] !== 'undefined' ? $dataArmors[id].name : '');
+                break;
+            case 'actor':
+                return (typeof $dataActors[id] !== 'undefined' ? $dataActors[id].name : '');
+                break;
+            case 'skill':
+                return (typeof $dataSkills[id] !== 'undefined' ? $dataSkills[id].name : '');
+                break;
         }
     };
 
@@ -236,10 +250,8 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
 
     /* Checks if the string is a break page */
     PHQuestBook.prototype.checkPageBreak = function(str) {
-        if (str.indexOf('[break]') > -1) {
+        if (str.indexOf('[break-on-update]') > -1) {
             return 1;
-        } else if (str.indexOf('[break-on-update]') > -1) {
-            return 2;
         }
         return 0;
     };
@@ -299,9 +311,12 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
     /* Updates the quest to show more instructions */
     PHQuestBook.prototype.updateQuest = function(title) {
         for (var i = 0; i < this.quests.length; i++) {
-            if (this.quests[i].title == title && this.quests[i].updates.length > 0) {
-                this.quests[i].updates.splice(0, 1);
-                i = this.quests.length;
+            if (this.quests[i].title == title) {
+                console.log('find');
+                if (this.quests[i].updates + 1 <= this.quests[i].descriptions.length - 1) {
+                    this.quests[i].updates = this.quests[i].updates + 1;
+                    i = this.quests.length;
+                }
             }
         }
     };
@@ -329,9 +344,14 @@ PHPlugins.Params.PHQuestTextPage = String(PHPlugins.Parameters['Text Page']);
     };
 
     /* Get the full description of a quest */
-    PHQuestBook.prototype.getFullDescription = function(index, page) {
-        if (typeof this.quests[index] !== 'undefined' && this.quests[index].descriptions.length > page) {
-            return this.quests[index].descriptions[page];
+    PHQuestBook.prototype.getFullDescription = function(index) {
+        if (typeof this.quests[index] !== 'undefined' && typeof this.quests[index].descriptions[this.quests[index].updates] !== 'undefined') {
+            var str = '';
+            str += this.quests[index].descriptions[this.quests[index].updates];
+            for (var i = this.quests[index].updates - 1; i >= 0; i--) {
+                str += '\n\n' + this.quests[index].descriptions[i];
+            }
+            return str;
         }
         return '';
     };
@@ -678,7 +698,7 @@ function Window_QuestBookDetails() {
     this.initialize.apply(this, arguments);
 }
 
-Window_QuestBookDetails.prototype = Object.create(Window_Base.prototype);
+Window_QuestBookDetails.prototype = Object.create(Window_Selectable.prototype);
 Window_QuestBookDetails.prototype.constructor = Window_QuestBookDetails;
 
 Window_QuestBookDetails.prototype.initialize = function() {
@@ -686,17 +706,20 @@ Window_QuestBookDetails.prototype.initialize = function() {
     var height;
     var categoryHeight = this.fittingHeight(1);
 
+    this._questPage = 0;
+    this._lastTotalPages = 0;
+
     if (PHPlugins.Params.PHQuestDisplayType == 0) {
         height = this.fittingHeight(3);
-        Window_Base.prototype.initialize.call(this, 0, categoryHeight + height, Graphics.boxWidth, Graphics.boxHeight - height - categoryHeight * 2);
+        Window_Selectable.prototype.initialize.call(this, 0, categoryHeight + height, Graphics.boxWidth, Graphics.boxHeight - height - categoryHeight);
     } else if (PHPlugins.Params.PHQuestDisplayType == 1) {
         height = parseInt((Graphics.boxWidth * 2) / 6);
-        Window_Base.prototype.initialize.call(this, height, categoryHeight, Graphics.boxWidth - height, Graphics.boxHeight - categoryHeight * 2);
+        Window_Selectable.prototype.initialize.call(this, height, categoryHeight, Graphics.boxWidth - height, Graphics.boxHeight - categoryHeight);
     }
 
 };
 
-Window_QuestBookDetails.prototype.setQuestInd = function(index) {
+Window_QuestBookDetails.prototype.setQuestIndex = function(index) {
     this._questIndex = index;
 };
 
@@ -708,11 +731,141 @@ Window_QuestBookDetails.prototype.refresh = function() {
     this.contents.clear();
     this.changeTextColor(this.systemColor());
     if (this._questIndex > -1) {
-        this.drawTextEx(PHPlugins.PHQuests.getFullDescription(this._questIndex, this._questPage), 0, 0);
+        this.drawQuestTextEx(PHPlugins.PHQuests.getFullDescription(this._questIndex), 0, 0);
     }
 };
 
+Window_QuestBookDetails.prototype.drawQuestTextEx = function(text, x, y) {
+    if (text) {
+        var textState = { index: 0, x: x, y: y, left: x };
+        textState.text = this.convertEscapeCharacters(this.verifyFontSize(text));
+        textState.height = this.calcTextHeight(textState, false);
+        textState.y -= this._questPage * textState.height;
+        textState.text = this.formatQuest(textState.text, textState.height);
+        this.resetFontSettings();
+        while (textState.index < textState.text.length) {
+            this.processCharacter(textState);
+        }
+        return textState.x - x;
+    } else {
+        return 0;
+    }
+};
 
+Window_QuestBookDetails.prototype.formatQuest = function(text, height) {
+
+    var quest = text;
+    var finalText = '';
+
+    var totalSize = 0;
+    var textWidth = 0;
+    var btmWidth = this.contentsWidth();
+    var spaceWidth = this.textWidth(' ');
+
+    var totalPages = 0;
+    var totalHeight = 0;
+    var btmHeight = this.contentsHeight();
+
+    quest = quest.split(' ');
+    for (var i = 0; i < quest.length; i++) {
+        if (quest[i].indexOf('\n') == -1) {
+            textWidth = this.textWidth(quest[i]);
+            if (totalSize + textWidth <= btmWidth) {
+                finalText += quest[i] + ' ';
+                totalSize += textWidth + spaceWidth;
+            } else {
+                finalText += '\n';
+                finalText += quest[i] + ' ';
+                totalSize = textWidth + spaceWidth;
+                totalHeight += height;
+                if (totalHeight > btmHeight) totalPages++;
+            }
+        } else {
+            quest[i] = quest[i].split('\n');
+            for (var j = 0; j < quest[i].length; j++) {
+                textWidth = this.textWidth(quest[i][j]);
+                if (totalSize + textWidth > btmWidth) {
+                    finalText += '\n';
+                    totalSize = 0;
+                    totalHeight += height;
+                    if (totalHeight > btmHeight) totalPages++;
+                }
+                finalText += quest[i][j] + ' ';
+                totalSize += textWidth + spaceWidth;
+                if (j + 1 < quest[i].length) {
+                    finalText += '\n';
+                    totalSize = textWidth + spaceWidth;
+                    totalHeight += height;
+                    if (totalHeight > btmHeight) totalPages++;
+                }
+            }
+        }
+    }
+
+    this._lastTotalPages = totalPages;
+    return finalText;
+
+};
+
+Window_QuestBookDetails.prototype.verifyFontSize = function(text) {
+    return text.replace(/\\{/g, '').replace(/\\}/g, '');
+};
+
+Window_QuestBookDetails.prototype.allowPageUp = function() {
+    return this._questPage > 0;
+};
+
+Window_QuestBookDetails.prototype.allowPageDown = function() {
+    if (this._questPage < this._lastTotalPages) {
+        return true;
+    }
+    return false;
+};
+
+Window_QuestBookDetails.prototype.updateArrows = function() {
+    this.downArrowVisible = this.allowPageDown();
+    this.upArrowVisible = this.allowPageUp();
+};
+
+Window_QuestBookDetails.prototype.isCursorMovable = function() {
+    return this.isOpenAndActive();
+};
+
+Window_QuestBookDetails.prototype.processWheel = function() {
+    if (this.isOpenAndActive()) {
+        var threshold = 10;
+        if (TouchInput.wheelY >= threshold) {
+            this.cursorDown();
+        }
+        if (TouchInput.wheelY <= -threshold) {
+            this.cursorUp();
+        }
+    }
+};
+
+Window_QuestBookDetails.prototype.cursorDown = function() {
+    if (this.allowPageDown()) {
+        SoundManager.playCursor();
+        this._questPage++;
+        this.refresh();
+    }
+};
+
+Window_QuestBookDetails.prototype.cursorUp = function() {
+    if (this.allowPageUp()) {
+        SoundManager.playCursor();
+        this._questPage--;
+        this.refresh();
+    }
+};
+
+Window_QuestBookDetails.prototype.cursorPagedown = function() {
+    this.cursorDown();
+};
+
+Window_QuestBookDetails.prototype.cursorPageup = function() {
+    this.cursorUp();
+};
 
 
 
@@ -744,8 +897,8 @@ Window_QuestBookList.prototype.initialize = function() {
     this.refresh();
 };
 
-Window_QuestBookList.prototype.setPaginationWindow = function(window) {
-    this._pageWindow = window;
+Window_QuestBookList.prototype.setDetailWindow = function(window) {
+    this._detailWindow = window;
 };
 
 Window_QuestBookList.prototype.maxItems = function() {
@@ -760,11 +913,11 @@ Window_QuestBookList.prototype.refresh = function() {
 Window_QuestBookList.prototype.update = function() {
     Window_Selectable.prototype.update.call(this);
     if (this.index() > -1) {
-        this._pageWindow.setQuestIndex(this._questList[this.index()]._index);
+        this._detailWindow.setQuestIndex(this._questList[this.index()]._index);
     } else {
-        this._pageWindow.setQuestIndex(-1);
+        this._detailWindow.setQuestIndex(-1);
     }
-    this._pageWindow.refresh();
+    this._detailWindow.refresh();
 };
 
 Window_QuestBookList.prototype.drawQuestList = function() {
@@ -792,75 +945,6 @@ Window_QuestBookList.prototype.drawQuest = function(quest, index) {
 
 
 
-/*
- * WINDOW QUEST BOOK PAGES
- */
-function Window_QuestBookPages() {
-    this.initialize.apply(this, arguments);
-}
-
-Window_QuestBookPages.prototype = Object.create(Window_Selectable.prototype);
-Window_QuestBookPages.prototype.constructor = Window_QuestBookPages;
-
-Window_QuestBookPages.prototype.initialize = function() {
-
-    var height = this.fittingHeight(1);
-
-    if (PHPlugins.Params.PHQuestDisplayType == 0) {
-        Window_Selectable.prototype.initialize.call(this, 0, Graphics.boxHeight - height, Graphics.boxWidth, height);
-    } else if (PHPlugins.Params.PHQuestDisplayType == 1) {
-        var x = parseInt((Graphics.boxWidth * 2) / 6);
-        Window_Selectable.prototype.initialize.call(this, x, Graphics.boxHeight - height, Graphics.boxWidth - x, height);
-    }
-
-    this.deselect();
-    this.deactivate();
-
-};
-
-Window_QuestBookPages.prototype.maxItems = function() {
-    return this._quantityPages || 1;
-};
-
-Window_QuestBookPages.prototype.maxCols = function() {
-    return 1;
-};
-
-Window_QuestBookPages.prototype.setDetailWindow = function(window) {
-    this._detailWindow = window;
-};
-
-Window_QuestBookPages.prototype.setQuestIndex = function(index) {
-    this._questIndex = index;
-};
-
-Window_QuestBookPages.prototype.drawAllPages = function() {
-    this._quantityPages = PHPlugins.PHQuests.getQuantityPages(this._questIndex);
-    for (var i = 0; i < this._quantityPages; i++) {
-        this.drawPages(i);
-    }
-};
-
-Window_QuestBookPages.prototype.drawPages = function(index) {
-    var rect = this.itemRectForText(index);
-    this.resetTextColor();
-    this.drawText(PHPlugins.Params.PHQuestTextPage + " " + (index+1), rect.x, rect.y, rect.width, 'center');
-};
-
-Window_QuestBookPages.prototype.refresh = function() {
-    if (this.contents) {
-        this.contents.clear();
-        this.drawAllPages();
-    }
-};
-
-Window_QuestBookPages.prototype.update = function() {
-    Window_Selectable.prototype.update.call(this);
-    this._detailWindow.setQuestInd(this._questIndex);
-    this._detailWindow.setQuestPage(this.index());
-    this._detailWindow.refresh();
-};
-
 
 
 /* ---------------------------------------------------------- *
@@ -885,11 +969,19 @@ Scene_QuestBook.prototype.create = function() {
     Scene_MenuBase.prototype.create.call(this);
 
     this.createWindowDetail();
-    this.createPagination();
     this.createWindowList();
     this.createWindowCategory();
+    this.changeWindowsOpacity();
 
 };
+
+if (PHPlugins.Params.PHQuestBackgroundImage != '') {
+    Scene_QuestBook.prototype.createBackground = function () {
+        this._backgroundSprite = new Sprite();
+        this._backgroundSprite.bitmap = ImageManager.loadPicture(PHPlugins.Params.PHQuestBackgroundImage);
+        this.addChild(this._backgroundSprite);
+    };
+}
 
 Scene_QuestBook.prototype.createWindowCategory = function() {
     this._categoryWindow = new Window_QuestBookCategory();
@@ -903,23 +995,26 @@ Scene_QuestBook.prototype.createWindowList = function() {
     this._listWindow = new Window_QuestBookList();
     this._listWindow.setHandler('cancel', this.onListCancel.bind(this));
     this._listWindow.setHandler('ok', this.onListOk.bind(this));
-    this._listWindow.setPaginationWindow(this._pageWindow);
+    this._listWindow.setDetailWindow(this._detailWindow);
     this.addWindow(this._listWindow);
 };
 
 Scene_QuestBook.prototype.createWindowDetail = function() {
     this._detailWindow = new Window_QuestBookDetails();
+    this._detailWindow.setHandler('cancel', this.onDetailCancel.bind(this));
     this.addWindow(this._detailWindow);
 };
 
-Scene_QuestBook.prototype.createPagination = function() {
-    this._pageWindow = new Window_QuestBookPages();
-    this._pageWindow.setHandler('cancel', this.onPaginationCancel.bind(this));
-    this._pageWindow.setDetailWindow(this._detailWindow);
-    this.addWindow(this._pageWindow);
+Scene_QuestBook.prototype.changeWindowsOpacity = function() {
+    if (PHPlugins.Params.PHQuestBackgroundImage != '') {
+        this._categoryWindow.opacity = 0;
+        this._listWindow.opacity = 0;
+        this._detailWindow.opacity = 0;
+    }
 };
 
 Scene_QuestBook.prototype.onCategoryOk = function() {
+    this._detailWindow._questPage = 0;
     this._categoryWindow.setQuestCategory();
     this._categoryWindow.deactivate();
     this._listWindow.select(0);
@@ -934,12 +1029,11 @@ Scene_QuestBook.prototype.onListCancel = function() {
 
 Scene_QuestBook.prototype.onListOk = function() {
     this._listWindow.deactivate();
-    this._pageWindow.select(0);
-    this._pageWindow.activate();
+    this._detailWindow.activate();
 };
 
-Scene_QuestBook.prototype.onPaginationCancel = function() {
-    this._pageWindow.deselect();
-    this._pageWindow.deactivate();
+Scene_QuestBook.prototype.onDetailCancel = function() {
+    this._detailWindow._questPage = 0;
+    this._detailWindow.deactivate();
     this._listWindow.activate();
 };

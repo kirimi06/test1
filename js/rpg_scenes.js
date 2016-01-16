@@ -2266,8 +2266,8 @@ Scene_Battle.prototype.startActorCommandSelection = function() {
     this._actorCommandWindow.setup(BattleManager.actor());
 };
 
-Scene_Battle.prototype.commandAttack = function() {
-    BattleManager.inputtingAction().setAttack();
+Scene_Battle.prototype.commandAttack = function() {	
+    BattleManager.inputtingAction().setAttack();	
     this.selectEnemySelection();
 };
 
