@@ -1,6 +1,6 @@
 [
 null,
-{"id":1,"expanded":true,"name":"アリスの部屋","order":3,"parentId":4,"scrollX":531.8181818181819,"scrollY":324},
+{"id":1,"expanded":true,"name":"アリスの部屋","order":3,"parentId":4,"scrollX":479.5,"scrollY":324},
 {"id":2,"expanded":false,"name":"倉庫","order":6,"parentId":4,"scrollX":479.5,"scrollY":327},
 {"id":3,"expanded":true,"name":"大広場入り口","order":5,"parentId":4,"scrollX":531.8181818181819,"scrollY":324},
 {"id":4,"expanded":true,"name":"玄関","order":1,"parentId":0,"scrollX":531.8181818181819,"scrollY":324},
