@@ -69,7 +69,6 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"MOG_MenuCursor","status":true,"description":"(v1.1) Adiciona um cursor animado no menu.","parameters":{"Slide Animation":"true","Cursor X-axis":"0","Cursor Y-axis":"0","Frames Animation":"false","Max Frames":"4"}},
 {"name":"MOG_MenuBackground","status":false,"description":"(v1.0) O plugin permite mudar a imagem de fundo do menu.","parameters":{"Disable Scenes":"Scene_Test1,Scene_Test2,Scene_Test3","Unique Backgrounds":"false","Window Opacity":"30","Scroll X-Axis":"0","Scroll Y-Axis":"0"}},
-{"name":"MOG_MenuParticles","status":true,"description":"(v1.1) Adiciona partículas nas cenas menu.","parameters":{"Number of Particles":"15","Disable Scenes":"Scene_Test1,Scene_Test2,Scene_Test3","Unique Particles":"false","X-Axis Speed":"0","Y-Axis Speed":"-1","Rotation Speed":"1","Blend Mode":"1"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Yami_8DIR","status":true,"description":"プレイヤーの8方向の移動が可能になります。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
