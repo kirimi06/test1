@@ -11,7 +11,7 @@ Yanfly.Item = Yanfly.Item || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.17 Changes the way Items are handled for your game
+ * @plugindesc v1.18 Changes the way Items are handled for your game
  * and the Item Scene, too.
  * @author Yanfly Engine Plugins
  *
@@ -129,6 +129,14 @@ Yanfly.Item = Yanfly.Item || {};
  * @desc This is the visual text format for independent item ID.
  * %1 - Item Index     %2 - Maximum
  * @default %1/%2
+ *
+ * @param --Independent Items--
+ * @default
+ *
+ * @param Midgame Note Parsing
+ * @desc Allow midgame note parsing or do it at beginning?
+ * NO - false     YES - true    Recommended: false
+ * @default false
  *
  * @help
  * ============================================================================
@@ -294,8 +302,23 @@ Yanfly.Item = Yanfly.Item || {};
  *   to synch up what's shown in the item info window.
  *
  * ============================================================================
+ * Independent Items and Midgame Note Parsing
+ * ============================================================================
+ *
+ * The "Midgame Note Parsing" option in the plugin parameters is made for any
+ * plugins that may only parse notetags midgame as opposed to at the loading of
+ * the game. This is an option that you should enable AT YOUR OWN RISK.
+ *
+ * Why is it at your own risk? Because enabling this option means independent
+ * items will keep their notedata, thus, increasing the file sizes of your save
+ * files several times bigger, and it can cause lag midgame, too.
+ *
+ * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.18:
+ * - Added 'Midgame Note Parsing' plugin parameter.
  *
  * Version 1.17:
  * - Added <Text Color: x> notetag for items, weapons, and armors.
@@ -397,18 +420,21 @@ Yanfly.Param.ItemMaxIcons = Number(Yanfly.Parameters['Maximum Icons']);
 Yanfly.Param.ItemUseCmd = String(Yanfly.Parameters['Use Command']);
 Yanfly.Param.ItemCarryFmt = String(Yanfly.Parameters['Carry Format']);
 
+Yanfly.Param.ItemNoteParse = String(Yanfly.Parameters['Midgame Note Parsing']);
+Yanfly.Param.ItemNoteParse = eval(Yanfly.Param.ItemNoteParse);
+
 //=============================================================================
 // DataManager
 //=============================================================================
 
 Yanfly.Item.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Item.DataManager_isDatabaseLoaded.call(this)) return false;
-   this.setDatabaseLengths();
-    this.processItemCoreNotetags($dataItems);
-    this.processItemCoreNotetags($dataWeapons);
-    this.processItemCoreNotetags($dataArmors);
-   return true;
+  if (!Yanfly.Item.DataManager_isDatabaseLoaded.call(this)) return false;
+  this.setDatabaseLengths();
+  this.processItemCoreNotetags($dataItems);
+  this.processItemCoreNotetags($dataWeapons);
+  this.processItemCoreNotetags($dataArmors);
+  return true;
 };
 
 DataManager.processItemCoreNotetags = function(group) {
@@ -642,7 +668,7 @@ ItemManager.setNewIndependentItem = function(baseItem, newItem) {
       newItem.priorityName = '';
     }
     newItem.boostCount = 0;
-    newItem.note = '';
+    if (!Yanfly.Param.ItemNoteParse) newItem.note = '';
 };
 
 ItemManager.customizeNewIndependentItem = function(baseItem, newItem) {

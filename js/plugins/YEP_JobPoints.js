@@ -11,7 +11,7 @@ Yanfly.JP = Yanfly.JP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04a This plugin by itself doesn't do much, but it enables
+ * @plugindesc v1.05 This plugin by itself doesn't do much, but it enables
  * actors to acquire JP (job points) used for other plugins.
  * @author Yanfly Engine Plugins
  *
@@ -185,6 +185,9 @@ Yanfly.JP = Yanfly.JP || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.05:
+ * - Updated compatibility for Subclasses gaining JP.
  *
  * Version 1.04a:
  * - Added failsafes to prevent JP from turning into NaN midbattle.
@@ -452,6 +455,21 @@ Game_Actor.prototype.gainJp = function(value, classId) {
 			this._battleJp += value;
 		}
 		this.setJp(this.jp(classId) + value, classId);
+    if (classId === this.currentClass().id && this.isSublcassEarnJp()) {
+      this.gainJpSubclass(value);
+    }
+};
+
+Game_Actor.prototype.isSublcassEarnJp = function() {
+    if (!Imported.YEP_X_Subclass) return false;
+    if (!this.subclass()) return false;
+    return Yanfly.Param.SubclassJp;
+};
+
+Game_Actor.prototype.gainJpSubclass = function(value) {
+    var classId = this.subclass().id;
+    value = Math.round(value * Yanfly.Param.SubclassJp);
+    this.setJp(this.jp(classId) + value, classId);
 };
 
 Game_Actor.prototype.loseJp = function(value, classId) {

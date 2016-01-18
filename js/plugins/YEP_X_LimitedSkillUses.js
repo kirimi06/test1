@@ -236,7 +236,7 @@ Yanfly.LSU = Yanfly.LSU || {};
  *   <Custom Global Use Max>
  *    value += user.level;
  *   </Custom Global Use Max>
- *   The 'value' variable is the maximum uses the user will gain for all
+ *   The 'value' variable is the maximum uses the target will gain for all
  *   Limited Use skills.
  *
  *   --- --- ---
@@ -244,7 +244,7 @@ Yanfly.LSU = Yanfly.LSU || {};
  *   <Custom SType x Use Max>
  *    value += user.level;
  *   </Custom SType x Use Max>
- *   The 'value' variable is the maximum uses the user will gain for all
+ *   The 'value' variable is the maximum uses the target will gain for all
  *   Limited Use skills of skill type x.
  *
  *   --- --- ---
@@ -259,7 +259,7 @@ Yanfly.LSU = Yanfly.LSU || {};
  *    value += user.level;
  *   </Custom Skill name Use Max>
  *
- *   The 'value' variable is the maximum uses the user will gain for all
+ *   The 'value' variable is the maximum uses the target will gain for all
  *   Limited Use skills of skill x. If you are using the named version of the
  *   notetag and you have multiple skills in your database with the same name,
  *   priority will be given to the skill with the highest ID.

@@ -11,7 +11,7 @@ Yanfly.Message = Yanfly.Message || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 Adds more features to the Message Window to customized
+ * @plugindesc v1.08 Adds more features to the Message Window to customized
  * the way your messages appear and functions.
  * @author Yanfly Engine Plugins
  *
@@ -280,6 +280,10 @@ Yanfly.Message = Yanfly.Message || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.08:
+ * - Fixed a bug regarding Input Number positioning when the Message Window's
+ * position was middle.
  *
  * Version 1.07:
  * - Added 'Word Wrap Space' for word wrap users. This parameter will leave a
@@ -757,6 +761,7 @@ Yanfly.Message.Window_NumberInput_updatePlacement =
 		Window_NumberInput.prototype.updatePlacement;
 Window_NumberInput.prototype.updatePlacement = function() {
     Yanfly.Message.Window_NumberInput_updatePlacement.call(this);
+    var messageY = this._messageWindow.y;
 		var messagePosType = $gameMessage.positionType();
 		if (messagePosType === 0) {
 			this.y = this._messageWindow.height;

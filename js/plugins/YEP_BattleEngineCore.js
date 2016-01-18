@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.28c Have more control over the flow of the battle system
+ * @plugindesc v1.28d Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -617,13 +617,15 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.28c:
+ * Version 1.28d:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
  * to force an action to end incorrectly. Thanks to DoubleX for the fix.
  * - Fixed a bug with mouse over not working properly.
  * - Fixed a bug regarding forced actions that will cause the battle to freeze
  * if the forced action causes the main active subject to leave the battle.
  * - Fixed a bug with timed states not updating their turns properly.
+ * - Changed priority of IF action sequences to higher to no longer interfere
+ * other action sequences.
  *
  * Version 1.27:
  * - Mechanic change. This will only affect those using turn-based state timing
@@ -1711,7 +1713,7 @@ BattleManager.updateActionList = function() {
       if (this._actSeq) {
         if (!this.actionConditionsMet(this._actSeq)) continue;
         var seqName = this._actSeq[0].toUpperCase();
-        if (!this.processActionSequence(seqName, this._actSeq[1])) {
+        if (!this.processActionSequenceCheck(seqName, this._actSeq[1])) {
           break;
         }
       } else {
@@ -1727,7 +1729,7 @@ BattleManager.updateActionTargetList = function() {
       if (this._actSeq) {
         if (!this.actionConditionsMet(this._actSeq)) continue;
         var seqName = this._actSeq[0].toUpperCase();
-        if (!this.processActionSequence(seqName, this._actSeq[1])) {
+        if (!this.processActionSequenceCheck(seqName, this._actSeq[1])) {
           break;
         }
       } else if (this._individualTargets.length > 0) {
@@ -1752,7 +1754,7 @@ BattleManager.updateActionTargetList = function() {
       if (this._actSeq) {
         if (!this.actionConditionsMet(this._actSeq)) continue;
         var seqName = this._actSeq[0].toUpperCase();
-        if (!this.processActionSequence(seqName, this._actSeq[1])) {
+        if (!this.processActionSequenceCheck(seqName, this._actSeq[1])) {
           break;
         }
       } else if (this._individualTargets.length > 0) {
@@ -1786,6 +1788,14 @@ BattleManager.startAction = function() {
     subject.useItem(this._action.item());
     this._action.applyGlobal();
     this._logWindow.startAction(this._subject, this._action, this._targets);
+};
+
+BattleManager.processActionSequenceCheck = function(actionName, actionArgs) {
+    // IF condition
+    if (actionName.match(/IF[ ](.*)/i)) {
+      return this.actionIfConditions(actionName, actionArgs);
+    }
+    return this.processActionSequence(actionName, actionArgs)
 };
 
 BattleManager.processActionSequence = function(actionName, actionArgs) {
@@ -1824,10 +1834,6 @@ BattleManager.processActionSequence = function(actionName, actionArgs) {
     // DISPLAY ACTION
     if (actionName === 'DISPLAY ACTION') {
       return this.actionDisplayAction();
-    }
-    // IF condition
-    if (actionName.match(/IF[ ](.*)/i)) {
-      return this.actionIfConditions(actionName, actionArgs);
     }
     // IMMORTAL: targets, true/false
     if (actionName === 'IMMORTAL') {

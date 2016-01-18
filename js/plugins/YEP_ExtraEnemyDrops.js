@@ -11,7 +11,7 @@ Yanfly.EED = Yanfly.EED || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Allows your enemies to drop more than just three
+ * @plugindesc v1.03 Allows your enemies to drop more than just three
  * items as per the editor's limit.
  * @author Yanfly Engine Plugins
  *
@@ -86,17 +86,17 @@ Yanfly.EED = Yanfly.EED || {};
  *   <Conditional Item x Drop>
  *    condition: +y%
  *    condition: -y%
- *   <Conditional Item x Drop>
+ *   </Conditional Item x Drop>
  *
  *   <Conditional Weapon x Drop>
  *    condition: +y%
  *    condition: -y%
- *   <Conditional Weapon x Drop>
+ *   </Conditional Weapon x Drop>
  *
  *   <Conditional Armor x Drop>
  *    condition: +y%
  *    condition: -y%
- *   <Conditional Armor x Drop>
+ *   </Conditional Armor x Drop>
  *   The above notetags will create the conditions for item, weapon, or armor x
  *   to drop. Insert various conditions in between the notetags to produce the
  *   conditional rate increases or decreases of y% for the drop.
@@ -104,7 +104,7 @@ Yanfly.EED = Yanfly.EED || {};
  *   <Conditional Named Drop>
  *    condition: +y%
  *    condition: -y%
- *   <Conditional Named Drop>
+ *   </Conditional Named Drop>
  *   If you prefer to name your drop, use the above format. If database entries
  *   have matching names, priority will be given to the item with the highest
  *   ID in the order of items, weapons, then armor. Insert various conditions
@@ -344,6 +344,10 @@ Yanfly.EED = Yanfly.EED || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version v1.03:
+ * - Fixed documentation errors.
+ * - Fixed a bug with the Turn Count condition.
  *
  * Version v1.02:
  * - Fixed a bug that crashed the game when a conditional drop is made based
@@ -1007,7 +1011,7 @@ DropManager.conditionTurn = function(line) {
     var a = this._enemy;
     var s = $gameSwitches._data;
     var v = $gameVariables._data;
-    value = eval('$gameParty.turnCount() ' + line);
+    value = eval('$gameTroop.turnCount() ' + line);
     return value;
 };
 

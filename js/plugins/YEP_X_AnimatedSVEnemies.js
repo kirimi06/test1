@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.05 (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -701,6 +701,10 @@ Yanfly.SVE = Yanfly.SVE || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Made adjustments to the <Sprite Height: x> notetag to also affect the
+ * location of the state icons and effects.
+ *
  * Version 1.04:
  * - Fixed a bug with Sprite Smoothing disabled on Shadows.
  * - Fixed a bug with the anchor Y positions being overwritten.
@@ -735,7 +739,9 @@ Yanfly.Param.SVEAnchorX = Number(Yanfly.Parameters['Anchor X']);
 Yanfly.Param.SVEAnchorY = Number(Yanfly.Parameters['Anchor Y']);
 Yanfly.Param.SVESmoothing = eval(String(Yanfly.Parameters['Sprite Smoothing']));
 Yanfly.Param.SVEWidth = String(Yanfly.Parameters['Sprite Width']);
+Yanfly.Param.SVEWidth = Yanfly.Param.SVEWidth.toLowerCase();
 Yanfly.Param.SVEHeight = String(Yanfly.Parameters['Sprite Height']);
+Yanfly.Param.SVEHeight = Yanfly.Param.SVEHeight.toLowerCase();
 Yanfly.Param.SVECollapse = eval(String(Yanfly.Parameters['Collapse']));
 Yanfly.Param.SVEFrameSpeed = Number(Yanfly.Parameters['Frame Speed']);
 
@@ -978,16 +984,31 @@ ImageManager.loadSystemSmooth = function(filename, hue) {
 
 Yanfly.SVE.Game_Battler_spriteWidth = Game_Battler.prototype.spriteWidth;
 Game_Battler.prototype.spriteWidth = function() {
-    var value = Yanfly.SVE.Game_Battler_spriteWidth.call(this);
-    if (this.isEnemy()) value *= Math.abs(this.spriteScaleX());
+    if (this.isSideviewDimensions('width')) {
+      var value = this.sideviewWidth();
+      value *= Math.abs(this.spriteScaleX());
+    } else {
+      var value = Yanfly.SVE.Game_Battler_spriteWidth.call(this);
+    }
     return value;
 };
 
 Yanfly.SVE.Game_Battler_spriteHeight = Game_Battler.prototype.spriteHeight;
 Game_Battler.prototype.spriteHeight = function() {
-    var value = Yanfly.SVE.Game_Battler_spriteHeight.call(this);
-    if (this.isEnemy()) value *= Math.abs(this.spriteScaleY());
+    if (this.isSideviewDimensions('height')) {
+      var value = this.sideviewHeight();
+      value *= Math.abs(this.spriteScaleY());
+    } else {
+      var value = Yanfly.SVE.Game_Battler_spriteHeight.call(this);
+    }
     return value;
+};
+
+Game_Battler.prototype.isSideviewDimensions = function(value) {
+    if (!this.isEnemy()) return false;
+    if (!this.hasSVBattler()) return false;
+    if (value === 'width') return this.sideviewWidth() !== 'auto';
+    if (value === 'height') return this.sideviewHeight() !== 'auto';
 };
 
 //=============================================================================
@@ -1366,7 +1387,7 @@ Sprite_Enemy.prototype.updateStateSprite = function() {
 };
 
 Sprite_Enemy.prototype.updateSVStateSprite = function() {
-    var height = this._mainSprite.height * -1;
+    var height = this._enemy.spriteHeight() * -1;
     height -= Sprite_StateIcon._iconHeight;
     this._stateIconSprite.y = height;
     this._stateSprite.y = 0;
@@ -1375,8 +1396,9 @@ Sprite_Enemy.prototype.updateSVStateSprite = function() {
 Sprite_Enemy.prototype.updateFloatingStateSprite = function() {
     if (this._enemy && this._enemy.isFloating()) {
       var heightRate = this.addFloatingHeight();
-      this._stateIconSprite.y += heightRate * this.height;
-      this._stateSprite.y += heightRate * this.height;
+      var height = this._enemy.spriteHeight();
+      this._stateIconSprite.y += heightRate * height;
+      this._stateSprite.y += heightRate * height;
     };
 };
 

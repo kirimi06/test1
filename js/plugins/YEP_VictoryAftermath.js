@@ -308,7 +308,7 @@ BattleManager.startVictoryPhase = function() {
 };
 
 BattleManager.prepareVictoryInfo = function() {
-    $gameParty.battleMembers().forEach(function(actor) {
+    $gameParty.allMembers().forEach(function(actor) {
         ImageManager.loadFace(actor.faceName());
         actor._preVictoryExp = actor.currentExp();
         actor._preVictoryLv = actor._level;
@@ -316,7 +316,7 @@ BattleManager.prepareVictoryInfo = function() {
         actor._victorySkills = [];
     }, this);
     this.gainRewards();
-    $gameParty.battleMembers().forEach(function(actor) {
+    $gameParty.allMembers().forEach(function(actor) {
         actor._expGained = actor.currentExp() - actor._preVictoryExp;
         actor._postVictoryLv = actor._level;
     }, this);

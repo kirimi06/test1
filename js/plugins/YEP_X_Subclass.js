@@ -11,7 +11,7 @@ Yanfly.Subclass = Yanfly.Subclass || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05 (Requires YEP_ClassChangeCore.js) Allow your actors
+ * @plugindesc v1.06 (Requires YEP_ClassChangeCore.js) Allow your actors
  * to subclass into a secondary class!
  * @author Yanfly Engine Plugins
  *
@@ -75,6 +75,14 @@ Yanfly.Subclass = Yanfly.Subclass || {};
  * @param LUK
  * @desc What rate of the Subclass LUK should be added?
  * @default 0.20
+ *
+ * @param EXP
+ * @desc When gaining EXP, how much should subclasses earn?
+ * @default 0.25
+ *
+ * @param JP
+ * @desc When gaining JP, how much should subclasses earn?
+ * @default 0.25
  *
  * @param ---Traits---
  * @default
@@ -243,6 +251,12 @@ Yanfly.Subclass = Yanfly.Subclass || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.06:
+ * - Added 'EXP' plugin parameter. This determines the rate the equipped
+ * subclass will earn EXP.
+ * - Added 'JP' plugin parameter. This determines the rate the equipped
+ * subclass will earn JP.
+ *
  * Version 1.05:
  * - Fixed a bug where changing a dead actor's subclass would revive them.
  *
@@ -289,6 +303,8 @@ Yanfly.Subclass.Param[4] = Number(Yanfly.Parameters['MAT']);
 Yanfly.Subclass.Param[5] = Number(Yanfly.Parameters['MDF']);
 Yanfly.Subclass.Param[6] = Number(Yanfly.Parameters['AGI']);
 Yanfly.Subclass.Param[7] = Number(Yanfly.Parameters['LUK']);
+Yanfly.Param.SubclassExp = Number(Yanfly.Parameters['EXP']);
+Yanfly.Param.SubclassJp = Number(Yanfly.Parameters['JP']);
 
 Yanfly.Param.SubclassSType = eval(String(Yanfly.Parameters['Skill Types']));
 Yanfly.Param.SubParamRates = eval(String(Yanfly.Parameters['Param Rates']));
@@ -719,6 +735,20 @@ Game_Actor.prototype.restrictSubclassChange = function(classId) {
     return this.actor().restrictSubclassChange.contains(classId);
 };
 
+Yanfly.Subclass.Game_Actor_gainExp = Game_Actor.prototype.gainExp;
+Game_Actor.prototype.gainExp = function(exp) {
+    this.gainExpSubclass(exp);
+    Yanfly.Subclass.Game_Actor_gainExp.call(this, exp);
+};
+
+Game_Actor.prototype.gainExpSubclass = function(exp) {
+    if (!this.subclass()) return;
+    exp *= Yanfly.Param.SubclassExp;
+    var curExp = this._exp[this._subclassId] || 0;
+    var newExp = curExp + Math.round(exp * this.finalExpRate());
+    this._exp[this._subclassId] = Math.max(newExp, 0);
+};
+
 //=============================================================================
 // Game_Interpreter
 //=============================================================================
@@ -740,6 +770,17 @@ Game_Interpreter.prototype.changeSubclass = function(args) {
     var subclassId = parseInt(args[1]);
     var actor = $gameActors.actor(actorId);
     if (actor) actor.setSubclass(subclassId);
+};
+
+Yanfly.Subclass.Game_Interpreter_command315 = 
+    Game_Interpreter.prototype.command315;
+Game_Interpreter.prototype.command315 = function() {
+    var value = this.operateValue(this._params[2], this._params[3],
+      this._params[4]);
+    this.iterateActorEx(this._params[0], this._params[1], function(actor) {
+      actor.gainExpSubclass(value);
+    }.bind(this));
+    return Yanfly.Subclass.Game_Interpreter_command315.call(this);
 };
 
 //=============================================================================

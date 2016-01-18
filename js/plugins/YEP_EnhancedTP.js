@@ -11,7 +11,7 @@ Yanfly.ETP = Yanfly.ETP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 Gives you more control over how TP is handled in
+ * @plugindesc v1.01 Gives you more control over how TP is handled in
  * your game in addition to letting players switch TP modes.
  * @author Yanfly Engine Plugins
  *
@@ -2594,8 +2594,12 @@ Yanfly.ETP = Yanfly.ETP || {};
  * Changelog
  * ============================================================================
  *
- * Version BETA:
- * - Started Plugin!
+ * Version 1.01:
+ * - Fixed a bug with some notetags not working properly.
+ * - Fixed a bug with 'EnableTpMode' plugin command not working properly.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -2693,7 +2697,6 @@ DataManager.processETPNotetags1 = function(group) {
         var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         obj.unlockedTpModes = obj.unlockedTpModes.concat(array);
       } else if (line.match(noteU2)) {
-        var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         var range = Yanfly.Util.getRange(parseInt(RegExp.$1),
           parseInt(RegExp.$2));
         obj.unlockedTpModes = obj.unlockedTpModes.concat(range);
@@ -2717,7 +2720,6 @@ DataManager.processETPNotetags2 = function(group) {
         var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         obj.unlockedTpModes = obj.unlockedTpModes.concat(array);
       } else if (line.match(noteU2)) {
-        var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         var range = Yanfly.Util.getRange(parseInt(RegExp.$1),
           parseInt(RegExp.$2));
         obj.unlockedTpModes = obj.unlockedTpModes.concat(range);
@@ -2741,7 +2743,6 @@ DataManager.processETPNotetags3 = function(group) {
         var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         obj.learnUnlockedTpModes = obj.learnUnlockedTpModes.concat(array);
       } else if (line.match(noteU2)) {
-        var array = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
         var range = Yanfly.Util.getRange(parseInt(RegExp.$1),
           parseInt(RegExp.$2));
         obj.learnUnlockedTpModes = obj.learnUnlockedTpModes.concat(range);
@@ -3321,7 +3322,7 @@ Window_SkillList.prototype.isEnabled = function(item) {
 
 Window_SkillType.prototype.addTpModeCommand = function() {
     var text = Yanfly.Param.ETPCmdName;
-    var enabled = Yanfly.Param.ETPEnableCmd;
+    var enabled = $gameSystem.isEnableTpMode();
     this.addCommand(text, 'skill', enabled, 'tpMode');
 };
 
