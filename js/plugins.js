@@ -155,5 +155,7 @@ var $plugins =
 {"name":"LotteryBox","status":true,"description":"ランダムでアイテムや装備、お金が手に入る抽選箱を提供します。","parameters":{"Result Variable Number":"0","Name Variable Number":"0","Auto Empty Mode":"ON"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"SupponShopStock","status":true,"description":"在庫システムを有するお店を設定します。version 1.01","parameters":{}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"MPP_ChoiceEX","status":true,"description":"選択肢の機能拡張(var.2.1)","parameters":{"maxPageRow":"6"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
