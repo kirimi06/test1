@@ -552,7 +552,7 @@ var UCHU_MobileOperation = {};
 				oldTerminateMessage.apply(this, arguments);
 				Btn_hide=false;
 				setTimeout("Scene_Base.prototype.showUserInterface();", 200);
-			}; */
+			}; 
 		};
 		
 		var Scene_Battle_createMessageWindow = Scene_Battle.prototype.createMessageWindow;
@@ -571,7 +571,7 @@ var UCHU_MobileOperation = {};
 				oldTerminateMessage.apply(this, arguments);
 				Btn_hide=false;
 				setTimeout("Scene_Base.prototype.showUserInterface();", 200);
-			};
+			}; */
 		};
 	}
 
