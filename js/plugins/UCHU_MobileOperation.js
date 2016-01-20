@@ -560,7 +560,7 @@ var UCHU_MobileOperation = {};
 			Scene_Battle_createMessageWindow.call(this);
 			var oldStartMessage = this._messageWindow.startMessage;
 			var oldTerminateMessage = this._messageWindow.terminateMessage;
-			var scene = this;
+			/* var scene = this;
 			this._messageWindow.startMessage = function() {
 				oldStartMessage.apply(this, arguments);
 				if($gameMessage.positionType()==2){
@@ -571,7 +571,7 @@ var UCHU_MobileOperation = {};
 				oldTerminateMessage.apply(this, arguments);
 				Btn_hide=false;
 				setTimeout("Scene_Base.prototype.showUserInterface();", 200);
-			};
+			}; */
 		};
 	}
 
