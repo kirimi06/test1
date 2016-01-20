@@ -3,8 +3,10 @@
 var $plugins =
 [
 {"name":"SaveFileExtras","status":true,"description":"v1.07 Show extra information in the save screen,\r\nincluding location, level, and gold.\r\nOptions to hide information you don't want to see (information is still saved in savegame.)\r\nConfigure colors and positions.\r\n$Amuseum_SaveFileExtras","parameters":{"Show Location":"true","Location Color":"0","Location X":"this.width / 2","Location Y":"rect.y + lineHeight","Show Level":"true","Level Color":"0","Level X":"this.width / 2","Level Y":"rect.y + lineHeight * 2","Show Gold":"true","Gold Color":"6","Gold X":"this.width * 0.66","Gold Y":"rect.y + lineHeight * 2","Show Title":"true","Title Color":"0","Title X":"this.width / 2","Title Y":"rect.y","Show Playtime":"true","Playtime Color":"0","Playtime X":"0","Playtime Y":"rect.y + lineHeight * 2","Show Characters":"true","Characters X":"rect.x + 220","Characters Y":"rect.y + rect.height - 4","Show Faces":"false","Faces X":"rect.x + 192","Faces Y":"rect.y + faceHeight","Face Margin":"0.66","Show Reserve Members":"false","Show File Id":"true","File Id Color":"0","File Id X":"rect.x","File Id Y":"rect.y"}},
+{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"AutoBattle","status":true,"description":"戦闘時に自動戦闘モードを追加します。","parameters":{"speed":"1","step":"3"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"ChangeWeaponOnBattle","status":true,"description":"戦闘コマンドに装備変更を追加","parameters":{"commandName":"装備変更"}},
 {"name":"BattleVoice","status":true,"description":"アクターの戦闘時の行動にボイスSEを設定します。","parameters":{"pitch":"100","volume":"90"}},
 {"name":"EscapeDungeon","status":true,"description":"ダンジョンから特定の場所にエスケープ","parameters":{"mapIdVal":"21","xCoordVal":"22","yCoordVal":"23"}},
@@ -83,7 +85,7 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Yami_8DIR","status":true,"description":"プレイヤーの8方向の移動が可能になります。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"AnalogMove","status":true,"description":"アナログ移動 \r\n1ピクセル単位の移動 アナログスティック対応","parameters":{}},
+{"name":"AnalogMove","status":false,"description":"アナログ移動 \r\n1ピクセル単位の移動 アナログスティック対応","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"UCHU_MobileOperation","status":true,"description":"スマホ操作用プラグイン。横持ち/縦持ちに対応した仮想ボタン、\r\nタッチ操作の方法を追加拡張し、スマホプレイを快適にします。","parameters":{"---PC Option---":"","PC BtnDisplay":"false","PC TouchExtend":"true","---File Path---":"","DPad Image":"./img/system/DirPad.png","ActionBtn Image":"./img/system/ActionButton.png","CancelBtn Image":"./img/system/CancelButton.png","---Button Customize---":"","Button Opacity":"0.7","Vertical BtnZoom":"1.7","Tablet BtnZoom":"0.8","TabVertical BtnZoom":"1.1","HideButton OnMessage":"true","DPad Visible":"true","DPad Size":"200","DPad Margin":"10; 10","DPad Orientation":"left; bottom","DPad OpelationRange":"1.3","DPad DiagonalRange":"0.3","ActionBtn Visible":"true","ActionBtn Size":"100","ActionBtn Margin":"10; 90","ActionBtn Orientation":"right; bottom","CancelBtn Visible":"true","CancelBtn Size":"100","CancelBtn Margin":"110; 10","CancelBtn Orientation":"right; bottom","---TouchInput Extend---":"","Flick PageUp-PageDown":"true","HoldCanvas ActionBtn":"true","OutCanvas CancelBtn":"false","OutCanvas ActionBtn":"false","--!need AnalogMove.js!--":"","Analog Move":"false","Analog Sensitivity":"1.8"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
@@ -155,6 +157,5 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"SupponShopStock","status":true,"description":"在庫システムを有するお店を設定します。version 1.01","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
