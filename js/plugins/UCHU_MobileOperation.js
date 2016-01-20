@@ -571,8 +571,8 @@ var UCHU_MobileOperation = {};
 				oldTerminateMessage.apply(this, arguments);
 				Btn_hide=false;
 				setTimeout("Scene_Base.prototype.showUserInterface();", 200);
-			}; */
-		};
+			};
+		}; */
 	}
 
 	if(Utils.isMobileDevice() || PRM.pcExt){
