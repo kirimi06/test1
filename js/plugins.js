@@ -3,7 +3,6 @@
 var $plugins =
 [
 {"name":"SaveFileExtras","status":true,"description":"v1.07 Show extra information in the save screen,\r\nincluding location, level, and gold.\r\nOptions to hide information you don't want to see (information is still saved in savegame.)\r\nConfigure colors and positions.\r\n$Amuseum_SaveFileExtras","parameters":{"Show Location":"true","Location Color":"0","Location X":"this.width / 2","Location Y":"rect.y + lineHeight","Show Level":"true","Level Color":"0","Level X":"this.width / 2","Level Y":"rect.y + lineHeight * 2","Show Gold":"true","Gold Color":"6","Gold X":"this.width * 0.66","Gold Y":"rect.y + lineHeight * 2","Show Title":"true","Title Color":"0","Title X":"this.width / 2","Title Y":"rect.y","Show Playtime":"true","Playtime Color":"0","Playtime X":"0","Playtime Y":"rect.y + lineHeight * 2","Show Characters":"true","Characters X":"rect.x + 220","Characters Y":"rect.y + rect.height - 4","Show Faces":"false","Faces X":"rect.x + 192","Faces Y":"rect.y + faceHeight","Face Margin":"0.66","Show Reserve Members":"false","Show File Id":"true","File Id Color":"0","File Id X":"rect.x","File Id Y":"rect.y"}},
-{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"AutoBattle","status":true,"description":"戦闘時に自動戦闘モードを追加します。","parameters":{"speed":"1","step":"3"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
@@ -157,5 +156,6 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"SupponShopStock","status":true,"description":"在庫システムを有するお店を設定します。version 1.01","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
