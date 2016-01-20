@@ -28,7 +28,6 @@ var $plugins =
 {"name":"YED_WordWrap","status":true,"description":"文章の改行機能を提供します。長文を適切な位置で改行します。","parameters":{"Break Word":"true"}},
 {"name":"YED_Hospital","status":false,"description":"v1.1.1 Provides hospital feature, where party spend their money for recovery.","parameters":{"[Default Price]":"","HP Price":"10","MP Price":"20","State Price":"100","[Visual Setting]":"","Nurse Face":"","Nurse Name":"Loli","Nurse Message":"治療していきますか？","Heal One Help":"Heals members individually.","Heal All Help (Treat)":"Heals all members at cost %1G.","Heal All Help (Healthy)":"All members are healthy.","Exit Help":"Go out.","Actor Help (Treat)":"%1 needs treatment.","Actor Help (Healthy)":"%1 is healthy.","Heal One Command":"Heal One","Heal All Command":"Heal All","Exit Command":"Exit","Text Alignment":"center"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Storage","status":true,"description":"シンプルな預かり所を追加します。","parameters":{"預かり数":"999","倉庫リストの区切り位置":"000","預けるコマンドの名称":"預ける","引き出すコマンドの名称":"引き出す","大事な物カテゴリ表示フラグ":"false","数値ウィンドウ横幅":"400","数値ウィンドウ縦幅":"76","数値ウィンドウ縦位置補正":"24"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"MrTS_StealSkill","status":true,"description":"Allows to steal items and skills from enemies.","parameters":{"Steal Mode":"1","Steal Success Text":"%1 は %2 から % を盗んだ！","Steal Fail Text":"%1 は %2 から盗めなかった！","Nothing Left Text":"%1 は盗めるものがない！"}},
@@ -81,8 +80,6 @@ var $plugins =
 {"name":"FollowerBalloon","status":false,"description":"FollowerBalloon","parameters":{}},
 {"name":"ItemHelp","status":false,"description":"ItemHelp","parameters":{}},
 {"name":"MoneyComma","status":true,"description":"金額にカンマをつける","parameters":{"MENU_OP":"false"}},
-{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Yami_8DIR","status":true,"description":"プレイヤーの8方向の移動が可能になります。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
@@ -157,5 +154,7 @@ var $plugins =
 {"name":"LotteryBox","status":true,"description":"ランダムでアイテムや装備、お金が手に入る抽選箱を提供します。","parameters":{"Result Variable Number":"0","Name Variable Number":"0","Auto Empty Mode":"ON"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"SupponShopStock","status":true,"description":"在庫システムを有するお店を設定します。version 1.01","parameters":{}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
