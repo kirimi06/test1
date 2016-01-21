@@ -11,7 +11,7 @@ Yanfly.Instant = Yanfly.Instant || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06a Allows skills/items to be instantly cast after being
+ * @plugindesc v1.06c Allows skills/items to be instantly cast after being
  * selected in the battle menu.
  * @author Yanfly Engine Plugins
  *
@@ -149,9 +149,11 @@ Yanfly.Instant = Yanfly.Instant || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06a:
+ * Version 1.06c:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
  * to force an action to end incorrectly. Thanks to DoubleX for the fix.
+ * - Added a more consistent window refresh upon using instant actions.
+ * - Instant icons are now shown outside of battle.
  *
  * Version 1.05:
  * - Added a fail safe to keep an action that once it's being used, it will
@@ -335,6 +337,7 @@ BattleManager.endActorInstantCast = function() {
     } else {
       this.selectNextCommand();
     }
+    this.refreshStatus()
 };
 
 BattleManager.endEnemyInstantCastAction = function() {
@@ -552,10 +555,9 @@ Window_Base.prototype.drawItemName = function(item, wx, wy, ww) {
 Window_Base.prototype.drawInstantIcon = function(item, wx, wy, ww) {
     var icon = Yanfly.Icon.Instant;
     if (icon <= 0) return;
-    if (!$gameParty.inBattle()) return;
     if (!item) return;
     if (!DataManager.isItem(item) && !DataManager.isSkill(item)) return;
-    var actor = BattleManager.actor();
+    var actor = this._actor;
     if (!actor) return;
     if (!actor.isInstantCast(item)) return;
     this.drawIcon(icon, wx + 2, wy + 2);

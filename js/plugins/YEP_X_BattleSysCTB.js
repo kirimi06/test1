@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.08a (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.09 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -387,6 +387,10 @@ Yanfly.CTB = Yanfly.CTB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.09:
+ * - Fixed a bug where forced actions clear out an action's effects before the
+ * turn is over, making post-turn effects to not occur.
  *
  * Version 1.08a:
  * - Fixed a bug where changing back and forth between the Fight/Escape window
@@ -1067,6 +1071,18 @@ BattleManager.startCTBAction = function(battler) {
     } else {
       this.endAction();
     }
+};
+
+Yanfly.CTB.BattleManager_processForcedAction =
+    BattleManager.processForcedAction;
+BattleManager.processForcedAction = function() {
+    var forced = false;
+    if (this._actionForcedBattler && this.isCTB()) {
+      var action = this._actionForcedBattler.currentAction();
+      forced = true;
+    }
+    Yanfly.CTB.BattleManager_processForcedAction.call(this);
+    if (forced) this._subject.setAction(0, action);
 };
 
 Yanfly.CTB.BattleManager_endAction = BattleManager.endAction;

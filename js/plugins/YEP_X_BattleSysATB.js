@@ -11,7 +11,7 @@ Yanfly.ATB = Yanfly.ATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.18 (Requires YEP_BattleEngineCore.js) Add ATB (Active
+ * @plugindesc v1.19 (Requires YEP_BattleEngineCore.js) Add ATB (Active
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -433,6 +433,10 @@ Yanfly.ATB = Yanfly.ATB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.19:
+ * - Fixed a bug where forced actions clear out an action's effects before the
+ * turn is over, making post-turn effects to not occur.
  *
  * Version 1.18:
  * - Fixed a bug where changing back and forth between the Fight/Escape window
@@ -1141,6 +1145,18 @@ BattleManager.startATBAction = function(battler) {
     } else {
       this.endAction();
     }
+};
+
+Yanfly.ATB.BattleManager_processForcedAction =
+    BattleManager.processForcedAction;
+BattleManager.processForcedAction = function() {
+    var forced = false;
+    if (this._actionForcedBattler && this.isATB()) {
+      var action = this._actionForcedBattler.currentAction();
+      forced = true;
+    }
+    Yanfly.ATB.BattleManager_processForcedAction.call(this);
+    if (forced) this._subject.setAction(0, action);
 };
 
 Yanfly.ATB.BattleManager_endAction = BattleManager.endAction;

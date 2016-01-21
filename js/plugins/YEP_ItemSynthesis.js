@@ -11,7 +11,7 @@ Yanfly.IS = Yanfly.IS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Players can now craft their own items in-game
+ * @plugindesc v1.03 Players can now craft their own items in-game
  * through an item synthesis system.
  * @author Yanfly Engine Plugins
  *
@@ -253,6 +253,9 @@ Yanfly.IS = Yanfly.IS || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.03:
+ * - Fixed a bug that caused a crash for OpenSynthesis recipe commands.
  *
  * Version 1.02:
  * - Added 'Equipped Recipes' plugin parameter. If enabled, this will allow the
@@ -1378,7 +1381,8 @@ Scene_Synthesis.addSynthesisItem = function(obj, list) {
 Scene_Synthesis.getAvailableItems = function(type) {
     var list = [];
     var lib = this.availableLibrary();
-    for (var i = 0; i < 3; ++i) {
+    var length = lib.length;
+    for (var i = 0; i < length; ++i) {
       var set = lib[i];
       this.getAvailableRecipes(set, type, list);
     }
@@ -1389,6 +1393,7 @@ Scene_Synthesis.getAvailableRecipes = function(set, type, list) {
     var length = set.length;
     for (var i = 0; i < length; ++i) {
       var item = set[i];
+      if (!item) continue;
       if (type === 0 && item.recipeItem) {
         this.getAvailableSynthesisItems(item.recipeItem, type, list);
       } else if (type === 1 && item.recipeWeapon) {
@@ -1410,7 +1415,9 @@ Scene_Synthesis.getAvailableSynthesisItems = function(array, type, list) {
 };
 
 Scene_Synthesis.availableLibrary = function() {
-    if ($gameTemp._synthRecipe) return [[$gameTemp._synthRecipe]];
+    if ($gameTemp._synthRecipe) {
+      return [[$gameTemp._synthRecipe]];
+    }
     var library = [];
     library.push($gameParty.items());
     library.push($gameParty.weapons());

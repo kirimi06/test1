@@ -11,6 +11,6 @@ null,
 {"id":9,"expanded":true,"name":"民家","order":8,"parentId":0,"scrollX":479.5,"scrollY":327},
 {"id":10,"expanded":false,"name":"民家：居間","order":9,"parentId":9,"scrollX":479.5,"scrollY":327},
 {"id":11,"expanded":true,"name":"森","order":10,"parentId":9,"scrollX":479.5,"scrollY":327},
-{"id":12,"expanded":true,"name":"???","order":13,"parentId":0,"scrollX":479.5,"scrollY":324},
+{"id":12,"expanded":true,"name":"???","order":13,"parentId":0,"scrollX":479.5,"scrollY":297},
 {"id":13,"expanded":false,"name":"客室2","order":7,"parentId":4,"scrollX":479.5,"scrollY":324}
 ]

@@ -11,7 +11,7 @@ Yanfly.Crit = Yanfly.Crit || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01a (Requires YEP_DamageCore.js) Control over critical
+ * @plugindesc v1.01b (Requires YEP_DamageCore.js) Control over critical
  * hits have been added.
  * @author Yanfly Engine Plugins
  *
@@ -28,7 +28,7 @@ Yanfly.Crit = Yanfly.Crit || {};
  * @param Flat Critical Formula
  * @desc Add a little bonus to your critical hits with flat
  * increases in damage and/or healing.
- * @default value += ((baseDamage > 0) ? 1 : -1) * 1.5 * user.luk + bonus;
+ * @default value += ((baseDamage >= 0) ? 1 : -1) * 1.5 * user.luk + bonus;
  *
  * @help
  * ============================================================================
@@ -195,7 +195,7 @@ Yanfly.Crit = Yanfly.Crit || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.01a:
+ * Version 1.01b:
  * - Fixed a bug regarding Lunatic Critical Hit Rates.
  * - Fixed a default formula that caused critical hits to heal unexpectedly.
  *

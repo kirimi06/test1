@@ -11,7 +11,7 @@ Yanfly.BSC = Yanfly.BSC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05a Alter the basic mechanics behind buffs and states
+ * @plugindesc v1.06 Alter the basic mechanics behind buffs and states
  * that aren't adjustable within the RPG Maker editor.
  * @author Yanfly Engine Plugins
  *
@@ -243,6 +243,14 @@ Yanfly.BSC = Yanfly.BSC || {};
  *   - Action End:   Whenever the battler finishes an action.
  *   - Regenerate:   Whenever the battler would regenerate HP/MP/TP.
  *   - Turn End:     Whenever the battler's turn ends.
+ *   - Battle:       Whenever a battle is started.
+ *   - Victory:      Whenever a battle is won. *Note1
+ *   - Escape:       Whenever a battle is escaped. *Note1
+ *   - Defeat:       Whenever a battle is lost. *Note1
+ *
+ * *Note1: If the state is set to expire on battle end, the expiration will
+ * occur before the custom effects would take place, meaning the effects will
+ * not occur at all unless the expiration is set to off.
  *
  * State Notetags:
  *
@@ -308,6 +316,40 @@ Yanfly.BSC = Yanfly.BSC || {};
  *   </Custom Turn End Effect>
  *   This effect will run at the end of each of the battler's turns. The code
  *   will process after all the other turn end effects have taken course.
+ *
+ *   <Custom Battle Effect>
+ *    code
+ *    code
+ *   </Custom Battle Effect>
+ *   This effect will occur at the start of battle if the battler has the state
+ *   already applied (usually through a passive state).
+ *
+ *   <Custom Victory Effect>
+ *    code
+ *    code
+ *   </Custom Victory Effect>
+ *   This effect will occur at the end of battle if the party is victorious.
+ *   This will only apply to the player's party. If this state can expire at
+ *   the end of battle, this effect will not occur as state expiration will
+ *   occur before this effect will happen.
+ *
+ *   <Custom Escape Effect>
+ *    code
+ *    code
+ *   </Custom Escape Effect>
+ *   This effect will occur at the end of battle if the party has escaped.
+ *   This will only apply to the player's party. If this state can expire at
+ *   the end of battle, this effect will not occur as state expiration will
+ *   occur before this effect will happen.
+ *
+ *   <Custom Defeat Effect>
+ *    code
+ *    code
+ *   </Custom Defeat Effect>
+ *   This effect will occur at the end of battle if the party is defeated.
+ *   This will only apply to the player's party. If this state can expire at
+ *   the end of battle, this effect will not occur as state expiration will
+ *   occur before this effect will happen.
  *
  * ============================================================================
  * Lunatic Mode - Custom Action Effects
@@ -406,6 +448,10 @@ Yanfly.BSC = Yanfly.BSC || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.06:
+ * - Added new notetags for <Custom Battle Effect>, <Custom Victory Effect>,
+ * <Custom Escape Effect>, and <Custom Defeat Effect> for Lunatic Mode.
  *
  * Version 1.05a:
  * - Fixed a bug with the 'Show Turns' parameter not working properly.
@@ -515,6 +561,10 @@ DataManager.processBSCNotetags1 = function(group) {
     obj.customEffectEval['establishState'] = '';
     obj.customEffectEval['actionStartState'] = '';
     obj.customEffectEval['actionEndState'] = '';
+    obj.customEffectEval['battle'] = '';
+    obj.customEffectEval['victory'] = '';
+    obj.customEffectEval['defeat'] = '';
+    obj.customEffectEval['escape'] = '';
     var evalMode = 'none';
     var evalType = 'none';
 
@@ -542,54 +592,47 @@ DataManager.processBSCNotetags1 = function(group) {
         obj.reapplyRules = 2;
       } else if (line.match(/<CUSTOM[ ](.*)[ ]EFFECT>/i)) {
         var name = String(RegExp.$1).toUpperCase();
+        evalMode = 'custom state effect';
         if (['APPLY', 'ADD'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'addState';
         } else if (['REMOVE', 'ERASE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'removeState';
         } else if (['LEAVE', 'DECAY'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'leaveState';
         } else if (['TURN START', 'BEGIN'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'turnStartState';
         } else if (['TURN END', 'CLOSE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'turnEndState';
         } else if (['REGENERATE', 'REGEN', 'WHILE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'regenerateState';
         } else if (['SELECT', 'ONTARGET'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'selectState';
         } else if (['DESELECT', 'OFFTARGET'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'deselectState';
         } else if (['REACT', 'REACTION'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'reactState';
         } else if (['RESPOND', 'RESPONSE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'respondState';
         } else if (['INITIATE', 'ONAPPLY'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'initiateState';
         } else if (['CONFIRM', 'PREDAMAGE', 'PRE-DAMAGE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'confirmState';
         } else if (['ESTABLISH', 'POSTDAMAGE', 'POST-DAMAGE'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'establishState';
         } else if (['CONCLUDE', 'OFFAPPLY'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'concludeState';
         } else if (['ACTION START', 'START'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'actionStartState';
         } else if (['ACTION END', 'FINISH'].contains(name)) {
-          evalMode = 'custom state effect';
           evalType = 'actionEndState';
+        } else if (['BATTLE', 'BATTLE START'].contains(name)) {
+          evalType = 'battle';
+        } else if (['VICTORY', 'BATTLE VICTORY'].contains(name)) {
+          evalType = 'victory';
+        } else if (['DEFEAT', 'BATTLE DEFEAT'].contains(name)) {
+          evalType = 'defeat';
+        } else if (['ESCAPE', 'BATTLE ESCAPE'].contains(name)) {
+          evalType = 'escape';
         }
       } else if (line.match(/<\/CUSTOM[ ](.*)[ ]EFFECT>/i)) {
         evalMode = 'none';
@@ -808,6 +851,18 @@ Yanfly.BSC.BattleManager_endAction = BattleManager.endAction;
 BattleManager.endAction = function() {
     if (this._subject) this._subject.onActionEndStateEffects();
     Yanfly.BSC.BattleManager_endAction.call(this);
+};
+
+Yanfly.BSC.BattleManager_endBattle = BattleManager.endBattle;
+BattleManager.endBattle = function(result) {
+    if (result === 0) {
+      $gameParty.processStateEval('victory');
+    } else if (result === 1) {
+      $gameParty.processStateEval('escape');
+    } else if (result === 2) {
+      $gameParty.processStateEval('defeat');
+    }
+    Yanfly.BSC.BattleManager_endBattle.call(this, result);
 };
 
 //=============================================================================
@@ -1187,6 +1242,37 @@ Game_Enemy.prototype.maxDebuffLimit = function(paramId) {
     var value = Game_Battler.prototype.maxDebuffLimit.call(this, paramId);
     value -= this.enemy().maxDebuff[paramId];
     return value;
+};
+
+//=============================================================================
+// Game_Unit
+//=============================================================================
+
+Game_Unit.prototype.processStateEval = function(type) {
+    var length1 = this.allMembers().length;
+    for (var i = 0; i < length1; ++i) {
+      var member = this.allMembers()[i];
+      if (!member) return;
+      var length2 = member.states().length;
+      for (var j = 0; j < length2; ++j) {
+        var state = member.states()[j];
+        if (state) member.customEffectEval(state.id, type);
+      }
+    }
+};
+
+Yanfly.BSC.Game_Unit_onBattleStart = Game_Unit.prototype.onBattleStart;
+Game_Unit.prototype.onBattleStart = function() {
+    Yanfly.BSC.Game_Unit_onBattleStart.call(this);
+    this.processStateEval('battle');
+};
+
+//=============================================================================
+// Game_Troop
+//=============================================================================
+
+Game_Troop.prototype.allMembers = function() {
+    return this.members();
 };
 
 //=============================================================================

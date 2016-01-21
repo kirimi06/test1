@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.04 (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -52,11 +52,6 @@ Yanfly.SVE = Yanfly.SVE || {};
  * @desc The default frame speed used in between motions.
  * Default: 12
  * @default 12
- *
- * @param Show State Overlay
- * @desc Show state overlays on sideview enemies?
- * NO - false     YES - true
- * @default true
  *
  * @param ---Shadows---
  * @default
@@ -573,13 +568,6 @@ Yanfly.SVE = Yanfly.SVE || {};
  *   the faster the sideview battler animates. The higher it is, the slower the
  *   battler animates.
  *
- *   --- State Overlays ---
- *
- *   <Sideview Show State Overlay>
- *   <Sideview Hide State Overlay>
- *   This will either show or hide the state overlay for the sideview enemy and
- *   ignore the default setting within the plugin parameters.
- *
  *   --- Motions ---
  *
  *   <Sideview Attack Motion: swing>
@@ -713,14 +701,677 @@ Yanfly.SVE = Yanfly.SVE || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06:
- * - Fixed a bug that prevented animated sideview enemies from not mirroring.
- * - Added <Sideview Show State Overlay> and <Sideview Hide State Overlay>
- * notetags to make certain enemies show/hide state overlays.
+ * Version 1.04:
+ * - Fixed a bug with Sprite Smoothing disabled on Shadows.
+ * - Fixed a bug with the anchor Y positions being overwritten.
  *
- * Version 1.05:
- * - Made adjustments to the <Sprite Height: x> notetag to also affect the
- * location of the state icons and effects.
+ * Version 1.03:
+ * - Fixed a bug that would cause <Sideview Width: x> & <Sideview Height: x>
+ * notetags to crash the game.
+ *
+ * Version 1.02:
+ * - Synchronized state icons and overlays with floating enemies.
+ *
+ * Version 1.01:
+ * - Added 'HP Link Breathing' plugin parameter. If enabled, the lower the HP,
+ * the slower the enemy breathes.
+ * - Added <Enable HP Link Breathing> and <Disable HP Link Breathing> notetags.
+ *
+ * Version 1.00:
+ * - Finished plugin! Hooray!
+ */
+ /*:ja
+ * @plugindesc v1.04 モーション付のサイドビューアクターを、敵にも用いることができます(使用にはYEP_BattleEngineCore.jsが必要です)
+ * @author Yanfly Engine Plugins
+ *
+ * @param ---一般---
+ * @default
+ *
+ * @param Anchor X
+ * @desc スプライトのデフォルトアンカー位置を設定します。(X)
+ * デフォルト値: 0.5
+ * @default 0.5
+ *
+ * @param Anchor Y
+ * @desc スプライトのデフォルトアンカー位置を設定します。(Y)
+ * デフォルト値: 1
+ * @default 1
+ *
+ * @param Sprite Smoothing
+ * @desc スプライトスムージングをオンにします。(グローバルセッティング)
+ * オフ - false     オン - true
+ * @default true
+ *
+ * @param Sprite Width
+ * @desc サイドビュースプライトの、最小幅を設定します。
+ * 'auto'を入力すると自動で決定します。デフォルト: 64
+ * @default auto
+ *
+ * @param Sprite Height
+ * @desc サイドビュースプライトの、高さの最小値を設定します。
+ * 'auto'を入力すると自動で決定します。デフォルト: 64
+ * @default auto
+ *
+ * @param Collapse
+ * @desc スプライトが死亡した際、消滅させますか？
+ * いいえ - false     はい - true
+ * @default false
+ *
+ * @param Frame Speed
+ * @desc モーション間で用いられる、デフォルトのフレームスピードを設定します。
+ * デフォルト: 12
+ * @default 12
+ *
+ * @param ---影---
+ * @default
+ *
+ * @param Show Shadow
+ * @desc サイドビューの敵に影を付けますか？
+ * いいえ - false     はい - true
+ * @default false
+ *
+ * @param Shadow Scale X
+ * @desc 影の、デフォルトの水平方向(X)の大きさを設定します。
+ * 'auto'を用いると自動で決定します。デフォルト: 1
+ * @default auto
+ *
+ * @param Shadow Scale Y
+ * @desc 影の、デフォルトの垂直方向(Y)の大きさを設定します。
+ * 'auto'を用いると自動で決定します。デフォルト: 1
+ * @default auto
+ *
+ * @param ---呼吸---
+ * @default
+ *
+ * @param Enable Breathing
+ * @desc 敵の呼吸オプションを設定します。
+ * 0 - 無し, 1 - 静止時, 2 - サイドビュー, 3 - 両方
+ * @default 1
+ *
+ * @param Breathing Speed
+ * @desc 敵の呼吸のスピードを設定します。
+ * 低い値ほど速く、高い値ほど遅く呼吸します。
+ * @default 20
+ *
+ * @param Breathing X Rate
+ * @desc 呼吸時の X軸 方向の収縮率を指定します。
+ * 低い値ほど穏やかに、高い値ほど激しく収縮します。
+ * @default 0.001
+ *
+ * @param Breathing Y Rate
+ * @desc 呼吸時の Y軸 方向の収縮率を指定します。
+ * 低い値ほど穏やかに、高い値ほど激しく収縮します。
+ * @default 0.02
+ *
+ * @param HP Link Breathing
+ * @desc 呼吸速度をHPのレートとリンクさせますか？
+ * いいえ - false     はい - true
+ * @default false
+ *
+ * @param ---浮遊---
+ * @default
+ *
+ * @param Floating Speed
+ * @desc 敵のデフォルトの浮遊スピードを設定します。
+ * 低い値ほど速く、高い値ほど遅く呼吸します。
+ * @default 20
+ *
+ * @param Floating Rate
+ * @desc 敵のデフォルトの浮遊レートを設定します。
+ * 低い値ほど頻繁に、高い値ほどゆっくりと浮遊します。
+ * @default 0.3
+ *
+ * @param Floating Height
+ * @desc デフォルトの浮遊の最低値を設定します。
+ * 低く設定するほど地面に近く、高く設定すると高く浮遊します。
+ * @default 50
+ *
+ * @param ---モーション---
+ * @default
+ *
+ * @param Attack Motion
+ * @desc 武器無しの時のデフォルト攻撃モーションを設定します。
+ * 攻撃モーション: 振り     突き     飛び道具
+ * @default thrust
+ *
+ * @param Weapon Image Index
+ * @desc スプライトにデフォルトの武器の画像インデックスを設定します。
+ * 0を入れると画像は使用されません。
+ * @default 0
+ *
+ * @param Idle Motion
+ * @desc スプライトに何もしていない時のモーションを設定します。
+ * デフォルト: 歩行
+ * @default walk
+ *
+ * @param Damage Motion
+ * @desc スプライトにダメージ時のモーションを設定します。
+ * デフォルト: ダメージ
+ * @default damage
+ *
+ * @param Evade Motion
+ * @desc Sets スプライトに回避時のモーションを設定します。
+ * デフォルト: 回避
+ * @default evade
+ *
+ * @param Escape Motion
+ * @desc スプライトに逃避時のモーションを設定します。
+ * デフォルト: 逃げる
+ * @default escape
+ *
+ * @param Guard Motion
+ * @desc スプライトにガード時のモーションを設定します。
+ * デフォルト: 防御
+ * @default guard
+ *
+ * @param Abnormal Motion
+ * @desc スプライトに状態異常時のモーションを設定します。
+ * デフォルト: 状態異常
+ * @default abnormal
+ *
+ * @param Sleep Motion
+ * @desc スプライトに睡眠時のモーションを設定します。
+ * デフォルト: 睡眠
+ * @default sleep
+ *
+ * @param Dying Motion
+ * @desc スプライトに瀕死時のモーションを設定します。
+ * デフォルト: 瀕死
+ * @default dying
+ *
+ * @param Dead Motion
+ * @desc スプライトに死亡時のモーションを設定します。
+ * デフォルト: 戦闘不能
+ * @default dead
+ *
+ * @param ---武器---
+ * @default
+ *
+ * @param Weapon Image Index
+ * @desc スプライトにデフォルトの武器の画像インデックスを設定します。
+ * 0を入れると画像は使用されません。
+ * @default 0
+ *
+ * @param Weapon 1 Motion
+ * @desc この武器1にデフォルトで使われるモーションを設定します。
+ * 武器1: ダガー     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 1 Animation
+ * @desc この武器1にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 6
+ *
+ * @param Weapon 2 Motion
+ * @desc この武器2にデフォルトで使われるモーションを設定します。
+ * 武器2: 剣     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 2 Animation
+ * @desc この武器2にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 6
+ *
+ * @param Weapon 3 Motion
+ * @desc この武器3にデフォルトで使われるモーションを設定します。
+ * 武器3: フレイル     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 3 Animation
+ * @desc この武器3にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 4 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器4: 斧     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 4 Animation
+ * @desc この武器4にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 6
+ *
+ * @param Weapon 5 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器5: 鞭     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 5 Animation
+ * @desc この武器5にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 6
+ *
+ * @param Weapon 6 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器6: 杖     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 6 Animation
+ * @desc この武器6にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 7 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器7: ロングボウ(弓)     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 7 Animation
+ * @desc この武器7にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 11
+ *
+ * @param Weapon 8 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器8: クロスボウ     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 8 Animation
+ * @desc この武器8にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 11
+ *
+ * @param Weapon 9 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器9: 銃     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 9 Animation
+ * @desc この武器9にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 111
+ *
+ * @param Weapon 10 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器10: クロウ(爪)     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 10 Animation
+ * @desc この武器10にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 16
+ *
+ * @param Weapon 11 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器11: グローブ     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 11 Animation
+ * @desc この武器11にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 12 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器12: 棘     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 12 Animation
+ * @desc この武器12にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 11
+ *
+ * @param Weapon 13 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器13: メイス     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 13 Animation
+ * @desc この武器13にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 14 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器14: ロッド     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 14 Animation
+ * @desc この武器14にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 15 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器15: こん棒     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 15 Animation
+ * @desc この武器15にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 16 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器16: チェーン     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 16 Animation
+ * @desc この武器16にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 6
+ *
+ * @param Weapon 17 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器17: 剣2     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 17 Animation
+ * @desc この武器17にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 7
+ *
+ * @param Weapon 18 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器18: 鉄パイプ     モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 18 Animation
+ * @desc この武器18にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 19 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器19: スリングショット     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 19 Animation
+ * @desc この武器19にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 11
+ *
+ * @param Weapon 20 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器20: ショットガン     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 20 Animation
+ * @desc この武器20にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 111
+ *
+ * @param Weapon 21 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器21: ライフル     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 21 Animation
+ * @desc この武器21にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 111
+ *
+ * @param Weapon 22 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器22: チェーンソー     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 22 Animation
+ * @desc この武器22にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 7
+ *
+ * @param Weapon 23 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器23: レールガン     モーション: 飛び道具
+ * @default missile
+ *
+ * @param Weapon 23 Animation
+ * @desc この武器23にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 15
+ *
+ * @param Weapon 24 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器24: スタンロッド     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 24 Animation
+ * @desc この武器24にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 15
+ *
+ * @param Weapon 25 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器25: スペルブック   モーション: 振り
+ * @default swing
+ *
+ * @param Weapon 25 Animation
+ * @desc この武器25にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 26 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器26: カスタム     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 26 Animation
+ * @desc この武器26にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 27 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器27: カスタム     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 27 Animation
+ * @desc この武器27にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 28 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器28: カスタム     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 28 Animation
+ * @desc この武器28にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 29 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器29: カスタム     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 29 Animation
+ * @desc この武器29にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @param Weapon 30 Motion
+ * @desc この武器にデフォルトで使われるモーションを設定します。
+ * 武器30: カスタム     モーション: 突き
+ * @default thrust
+ *
+ * @param Weapon 30 Animation
+ * @desc この武器30にデフォルトで使われる戦闘アニメーションを設定します。
+ * @default 1
+ *
+ * @help
+ * ============================================================================
+ * Introduction
+ * ============================================================================
+ *
+ * このプラグインを使うには、別途で「YEP_BattleEngineCore」が必要です。
+ * プラグインリスト内では、このプラグインが必ず「YEP_BattleEngineCore」の下に
+ * 来るようにしてください。 
+ *
+ * この拡張プラグインは、敵に様々なアニメーションを付けることができます。
+ * 静止中の敵に息をさせたり、浮遊させたりすることで、より生き生きとした表現が
+ * 可能になります。
+ *
+ * もし「YEP_X_ActSeqPack2」を持っていて、浮遊の能力を使いたいのであれば、
+ * このプラグインを「YEP_X_ActSeqPack2」の下に置くようにしてください。
+ * 
+ * このプラグインを使うには、敵キャラのメモ欄に下記のタグを挿入してください。
+ *
+ * ============================================================================
+ * ノートタグ
+ * ============================================================================
+ *
+ * これらのタグを敵のメモ欄に挿入することで、サイドビューバトラーに様々な変更
+ * を加えることができます。
+ *
+ * 敵のNotetags:
+ *
+ *   --- 一般 ---
+ *
+ *   <Breathing>
+ *   <No Breathing>
+ *   呼吸のエフェクトを敵のスプライトに付与/解除することができます。
+ *
+ *   <Breathing Speed: x>
+ *   一呼吸にかかるフレーム数を設定できます。x に入れる値が小さくなるほど、
+ *   敵は呼吸が荒くなります。高くなるほどゆっくりと呼吸するようになります。
+ *
+ *   <Breathing Rate X: x.y>
+ *   <Breathing Rate Y: x.y>
+ *   x yで水平・垂直方向を指定して、呼吸時のX Yレートを変更することができます。
+ *   (1.0)入力で100%の変更率、(0.0)で0%の変更率になります。
+ *
+ *   <Enable HP Link Breathing>
+ *   <Disable HP Link Breathing>
+ *   呼吸の速さをHPとリンクさせるかを変更できます。敵のHPが低くなるほど、
+ *   呼吸がゆっくりになります。
+ *
+ *   <Floating>
+ *   敵に浮遊しているかのようなアニメーションを付与できます。
+ *
+ *   <Floating Speed: x>
+ *   浮遊のサイクルにかかるフレーム数を指定します。値が小さくなるほど、敵は
+ *   素早く浮遊するようになります。 x の値が大きくなると、ゆっくり浮遊する
+ *   ようになります。
+ *
+ *   <Floating Rate: x.y>
+ *   浮遊のレートを x.y に変更します。(1.0)の時は100%の変化、(0.0)の時は
+ *   0%の変化率となります。
+ *
+ *   <Floating Height: x>
+ *   浮遊の高さの最小値を x にセットします。
+ *
+ *   <Scale Sprite: x%>
+ *   スプライトのサイズを、オリジナルの物から x% 拡大/縮小できます。
+ *   もし、幅もしくは高さ一方だけを変えたかったら下記のタグを使ってください。
+ *
+ *   <Scale Sprite Width: x%>
+ *   <Scale Sprite Height: x%>
+ *   これを使えば、スプライトのwidth(幅)やheight(高さ)を x% だけ変更できます。
+ *   幅と高さ、一方だけのサイズを変えたい方はこちらを使ってください。
+ *
+ *   --- サイドビュー ---
+ *
+ *   <Sideview Battler: filename>
+ *   サイドビューバトラーに使われるファイル名を指定します。
+ *   これはあなたのプロジェクトの「img/sv_actors/」フォルダ内から参照されます。
+ *   これを指定することで、下記のタグをバトラーに適用することができます。
+ *   大文字小文字を区別して、画像ファイルの拡張子は無しで入力してください。
+ *
+ *   *例: SF_Actor3_8.png だったら <Sideview Battler: SF_Actor3_8> となります。
+ *
+ *   *注: もしこれらのタグの内１つでも使われた場合、サイドビューバトラーの選択
+ *   はランダムプール内から行なわれます。しかし、それらの設定は、タグ内で設定
+ *   されたその他全てのサイドビューセッティングと同じものになります。
+ *
+ *   --- 特殊サイドビュー ---
+ *
+ *   <Sideview Anchor X: y.z>
+ *   <Sideview Anchor Y: y.z>
+ *   敵のサイドビューバトラーに、 y.z でアンカーを設定します。
+ *   変わったタイプのサイドビューバトラーを用いたイベントに使用されます。
+ *   
+ *   <Sideview Width: x>
+ *   <Sideview Height: x>
+ *   サイドビューバトラーの幅/高さを指定します。これは、普通とは異なる形態の
+ *   バトラー画像を用いたサイドビューバトラーに用いられます。
+ *
+ *   <Sideview Collapse>
+ *   このタグを入れた敵は、死亡の際に消滅してしまいます。
+ *
+ *   <Sideview No Collapse>
+ *   このタグを入れた敵は、死んでも死体が残り消滅しなくなります。
+ *
+ *   <Sideview Frame Speed: x>
+ *   サイドビューバトラーのフレームスピードを x の値に設定します。
+ *   値が低くなるほど素早く動き、高い値だとゆっくり動くようになります。
+ *
+ *   --- モーション ---
+ *
+ *   <Sideview Attack Motion: swing>
+ *   <Sideview Attack Motion: thrust>
+ *   <Sideview Attack Motion: missile>
+ *   敵が武器を持っていない場合の、アタックモーションを設定します。
+ *   下記のモーション一覧内から、選ぶことができます。
+ *    walk(前進)  wait(待機)  chant(詠唱)  guard(防御)  damage(ダメージ)
+ *    evade(回避)  thrust(突き) swing(振り)  missile(飛び道具)  skill(スキル)
+ *    spell(魔法)  item(アイテム)  escape(逃げる)  victory（勝利)  dying(瀕死)
+ *    abnormal(状態異常)  sleep(睡眠)   dead(戦闘不能)
+ *
+ *   <Sideview Weapon: x>
+ *   スプライトの武器イメージを x に変更できます。武器のシステムイメージを
+ *   設定していない場合は、下記に従います。
+ *
+ *   0 - 無し
+ *   1 - ダガー   7 - 弓  13 - メイス       19 - スリングショット  25 - 本
+ *   2 - 剣  8 - クロスボウ   14 - ロッド   20 - ショットガン    26 - カスタム
+ *   3 - フレイル    9 - 銃       15 - 棍棒    21 - ライフル     27 - カスタム
+ *   4 - 斧     10 - 爪      16 - 鎖      22 - チェーンソー   28 - カスタム
+ *   5 - ムチ    11 - グローブ   17 - 剣2    23 - レールガン    29 - カスタム
+ *   6 - 杖   12 - 棘   18 - 鉄パイプ  24 - スタンロッド   30 - カスタム
+ *
+ *   * 注: 複数のタグを挿入すると、武器のランダムプール内に格納されることに
+ *   なります。このタグを使う際は、プラグインパラメータ内の全てのデフォルト設定
+ *   が使用されることになります。もしもっとユニークな設定をしたい場合は、下記の
+ *   タグを使ってみてください。:
+ *
+ *   <Sideview Weapon: x, y, z>
+ *   これにより、スプライトの武器イメージを x に、モーションを y に
+ *   アタックアニメーションを z にカスタマイズすることができます。
+ *   例えば下記のように使います。
+ *   
+ *      <Sideview Weapon: 2, swing, 6>
+ *
+ *   この例では「剣」を使って、「振り」のモーションを行い、
+ *   攻撃時には戦闘アニメーション「6」を再生します。
+ *
+ *   <Sideview Idle Motion: x>
+ *   サイドビューの敵に、待機モーションを付与できます。下記のモーション一覧から
+ *   好きなものを利用することができます。:
+ *    walk(前進)  wait(待機)  chant(詠唱)  guard(防御)  damage(ダメージ)
+ *    evade(回避)  thrust(突き) swing(振り)  missile(飛び道具)  skill(スキル)
+ *    spell(魔法)  item(アイテム)  escape(逃げる)  victory（勝利)  dying(瀕死)
+ *    abnormal(状態異常)  sleep(睡眠)   dead(戦闘不能)
+ *   * 注: 複数のタグを挿入すると、モーションのランダムプール内に格納されること
+ *   になります。
+ *
+ *  下記のタグでも同様に、モーション一覧から x に入るものを選んでください。
+ * 
+ *   <Sideview Damage Motion: x>
+ *   サイドビューの敵に、ダメージモーションを付与できます。
+ *
+ *   <Sideview Evade Motion: x>
+ *   サイドビューの敵に、回避モーションを付与できます。
+ *
+ *   <Sideview Escape Motion: x>
+ *   サイドビューの敵に、逃避モーションを付与できます。
+ *
+ *   <Sideview Guard Motion: x>
+ *   サイドビューの敵に、防御モーションを付与できます。
+ *
+ *   <Sideview Abnormal Motion: x>
+ *   サイドビューの敵に、状態異常モーションを付与できます。
+ *
+ *   <Sideview Sleep Motion: x>
+ *   サイドビューの敵に、睡眠モーションを付与できます。
+ *
+ *   <Sideview Dying Motion: x>
+ *   サイドビューの敵に、瀕死モーションを付与できます。
+ *
+ *   <Sideview Dead Motion: x>
+ *   サイドビューの敵に、死亡(戦闘不能)モーションを付与できます。
+ *
+ *   --- 影 ---
+ *
+ *   <Sideview Show Shadow>
+ *   これを挿入することで、サイドビュースプライトに影を付けることができます。
+ *   デフォルト設定は「Battle Engine Core」の 'Show Shadows'に依拠しています。
+ *
+ *   <Sideview Hide Shadow>
+ *   これを挿入することで、サイドビュースプライトの影を隠すことができます。
+ *   デフォルト設定は「Battle Engine Core」の 'Show Shadows'に依拠しています。
+ *
+ *   <Sideview Shadow Width: x%>
+ *   影の幅をデフォルトから x% だけ大きく/小さくすることができます。
+ *   デフォルトサイズは「img/system」フォルダから参照されたものです。
+ *
+ *   <Sideview Shadow Height: x%>
+ *   影の高さをデフォルトから x% だけ大きく/小さくすることができます。
+ *   デフォルトサイズは「img/system」フォルダから参照されたものです。
+ *
+ * ステートのタグ:
+ *
+ *   <Hide Sideview Weapon>
+ *   サイドビュー時の武器エフェクトを隠すことができます。
+ *   アタックモーションは、何も持っていなかった時のものに戻り、
+ *   アタックアニメーションはデフォルトのものに戻ります。
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
  *
  * Version 1.04:
  * - Fixed a bug with Sprite Smoothing disabled on Shadows.
@@ -743,6 +1394,7 @@ Yanfly.SVE = Yanfly.SVE || {};
  */
 //=============================================================================
 
+
 if (Imported.YEP_BattleEngineCore) {
 
 //=============================================================================
@@ -756,12 +1408,9 @@ Yanfly.Param.SVEAnchorX = Number(Yanfly.Parameters['Anchor X']);
 Yanfly.Param.SVEAnchorY = Number(Yanfly.Parameters['Anchor Y']);
 Yanfly.Param.SVESmoothing = eval(String(Yanfly.Parameters['Sprite Smoothing']));
 Yanfly.Param.SVEWidth = String(Yanfly.Parameters['Sprite Width']);
-Yanfly.Param.SVEWidth = Yanfly.Param.SVEWidth.toLowerCase();
 Yanfly.Param.SVEHeight = String(Yanfly.Parameters['Sprite Height']);
-Yanfly.Param.SVEHeight = Yanfly.Param.SVEHeight.toLowerCase();
 Yanfly.Param.SVECollapse = eval(String(Yanfly.Parameters['Collapse']));
 Yanfly.Param.SVEFrameSpeed = Number(Yanfly.Parameters['Frame Speed']);
-Yanfly.Param.SVEOverlay = eval(String(Yanfly.Parameters['Show State Overlay']));
 
 Yanfly.Param.SVEBreathing = Number(Yanfly.Parameters['Enable Breathing']);
 Yanfly.Param.SVEBreathSpeed = Number(Yanfly.Parameters['Breathing Speed']);
@@ -851,7 +1500,6 @@ DataManager.processSVENotetags1 = function(group) {
     obj.sideviewFloatSpeed = Yanfly.Param.SVEFloatSpeed;
     obj.sideviewFloatRate = Yanfly.Param.SVEFloatRate;
     obj.sideviewFloatHeight = Yanfly.Param.SVEFloatHeight;
-    obj.sideviewStateOverlay = Yanfly.Param.SVEOverlay;
 
 		for (var i = 0; i < notedata.length; i++) {
 			var line = notedata[i];
@@ -928,10 +1576,6 @@ DataManager.processSVENotetags1 = function(group) {
         obj.sideviewFloatRate = rate;
       } else if (line.match(/<(?:FLOATING HEIGHT):[ ](\d+)>/i)) {
         obj.sideviewFloatHeight = parseInt(RegExp.$1);
-      } else if (line.match(/<SIDEVIEW SHOW STATE OVERLAY>/i)) {
-        obj.sideviewStateOverlay = true;
-      } else if (line.match(/<SIDEVIEW HIDE STATE OVERLAY>/i)) {
-        obj.sideviewStateOverlay = false;
       }
 		}
     // Breathing
@@ -1007,31 +1651,16 @@ ImageManager.loadSystemSmooth = function(filename, hue) {
 
 Yanfly.SVE.Game_Battler_spriteWidth = Game_Battler.prototype.spriteWidth;
 Game_Battler.prototype.spriteWidth = function() {
-    if (this.isSideviewDimensions('width')) {
-      var value = this.sideviewWidth();
-    } else {
-      var value = Yanfly.SVE.Game_Battler_spriteWidth.call(this);
-    }
-    value *= Math.abs(this.spriteScaleX());
-    return Math.floor(value);
+    var value = Yanfly.SVE.Game_Battler_spriteWidth.call(this);
+    if (this.isEnemy()) value *= Math.abs(this.spriteScaleX());
+    return value;
 };
 
 Yanfly.SVE.Game_Battler_spriteHeight = Game_Battler.prototype.spriteHeight;
 Game_Battler.prototype.spriteHeight = function() {
-    if (this.isSideviewDimensions('height')) {
-      var value = this.sideviewHeight();
-    } else {
-      var value = Yanfly.SVE.Game_Battler_spriteHeight.call(this);
-    }
-    value *= Math.abs(this.spriteScaleY());
-    return Math.floor(value);
-};
-
-Game_Battler.prototype.isSideviewDimensions = function(value) {
-    if (!this.isEnemy()) return false;
-    if (!this.hasSVBattler()) return false;
-    if (value === 'width') return this.sideviewWidth() !== 'auto';
-    if (value === 'height') return this.sideviewHeight() !== 'auto';
+    var value = Yanfly.SVE.Game_Battler_spriteHeight.call(this);
+    if (this.isEnemy()) value *= Math.abs(this.spriteScaleY());
+    return value;
 };
 
 //=============================================================================
@@ -1410,19 +2039,17 @@ Sprite_Enemy.prototype.updateStateSprite = function() {
 };
 
 Sprite_Enemy.prototype.updateSVStateSprite = function() {
-    var height = this._enemy.spriteHeight() * -1;
+    var height = this._mainSprite.height * -1;
     height -= Sprite_StateIcon._iconHeight;
     this._stateIconSprite.y = height;
-    this._stateSprite.y = (this._enemy.spriteHeight() - 64) * -1;
-    this._stateSprite.visible = this._enemy.enemy().sideviewStateOverlay;
+    this._stateSprite.y = 0;
 };
 
 Sprite_Enemy.prototype.updateFloatingStateSprite = function() {
     if (this._enemy && this._enemy.isFloating()) {
       var heightRate = this.addFloatingHeight();
-      var height = this._enemy.spriteHeight();
-      this._stateIconSprite.y += heightRate * height;
-      this._stateSprite.y += heightRate * height;
+      this._stateIconSprite.y += heightRate * this.height;
+      this._stateSprite.y += heightRate * this.height;
     };
 };
 
@@ -1440,9 +2067,7 @@ Sprite_Enemy.prototype.updateBreathing = function() {
       var scaleX = 0;
       var scaleY = 0;
     }
-    var mirror = this.scale.x > 0 ? 1 : -1;
     this.scale.x = this._enemy.spriteScaleX() + scaleX;
-    this.scale.x = Math.abs(this.scale.x) * mirror;
     this.scale.y = this._enemy.spriteScaleY() + scaleY;
 };
 
