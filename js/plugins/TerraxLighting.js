@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.2.3
+// Version: 1.2.4
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -11,7 +11,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.2.3 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.2.4 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -289,7 +289,7 @@ Imported.TerraxLighting = true;
 	     
         	if (args[0] === 'set') { 
 	        	tint_value = args[1];
-	        	tint_target = tint_value;
+	        	Terrax_tint_target = tint_value;
 	        	$gameVariables.setTintValue(tint_value);
         	}  
         	if (args[0] === 'fade') { 
