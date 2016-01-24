@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.2.4
+// Version: 1.2.5
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -11,7 +11,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.2.4 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.2.5 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -106,7 +106,8 @@
  * Speed 10 means it takes 10 seconds to to pass one hour in game (probably to fast)
  * Plugin command 'Daynight hour 16 30' sets the hour to 16:30 hours
  * Each hour has its own color value.
- * Plugin command 'Daynight color 0 #222222' changes 0:00 hours to color value '#222222' 
+ * Plugin command 'Daynight color 0 #222222' changes 0:00 hours to color value '#222222'
+ * You can add time with the plugin command 'Daynight add 8 30' (this adds 8 hours and 30 minutes) 
  *
  * If you want to use the time of day to trigger effects (like turning on lights when it gets dark)
  * you can use the parameters 'Save DaynightHours','Save DaynightMinutes','Save DaynightSeconds'
@@ -313,6 +314,38 @@ Imported.TerraxLighting = true;
 		        }	
 		        $gameVariables.setSpeedDayNightSave(daynightspeed);
 	   		}
+	   		
+	   		if (args[0] === 'add') {   
+		   		var houradd = Number(args[1]); 
+		   		var minuteadd = 0;
+		   		if (args.length > 2) {
+		   			minuteadd = Number(args[2]); 
+	   			}
+	   			
+	   			var daynightminutes = Math.floor(daynighttimer/daynightspeed);
+	   			daynightminutes = daynightminutes + minuteadd;
+	   			if (daynightminutes > 60) {
+		   			daynightminutes = daynightminutes - 60;
+		   			daynightcycle = daynightcycle + 1; 
+	   			}					   			
+	   			daynightcycle = daynightcycle + houradd;
+		   		daynighttimer = daynightminutes * daynightspeed;
+		   		$gameVariables.setDayNightSaveMin(daynightminutes);
+		   		if (daynightsavemin > 0) {
+					$gameVariables.setValue(daynightsavemin, daynightminutes);			
+				}
+	        	if (daynightcycle < 0) {
+		       		daynightcycle = 0;
+				}
+	        	if (daynightcycle >= daynightHoursInDay) {
+		       		daynightcycle = daynightcycle - daynightHoursInDay;
+				}
+				if (daynightsave > 0) {
+					$gameVariables.setValue(daynightsave, daynightcycle);			
+				}
+				$gameVariables.setDayNightSave(daynightcycle);
+	   		}
+	   		
 	   		
 	   		if (args[0] === 'hour') {   
 		   		daynightcycle = Number(args[1]);  
@@ -552,11 +585,11 @@ Imported.TerraxLighting = true;
 		// *********************** TURN SCRIPT ON/OFF *********************
 			if (command === 'light' && args[0] == 'deactivate') {
 			scriptactive = false;	
-			
+			$gameVariables.setScriptActive(false);
 		}
 			if (command === 'light' && args[0] == 'activate') {
 			scriptactive = true;
-			
+			$gameVariables.setScriptActive(true);
 		}	
 						
 
@@ -1219,6 +1252,7 @@ Imported.TerraxLighting = true;
 			if (g>255) { g = 255; }
 		  	color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 		    r2 = r2 - gradrnd;  
+		    if (r2 < 0) r2=0;
   		}
   		
 	  	grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
@@ -1446,6 +1480,12 @@ Imported.TerraxLighting = true;
     	this._Terrax_Lighting_TileArray = value;
 	};	
 	
+	Game_Variables.prototype.valueScriptActive = function() {
+		return this._Terrax_Lighting_ScriptActive || false;
+	};
+	Game_Variables.prototype.setScriptActive = function(value) {
+		this._Terrax_Lighting_ScriptActive = value;
+	};
 	
 	
 	function SaveLightingVariables() {
@@ -1476,6 +1516,7 @@ Imported.TerraxLighting = true;
 			       daynightstop = false;
 				}
 			}
+			scriptactive = $gameVariables.valueScriptActive();
 			playercolor = $gameVariables.valuePlayerColorSave();
 			playerflicker = $gameVariables.valueFireSave();
 			playerflashlight = $gameVariables.valueFlashLightSave();

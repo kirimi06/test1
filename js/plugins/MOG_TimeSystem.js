@@ -1,4 +1,4 @@
-//=============================================================================
+﻿//=============================================================================
 // MOG_TimeSystem.js
 //=============================================================================
 
@@ -1401,7 +1401,7 @@ Window_Time_Status.prototype.need_fade = function() {
 //==============================
 Window_Time_Status.prototype.draw_time_contents = function() {
    var x = this.width - 130;
-   var y = 26;
+   var y = 23;
    this.contents.drawText(Moghunter.time_word, 0, 0, 90,32);
    if (this.pm_mode) {var apm = " am";if ($gameSystem.hour() >= 12) {var apm = " pm"};
 	   this.contents.drawText($gameSystem.hour_pm() + ":" +  $gameSystem.minute().padZero(2) + apm, x, 0, 90,32,"right");  
@@ -1431,5 +1431,6 @@ Window_Time_Status.prototype.draw_time_contents = function() {
 	   this.contents.drawText($gameSystem.season_name(), x, y * 5, 90,32,"right");
 	   this.contents.drawText(Moghunter.play_time_word, 0, y * 6, 90,32);
 	   this.contents.drawText($gameSystem.playtimeText(), x, y * 6, 90,32,"right");
+           this.contents.drawText($gameMap.displayName(), x, y * 7, 90,32,"right");
    };
 };
