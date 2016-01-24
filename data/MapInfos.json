@@ -15,5 +15,5 @@ null,
 {"id":13,"expanded":false,"name":"客室2","order":7,"parentId":4,"scrollX":479.5,"scrollY":324},
 null,
 null,
-{"id":16,"expanded":false,"name":"畑：1","order":14,"parentId":8,"scrollX":832,"scrollY":640}
+{"id":16,"expanded":false,"name":"畑：1","order":14,"parentId":0,"scrollX":832,"scrollY":640}
 ]
