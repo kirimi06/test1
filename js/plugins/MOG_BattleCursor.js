@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.2) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -48,7 +48,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cursor (v1.1) +++
+ * +++ MOG - Battle Cursor (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -73,6 +73,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.2) - Correção de não selecionar o alvo no modo "All Allies (Dead)"
  * (v1.1) - Correção na definição Offset das Tags.
  *        - Melhoria na codificação.
  */
@@ -565,6 +566,7 @@ var _alias_mog_bcursor_wactor_processTouch = Window_BattleActor.prototype.proces
 Window_BattleActor.prototype.processTouch = function() {
 	if (!this._window_mode && this.active) {
 		if (TouchInput.isTriggered() && $gameTemp._arrowAllTargets[1]) {this.processOk();};
+		if (Input.isTriggered("ok") && $gameTemp._arrowAllTargets[1]) {this.processOk();};
 		if (TouchInput.isCancelled()) {this.processCancel()};
 	    return;
 	};
@@ -686,6 +688,7 @@ var _alias_mog_bcursor_wenmy_processTouch = Window_BattleEnemy.prototype.process
 Window_BattleEnemy.prototype.processTouch = function() {
 	if (!this._window_mode && this.active) {
 		if (TouchInput.isTriggered() && $gameTemp._arrowAllTargets[0]) {this.processOk();};
+		if (Input.isTriggered("ok") && $gameTemp._arrowAllTargets[0]) {this.processOk();};
 		if (TouchInput.isCancelled()) {this.processCancel()};
 	    return;
 	};

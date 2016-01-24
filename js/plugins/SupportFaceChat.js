@@ -1,5 +1,5 @@
 //=============================================================================
-// 【フェイスチャット補助】　Version: 1.12
+// 【フェイスチャット補助】　Version: 1.15
 //
 // ここからリスポーン: http://respawnfromhere.blog.fc2.com/
 // Twitter: https://twitter.com/ibakip
@@ -42,10 +42,15 @@
  *　空文字の場合は高さを自動取得して計算。
  * @default
  *
+ * @param ChangeTone
+ * @desc FaceChat Ready実行時に画面の色調変更を行うか指定。
+ * true:行う false:行わない
+ * @default true
+ *
  * @help
  *
  * //=============================================================================
- * // 【フェイスチャット補助】　Version: 1.12
+ * // 【フェイスチャット補助】　Version: 1.15
  * //
  * // ここからリスポーン: http://respawnfromhere.blog.fc2.com/
  * // Twitter: https://twitter.com/ibakip
@@ -69,10 +74,8 @@
  * 【更新履歴】
  *  ○ Ver 1.01 （2015/11/21）
  *   ・チャットが空の時にもウィンドウが表示される問題を修正
- *
  *  ○ Ver 1.02 （2015/11/21）
  *   ・ウィンドウに余白ができるとレイアウトが崩れる問題を修正
- *
  *  ○ Ver 1.10 (2015/11/26)
  *   ・フキダシアイコン描画の機能追加
  *   ・サイドビューステート描画の機能追加
@@ -80,7 +83,6 @@
  *   ・顔グラ相対移動の機能追加
  *   ・ゲームパッドの操作に対応
  *   ・再起動すると追加していたチャットが消える問題を修正
- *
  *  ○ Ver 1.11 (2015/12/10)
  *   ・フキダシアイコンとサイドビューステートが
  *     正しく描画されない問題を修正
@@ -88,9 +90,16 @@
  *     開くのが一瞬見えてしまう問題を修正
  *   ・FaceChat ChangeFaceでエラーが出る問題を修正
  *   ・他プラグインとの競合対策を追加
- *
  *  ○ Ver 1.12 (2015/12/31)
  *   ・動作の軽量化
+ *  ○ Ver 1.13 (2016/1/2)
+ *   ・いくつかの問題点を修正
+ *  ○ Ver 1.14 (2016/1/3)
+ *   ・FaceChat Ready実行時に色調変化を行うかを指定できる
+ *     プラグインパラメータを追加
+ *   ・コンテニュー時にチャット起動が正しく行えなくなるバグを修正
+ *  ○ Ver 1.15 (2016/1/23)
+ *   ・いくつかの問題点を修正
  *
  */
  //=============================================================================
@@ -115,6 +124,7 @@ var draw_State = false;
 var Face = [ [10,0], [11,0], [12,0], [13,0], [14,0], [15,0], [16,0], [17,0] ];
 var BalloonAndState = [ [18,0], [19,0], [20,0], [21,0], [22,0], [23,0], [24,0], [25,0] ];
 var SFC_cache = {};
+var doFaceChatReady = false;
 Input.keyMapper[67] = 'FaceChat';
 Input.gamepadMapper[8] = 'FaceChat';
 
@@ -128,6 +138,7 @@ Input.gamepadMapper[8] = 'FaceChat';
  var CIW_icon   = Math.floor(Number(Parameters['IconNumber'])) || 0;
  var C_color = Math.floor(Number(Parameters['[C]color'])) || 0;
  var SFC_MsgWinHeight = Math.floor(Number(Parameters['MsgWindowHeight'])) || Window_Base.prototype.fittingHeight(4);
+ var ChangeTone = !Parameters['ChangeTone'].match(/^\s*(false)\s*$/i);
 //----------------------------------------------------------------------------
 
 
@@ -155,7 +166,9 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
                     currentDisplayID = 0;
                 }
             }
-            currentFaceChatID = FaceChatArray[currentDisplayID][0];
+            if(FaceChatArray.length > 0){
+                currentFaceChatID = FaceChatArray[currentDisplayID][0];
+            }
         }
     }
     if (command === 'FaceChatWindow'){
@@ -174,20 +187,21 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     if ( command === 'FaceChat' ){
         switch (args[0]) {
             case 'Ready':
-                var tone = [-120,-120,-120,128];
-                var frame = 30;
-                var wait = true;
-                $gameScreen.startTint( tone , frame );
-                if ( wait ) {
-                    this.wait( frame );
+                if(ChangeTone){
+                    currentTone = [$gameScreen.tone()[0],$gameScreen.tone()[1],$gameScreen.tone()[2],$gameScreen.tone()[3]];
+                    var tone = [currentTone[0]-120,currentTone[1]-120,currentTone[2]-120,currentTone[3]];
+                    var frame = 30;
+                    var wait = true;
+                    $gameScreen.startTint( tone , frame );
+                    if ( wait ) {
+                        this.wait( frame );
+                    }
                 }
+                doFaceChatReady = true;
                 showTitle = true;
                 break;
             case 'Finish':
                 showTitle = false;
-                var tone = [0,0,0,0];
-                var frame = 30;
-                var wait = true;
                 for(var i=0;i<BalloonAndState.length;i++){
                     Face[i][1] = 0;
                     BalloonAndState[i][1] = 0;
@@ -195,10 +209,15 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
                 for(var loop=25;loop>=10;loop--){
                     $gameScreen.erasePicture(loop);
                 }
-                $gameScreen.startTint( tone , frame );
-                if ( wait ) {
-                    this.wait( frame );
+                if(ChangeTone && doFaceChatReady){
+                    var frame = 30;
+                    var wait = true;
+                    $gameScreen.startTint( currentTone , frame );
+                    if ( wait ) {
+                        this.wait( frame );
+                    }
                 }
+                doFaceChatReady = false;
                 break;
             case 'addFace':
                 draw_Face = true;
@@ -503,6 +522,8 @@ var _DataManager_makeSaveContents = DataManager.makeSaveContents;
 DataManager.makeSaveContents = function() {
     var contents = _DataManager_makeSaveContents();
     contents.FaceChatArray = FaceChatArray;
+    contents.currentDisplayID = currentDisplayID;
+    contents.currentFaceChatID = currentFaceChatID;
     return contents;
 };
 
@@ -510,6 +531,8 @@ var _DataManager_extractSaveContents = DataManager.extractSaveContents;
 DataManager.extractSaveContents = function(contents) {
     _DataManager_extractSaveContents(contents);
     FaceChatArray = contents.FaceChatArray;
+    currentDisplayID = contents.currentDisplayID;
+    currentFaceChatID = contents.currentFaceChatID;
 };
 
 
@@ -530,7 +553,6 @@ Window_ChatTitle.prototype.initialize = function(x, y, width, height) {
 };
 
 Window_ChatTitle.prototype.refresh = function(){
-    console.log(this.visible);
     if(this.visible){
         var y = (this.contentsHeight() - Window_Base.prototype.lineHeight() ) / 2;
         this.contents.fillRect(0, 0, this.contentsWidth(), this.contentsHeight(), '#0c0c0c' );
@@ -700,9 +722,6 @@ Scene_Map.prototype.createAllWindows = function() {
 var SFC_scene_map_update = Scene_Map.prototype.update;
 Scene_Map.prototype.update = function() {
     SFC_scene_map_update.call(this);
-
-console.log(currentFaceChatID);
-
     if( showTitle && !this.titleWindowOpened ){
         this.ChatTitleWindow.open();
         this.ChatTitleWindow.visible = true;

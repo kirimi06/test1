@@ -2,7 +2,7 @@
 // MOG_OugiAnimation.js
 //=============================================================================
 /*:
- * @plugindesc (v1.0) Ativa uma animação antes de executar a ação.
+ * @plugindesc (v1.2) Ativa uma animação antes de executar a ação.
  * @author Moghunter
  *
  * @param For Enemies
@@ -11,7 +11,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Ougi Animation (v1.0) +++
+ * +++ MOG - Ougi Animation (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -44,6 +44,11 @@
  *  Ougi Animation: _Angry
  *  Ougi Animation: _Happy
  *  ...
+ * ============================================================================= 
+ * HISTÓRICOS
+ * =============================================================================
+ * (v1.2) - Correção de travar a tela quando não se tem a imagem. 
+ * (v1.1) - Melhoria na codificação. 
  */
 
 //=============================================================================
@@ -205,5 +210,6 @@ Scene_Battle.prototype.updateOugi = function() {
   if (!this._spriteOugi) {this.createOugi();return};
   if (!this._spriteOugi[2] && this._spriteOugi[0].bitmap.isReady()) {this.centerOugi();}
   this.updateOugiAnimation();
-  if (!$gameTemp._ougiData[0] || this._spriteOugi[1].height === 0) {this.ougiTerminate()};
+  if (!$gameTemp._ougiData[0] || this._spriteOugi[0].height === 0 || this._spriteOugi[1].height === 0) {
+	  this.ougiTerminate()};
 };

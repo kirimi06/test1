@@ -2,7 +2,7 @@
 // MOG_TimeSystem_Hud.js
 //=============================================================================
 /*:
- * @plugindesc (v1.0) Adiciona uma HUD apresentando o tempo. 
+ * @plugindesc (v1.1) Adiciona uma HUD apresentando o tempo. 
  * @author Moghunter
  *
  * @param X-axis
@@ -115,7 +115,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG Time System Hud (v1.0) +++
+ * +++ MOG Time System Hud (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -129,6 +129,11 @@
  * TimeHud_D.png
  * TimeHud_E.png  
  * 
+ * ============================================================================
+ * HISTÓRICO
+ * ============================================================================
+ * (v1.1) Correção de piscar a hud no modo ocultar a hud.
+ *        
  */
  
 //=============================================================================
@@ -520,6 +525,7 @@ SpriteTimeEngine.prototype.update = function() {
 // * Update visible
 //==============================
 SpriteTimeEngine.prototype.update_visible = function() {
+	this.visible = $gameSystem._time_window_visible;
 	if (this.is_hud_visible()) {this.opacity += 10}	 
 	else {this.opacity -= 10};
 };

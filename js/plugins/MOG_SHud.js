@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Apresenta uma Hud com a quantidade hp em cima do personagem.
+ * @plugindesc (v1.1) Apresenta uma Hud com a quantidade hp em cima do personagem.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -24,7 +24,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG S Hud (v1.0) +++
+ * +++ MOG S Hud (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -40,6 +40,11 @@
  * hide_s_hud
  * show_s_hud
  * 
+ * ============================================================================
+ * HISTÓRICO
+ * ============================================================================
+ * (v1.1) - Correção de piscar a hud no modo ocultar a hud.
+ *        
  */
 
 //=============================================================================
@@ -224,6 +229,7 @@ S_Hud.prototype.update_meter = function() {
 // * Update visible
 //==============================
 S_Hud.prototype.update_visible = function() {
+	this.visible = $gameSystem._shud_visible;
 	if (this.is_hud_visible()) {this.opacity += 10}	 
 	else {this.opacity -= 10};
 };

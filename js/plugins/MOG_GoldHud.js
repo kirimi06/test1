@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Apresenta uma Hud com a quantidade de dinheiro.
+ * @plugindesc (v1.2) Apresenta uma Hud com a quantidade de dinheiro.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -28,7 +28,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Gold Hud (v1.0) +++
+ * +++ MOG Gold Hud (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -47,7 +47,9 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
- * v1.1 - Correção na posição da HUD através do setup.
+ * (v1.2) - Correção de piscar a hud no modo ocultar a hud.
+ * (v1.1) - Correção na posição da HUD através do setup.
+ *        
  */
 
 //=============================================================================
@@ -256,6 +258,7 @@ Gold_Hud.prototype.update_number = function() {
 // * Update visible
 //==============================
 Gold_Hud.prototype.update_visible = function() {
+	this.visible = $gameSystem._ghud_visible;
 	if (this.is_hud_visible()) {this.opacity += 10}	 
 	else {this.opacity -= 10};
 };

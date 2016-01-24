@@ -11,7 +11,7 @@ Yanfly.Message = Yanfly.Message || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.08 Adds more features to the Message Window to customized
+ * @plugindesc v1.09 Adds more features to the Message Window to customized
  * the way your messages appear and functions.
  * @author Yanfly Engine Plugins
  *
@@ -33,10 +33,14 @@ Yanfly.Message = Yanfly.Message || {};
  * Default: Window_Base._faceWidth + 24
  * @default Window_Base._faceWidth + 24
  *
- * @param Fast Forward
- * @desc Using this will enable a fast forward button to skip forward
- * quickly. If you don't wish to use this, use 'false' instead.
- * @default Input.isPressed('pagedown')
+ * @param Fast Forward Key
+ * @desc This is the key used for fast forwarding.
+ * @default pagedown
+ *
+ * @param Enable Fast Forward
+ * @desc Enable fast forward button for your messages by default?
+ * NO - false     YES - true
+ * @default true
  *
  * @param Word Wrapping
  * @desc Use this to enable or disable word wrapping by default.
@@ -257,29 +261,40 @@ Yanfly.Message = Yanfly.Message || {};
  * to change various aspects about the Message system.
  *
  * Plugin Comand
- *   MessageRows 6          = Changes the Message Rows displayed to 6. If you
- *                            are using continuous Show Text events, this will
- *                            continue displaying the following lines's texts
- *                            until it hits the row limit. Anything after that
- *                            is cut off until the next message starts to avoid
- *                            accidental overlap.
+ *   MessageRows 6
+ *   - Changes the Message Rows displayed to 6. If you are using continuous
+ *   Show Text events, this will continue displaying the following lines's
+ *   texts until it hits the row limit. Anything after that is cut off until
+ *   the next message starts to avoid accidental overlap.
  *
- *   MessageWidth 400       = Changes the Message Window Width to 400 pixels.
- *                            This will cut off any words that are shown too
- *                            far to the right so adjust accordingly!
+ *   MessageWidth 400
+ *   - Changes the Message Window Width to 400 pixels. This will cut off any
+ *   words that are shown too far to the right so adjust accordingly!
  *
- *   EnableWordWrap         = Enables wordwrapping. If a word extends past the
- *                            window size, it will automatically move onto the
- *                            next line. Keep in mind, you will need to use
- *                            \br to perform line breaks.
+ *   EnableWordWrap
+ *   - Enables wordwrapping. If a word extends past the window size, it will
+ *   automatically move onto the next line. Keep in mind, you will need to use
+ *   \br to perform line breaks.
  *
- *   DisableWordWrap        = This disables wordwrapping. Line breaks will be
- *                            automatic at points where a new line is started
- *                            in the editor.
+ *   DisableWordWrap
+ *   - This disables wordwrapping. Line breaks will be automatic at points
+ *   where a new line is started in the editor.
+ *
+ *   EnableFastForward
+ *   - Enables Fast Forward key from working with messages.
+ *
+ *   DisableFastForward
+ *   - Disables Fast Forward key from working with messages.
  *
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.09:
+ * - Replaced 'Fast Forward' parameter with the 'Fast Forward Key' parameter
+ * and 'Enable Fast Forward' parameter. Two new Plugin Commands are added. They
+ * are 'EnableFastForward' and 'DisableFastForward' for control over when fast
+ * forwarding is allowed as to not cause timed cutscenes to desynch.
  *
  * Version 1.08:
  * - Fixed a bug regarding Input Number positioning when the Message Window's
@@ -328,15 +343,18 @@ Yanfly.Param = Yanfly.Param || {};
 Yanfly.Param.MSGDefaultRows = String(Yanfly.Parameters['Default Rows']);
 Yanfly.Param.MSGDefaultWidth = String(Yanfly.Parameters['Default Width']);
 Yanfly.Param.MSGFaceIndent = String(Yanfly.Parameters['Face Indent']);
-Yanfly.Param.MSGFastForward = String(Yanfly.Parameters['Fast Forward']);
+Yanfly.Param.MSGFastForwardKey = String(Yanfly.Parameters['Fast Forward Key']);
+Yanfly.Param.MSGFFOn = eval(String(Yanfly.Parameters['Enable Fast Forward']));
 Yanfly.Param.MSGWordWrap = String(Yanfly.Parameters['Word Wrapping']);
 Yanfly.Param.MSGDescWrap = String(Yanfly.Parameters['Description Wrap']);
 Yanfly.Param.MSGWrapSpace = eval(String(Yanfly.Parameters['Word Wrap Space']));
+
 Yanfly.Param.MSGFontName = String(Yanfly.Parameters['Font Name']);
 Yanfly.Param.MSGFontSize = Number(Yanfly.Parameters['Font Size']);
 Yanfly.Param.MSGFontSizeChange = String(Yanfly.Parameters['Font Size Change']);
 Yanfly.Param.MSGFontChangeMax = String(Yanfly.Parameters['Font Changed Max']);
 Yanfly.Param.MSGFontChangeMin = String(Yanfly.Parameters['Font Changed Min']);
+
 Yanfly.Param.MSGNameBoxBufferX = String(Yanfly.Parameters['Name Box Buffer X']);
 Yanfly.Param.MSGNameBoxBufferY = String(Yanfly.Parameters['Name Box Buffer Y']);
 Yanfly.Param.MSGNameBoxPadding = String(Yanfly.Parameters['Name Box Padding']);
@@ -372,6 +390,7 @@ Game_System.prototype.initialize = function() {
 
 Game_System.prototype.initMessageSystem = function() {
 		this._wordWrap = eval(Yanfly.Param.MSGWordWrap);
+    this._fastForward = Yanfly.Param.MSGFFOn;
 };
 
 Game_System.prototype.messageRows = function() {
@@ -391,6 +410,16 @@ Game_System.prototype.wordWrap = function() {
 Game_System.prototype.setWordWrap = function(state) {
 		if (this._wordWrap === undefined) this.initMessageSystem();
 		this._wordWrap = state;
+};
+
+Game_System.prototype.isFastFowardEnabled = function() {
+    if (this._fastForward === undefined) this.initMessageSystem();
+    return this._fastForward;
+};
+
+Game_System.prototype.setFastFoward = function(state) {
+    if (this._fastForward === undefined) this.initMessageSystem();
+    this._fastForward = state;
 };
 
 //=============================================================================
@@ -414,6 +443,8 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 		if (command === 'MessageWidth') $gameSystem._messageWidth = args[0];
 		if (command === 'EnableWordWrap') $gameSystem.setWordWrap(true);
 		if (command === 'DisableWordWrap') $gameSystem.setWordWrap(false);
+    if (command === 'EnableFastForward') $gameSystem.setFastFoward(true);
+    if (command === 'DisableFastForward') $gameSystem.setFastFoward(false);
 };
 
 Game_Interpreter.prototype.command101 = function() {
@@ -633,7 +664,6 @@ Window_Base.prototype.processEscapeCharacter = function(code, textState) {
         break;
     case 'PY':
         textState.y = this.obtainEscapeParam(textState);
-        break;
         break;
 		default:
       Yanfly.Message.Window_Base_processEscapeCharacter.call(this,
@@ -1004,7 +1034,8 @@ Window_Message.prototype.newLineX = function() {
 };
 
 Window_Message.prototype.isFastForward = function() {
-		return eval(Yanfly.Param.MSGFastForward);
+    if (!$gameSystem.isFastFowardEnabled()) return false;
+		return Input.isPressed(Yanfly.Param.MSGFastForwardKey);
 };
 
 Yanfly.Message.Window_Message_updateInput =

@@ -1,9 +1,9 @@
-﻿//=============================================================================
+//=============================================================================
 // MOG_TimeSystem.js
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Sistema dinámico de tempo. 
+ * @plugindesc (v1.3) Sistema dinámico de tempo. 
  * @author Moghunter
  *
  * @param >> MAIN ===================
@@ -263,7 +263,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Time System (v1.2) +++
+ * +++ MOG Time System (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -343,7 +343,8 @@
  *
  * =============================================================================
  * HISTÓRICO
- * ============================================================================= 
+ * =============================================================================
+ * v1.3 - Correção do parâmetros iniciais e setup do Plugin. 
  * v1.2 - Correção do efeito blinking da janela durante os dialogos.
  *      - Adição de comandos de Plugin de ativar ou desativar o sistema de tempo. 
  *      - Adição de comandos de Plugin de ativar ou desativar a janela de tempo. 
@@ -369,7 +370,7 @@
 	
 	// VARIABLES
 	Moghunter.sec_variableId = Number(Moghunter.parameters['Second Variable ID'] || 10101);
-	Moghunter.min_variableId = Number(Moghunter.parameters['Mininute Variable ID'] || 10102);
+	Moghunter.min_variableId = Number(Moghunter.parameters['Minute Variable ID'] || 10102);
 	Moghunter.hour_variableId = Number(Moghunter.parameters['Hour Variable ID'] || 10);
 	Moghunter.day_variableId = Number(Moghunter.parameters['Day Variable ID'] || 11);
 	Moghunter.day_week_variableId = Number(Moghunter.parameters['Day Week Variable ID'] || 10104);
@@ -637,8 +638,8 @@ Game_System.prototype.setup_variable_tm = function() {
     $gameVariables._data[this._sec_variableId] = 0;
 	$gameVariables._data[this._min_variableId] = Math.min(Math.max(Moghunter.start_minute,0),this.max_time(this._min_variableId) - 1);
 	$gameVariables._data[this._hour_variableId] = Math.min(Math.max(Moghunter.start_hour,0),this.max_time(this._hour_variableId) - 1);
-	$gameVariables._data[this._day_variableId] = Math.min(Math.max(Moghunter.start_day,1),this.max_time(this._month_variableId) - 1);
-	$gameVariables._data[this._month_variableId] = Math.min(Math.max(Moghunter.start_month - 1,0),this.max_time(this._year_variableId) - 1);
+	$gameVariables._data[this._day_variableId] = Math.min(Math.max(Moghunter.start_day,1),this.max_time(this._day_variableId) - 1);
+	$gameVariables._data[this._month_variableId] = Math.min(Math.max(Moghunter.start_month - 1,0),this.max_time(this._month_variableId) - 1);
 	$gameVariables._data[this._year_variableId] = Math.min(Math.max(Moghunter.start_year,0),9999);
 	$gameVariables._data[this._day_week_variableId] = Math.min(Math.max(Moghunter.start_day_week - 1,0),this.max_time(this._day_week_variableId) - 1);
 	$gameVariables._data[this._season_variableId] = Math.min(Math.max(Moghunter.start_season - 1,0),this.max_time(this._season_variableId) - 1);
@@ -1400,21 +1401,19 @@ Window_Time_Status.prototype.need_fade = function() {
 //==============================
 Window_Time_Status.prototype.draw_time_contents = function() {
    var x = this.width - 130;
-   var y = 23;
-   this.contents.drawText(Moghunter.Location, 7, y * 0, 90,32);
-   this.drawText($gameMap. displayName(), x, y * 7, 90, 32, 'right');
-   this.contents.drawText(Moghunter.time_word, 1, 0, 90,32);
+   var y = 26;
+   this.contents.drawText(Moghunter.time_word, 0, 0, 90,32);
    if (this.pm_mode) {var apm = " am";if ($gameSystem.hour() >= 12) {var apm = " pm"};
-	   this.contents.drawText($gameSystem.hour_pm() + ":" +  $gameSystem.minute().padZero(2) + apm, x, 1, 90,32,"right");  
+	   this.contents.drawText($gameSystem.hour_pm() + ":" +  $gameSystem.minute().padZero(2) + apm, x, 0, 90,32,"right");  
    }
    else {
-      this.contents.drawText($gameSystem.hour().padZero(2) + ":" +  $gameSystem.minute().padZero(2), x, 1, 90,32,"right");
+      this.contents.drawText($gameSystem.hour().padZero(2) + ":" +  $gameSystem.minute().padZero(2), x, 0, 90,32,"right");
    };   
    if (this._mode === 1) {
-       this.contents.drawText(Moghunter.day_word, 1, y, 90,32);
+       this.contents.drawText(Moghunter.day_word, 0, y, 90,32);
 	   var text = $gameSystem.day_week_name() + " " + $gameSystem.month().padZero(2) + "/" + $gameSystem.day().padZero(2);
 	   this.contents.drawText(text, x - 30, y, 120,32,"right");
-	   this.contents.drawText(Moghunter.year_word, 1, y * 2, 90,32);
+	   this.contents.drawText(Moghunter.year_word, 0, y * 2, 90,32);
 	   var text = $gameSystem.year() + " " + $gameSystem.season_name();
 	   this.contents.drawText(text, x - 30, y * 2, 120,32,"right");
    }

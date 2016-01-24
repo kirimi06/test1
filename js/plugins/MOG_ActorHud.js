@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona uma Hud com os parâmetros do personagem.
+ * @plugindesc (v1.1) Adiciona uma Hud com os parâmetros do personagem.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -263,7 +263,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Actor Hud (v1.0) +++
+ * +++ MOG Actor Hud (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -298,6 +298,11 @@
  * hide_actor_hud
  * show_actor_hud
  * 
+ * ============================================================================
+ * HISTÓRICO
+ * ============================================================================
+ * (v1.1) - Correção de piscar a hud no modo ocultar a hud.
+ *        
  */
 
 //=============================================================================
@@ -523,7 +528,7 @@ Actor_Hud.prototype.initialize = function(hud_id) {
 	this._hud_size = [-1,-1,-1,-1];
     this.base_parameter_clear();
     this.load_img();
-	this.opacity = 255;
+	this.opacity = $gameSystem._ahud_visible ? 255 : 0;
 };
 
 //==============================
@@ -689,6 +694,7 @@ Actor_Hud.prototype.update_sprites = function() {
 // * Update visible
 //==============================
 Actor_Hud.prototype.update_visible = function() {
+	this.visible = $gameSystem._ahud_visible;
 	if (this.is_hud_visible()) {this.opacity += 10}	 
 	else {this.opacity -= 10};
 };

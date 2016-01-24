@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.6) Adiciona a animação de aura e partículas nos inimigos.
+ * @plugindesc (v1.7) Adiciona a animação de aura e partículas nos inimigos.
  * @author Moghunter
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Aura Effects (v1.6) +++
+ * +++ MOG - Aura Effects (v1.7) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -49,6 +49,8 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.7) Correção da rotação não aconpanhar o battler.
+ *        Posição da aura atrás do battler.
  * (v1.6) Correção do Crash relativo as Notetags.
  * (v1.5) Melhoria na codificação.
  * (v1.4) Correção de não atualizar os efeitos no efeito transformação.
@@ -109,11 +111,14 @@ Game_Battler.prototype.notetags = function() {
 //==============================
 var _alias_mog_aura_effect_spriteseBattle_createEnemies = Spriteset_Battle.prototype.createEnemies;
 Spriteset_Battle.prototype.createEnemies = function() {
-	_alias_mog_aura_effect_spriteseBattle_createEnemies.call(this)
 	this._aura_plane = [];
 	this._aura_plane_b = [];
-	for (var i = 0; i < $gameTroop.members().length; i++) {this._aura_plane[i] = new Aura_PlaneA(),this._battleField.addChild(this._aura_plane[i]);
-	                                                        this._aura_plane_b[i] = new Aura_PlaneB(),this._battleField.addChild(this._aura_plane_b[i])};
+	for (var i = 0; i < $gameTroop.members().length; i++) {this._aura_plane[i] = new Aura_PlaneA(),this._battleField.addChild(this._aura_plane[i])};
+															
+	
+	_alias_mog_aura_effect_spriteseBattle_createEnemies.call(this)
+	for (var i = 0; i < $gameTroop.members().length; i++) {this._aura_plane_b[i] = new Aura_PlaneB(),this._battleField.addChild(this._aura_plane_b[i])};															
+															
 	for (var i = 0; i < this._enemySprites.length; i++) {
 		 this._enemySprites[i].add_aura_plane(this._aura_plane[i],0);
 		 this._enemySprites[i].add_aura_plane(this._aura_plane_b[i],1);
@@ -200,6 +205,7 @@ Aura_PlaneA.prototype.loadFiles = function(sprite) {
 		this.bitmap = sprite.bitmap;
 	};	
 	if (sprite._battler.isAlive()) {this.visible = true;};
+	this._SprBat = this.aura_effect[1] === "battler" ? true : false;
 };
 
 //==============================
@@ -229,6 +235,7 @@ Aura_PlaneA.prototype.update_aura = function(sprite) {
 	if (!this._aura_data[1]) {this.set_data(sprite)};
 	this.x = sprite.x;
 	this.y = sprite.y - this._aura_data[3]
+	if (this._SprBat) {this.rotation = sprite.rotation};
 	if (sprite._battler.isDead()) {this.opacity -= 5}
 	else {
 	  if(this.aura_effect[0] == 0) {this.update_zoom_effect_a();}

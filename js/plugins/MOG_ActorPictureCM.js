@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Apresenta a imagem do personagem durante a seleção de comandos.
+ * @plugindesc (v1.3) Apresenta a imagem do personagem durante a seleção de comandos.
  * @author Moghunter
  *
  * @param CM 1 Visible
@@ -32,7 +32,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Actor Picture CM (v1.2) +++
+ * +++ MOG - Actor Picture CM (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -62,6 +62,7 @@
  * ============================================================================= 
  * HISTÓRICOS
  * =============================================================================
+ * (v1.3) - Melhoria na codificação.
  * (v1.2) - Compatibilidade com MOG Battle Cursor no modo Front View.
  * (v1.1) - Adicionado a imagem secundária do personagem.
  */
@@ -267,8 +268,9 @@ Scene_Battle.prototype.update = function() {
 //==============================
 Scene_Battle.prototype.sprite_actor_cm_visible = function() {
 	if (!BattleManager.actor()) {return false};
-	if(this._actorWindow.active) {return false};
-	if(this._enemyWindow.active) {return false};
-	if(this._partyCommandWindow.active) {return false};
+	if (this._actorWindow.active) {return false};
+	if (this._enemyWindow.active) {return false};
+	if (this._partyCommandWindow.active) {return false};
+	if (!BattleManager.isInputting()) {return false};
 	return true;
 };
