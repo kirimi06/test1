@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.2.5
+// Version: 1.2.6
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -11,7 +11,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.2.5 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.2.6 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -81,6 +81,8 @@
  * Light radius 200 #FFFFFF  (to change the radius and the color)
  * If you want to change the player radius slowly over time (like a dying torch)
  * use the command 'Light radiusgrow 200 #FFFFFF'
+ * You can alter the brightness of the players lightsource by adding: 
+ * 'Light radius 200 #FFFFFF B70' (Brightness values between 0 and 99, 0 is default)
  *
  * To turn on and off lightsources in the game, do the following:
  * Give the lightsource the normal def :  Light 250 #FFFFFF and an extra number 
@@ -183,6 +185,7 @@ Imported.TerraxLighting = true;
 	var oldseconds = 0;
     var playercolor = '#FFFFFF';  
     var playerflicker = false; 
+    var playerbrightness = 0.0;
     var flickerradiusshift = 7;
     var flickercolorshift = 10;
     var playerflashlight = false;
@@ -486,6 +489,18 @@ Imported.TerraxLighting = true;
 					}
 					$gameVariables.setPlayerColor(playercolor);  
 				}
+			    // player brightness
+				if (args.length > 3) {
+					var brightness = 0.0;
+					var b_arg = args[3];
+					if (typeof b_arg != 'undefined') {
+					    var key = b_arg.substring(0,1);
+						if (key == 'b' || key == 'B') {
+							playerbrightness = Number(b_arg.substring(1))/100;
+							$gameVariables.setPlayerBrightness(playerbrightness);	
+						}	
+		    		}
+    			}
 			} 
 			
 			//******************* Light radiusgrow 100 #FFFFFF ************************  	    
@@ -511,7 +526,7 @@ Imported.TerraxLighting = true;
 					//lightgrow_speed = (Math.abs(newradius-player_radius))/500;
 
 				}
-			
+				// player color
 				if (args.length > 2) {
 					playercolor = args[2];
 					var isValidPlayerColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor); 	    
@@ -520,6 +535,19 @@ Imported.TerraxLighting = true;
 					}
 					$gameVariables.setPlayerColor(playercolor);  
 				}
+				// player brightness
+				if (args.length > 3) {
+					var brightness = 0.0;
+					var b_arg = args[3];
+					if (typeof b_arg != 'undefined') {
+					    var key = b_arg.substring(0,1);
+						if (key == 'b' || key == 'B') {
+							playerbrightness = Number(b_arg.substring(1))/100;
+							$gameVariables.setPlayerBrightness(playerbrightness);	
+						}	
+		    		}
+    			}
+				
 			} 
 			
 			// *********************** TURN SPECIFIC LIGHT ON *********************
@@ -769,9 +797,9 @@ Imported.TerraxLighting = true;
 					if (b<0) { b = 0; }						
 		  			var newcolor = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 		  				
-					this._maskBitmap.radialgradientFillRect(x1,y1, 0, player_radius, newcolor, 'black', playerflicker); 
+					this._maskBitmap.radialgradientFillRect(x1,y1, 0, player_radius, newcolor, 'black', playerflicker,playerbrightness); 
 				} else { 	
-					this._maskBitmap.radialgradientFillRect(x1,y1, 20, player_radius, playercolor, 'black', playerflicker); 
+					this._maskBitmap.radialgradientFillRect(x1,y1, 20, player_radius, playercolor, 'black', playerflicker,playerbrightness); 
 				}
 				
 			}
@@ -1412,7 +1440,12 @@ Imported.TerraxLighting = true;
 	Game_Variables.prototype.valuePlayerColorSave = function() {
 		return this._Terrax_Lighting_PlayerColor || '#FFFFFF';
 	};
-	
+	Game_Variables.prototype.setPlayerBrightness = function(value) {
+		this._Terrax_Lighting_PlayerBrightness = value;
+	};
+	Game_Variables.prototype.valuePlayerBrightnessSave = function() {
+		return this._Terrax_Lighting_PlayerBrightness || 0.0;
+	};
 	Game_Variables.prototype.setTintValue = function(value) {
 		this._Terrax_Tint_Value = value;
 	};
@@ -1481,8 +1514,12 @@ Imported.TerraxLighting = true;
 	};	
 	
 	Game_Variables.prototype.valueScriptActive = function() {
+		if (typeof this._Terrax_Lighting_ScriptActive == 'undefined') {
+			this._Terrax_Lighting_ScriptActive = true;
+		}
 		return this._Terrax_Lighting_ScriptActive || false;
 	};
+	
 	Game_Variables.prototype.setScriptActive = function(value) {
 		this._Terrax_Lighting_ScriptActive = value;
 	};
@@ -1531,7 +1568,8 @@ Imported.TerraxLighting = true;
 			flickercolorshift = $gameVariables.valueFireColorshiftSave();
 			tint_value = $gameVariables.valueTintValueSave();
 			Terrax_tint_target = $gameVariables.valueTintValueSave();
-			tilearray = $gameVariables.valueTileArray();				
+			tilearray = $gameVariables.valueTileArray();	
+			playerbrightness = $gameVariables.valuePlayerBrightnessSave();			
 	};
 	
 
