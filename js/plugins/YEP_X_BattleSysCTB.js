@@ -931,6 +931,7 @@ BattleManager.isBattlerCTBReady = function(battler) {
     if (battler.ctbRate() < 1) return false;
     if (battler.isCTBCharging()) return false;
     if (battler.currentAction() && battler.currentAction().item()) {
+      this._subject = battler;
       battler.setupCTBCharge();
       return true;
     }
@@ -960,6 +961,7 @@ BattleManager.selectNextCommand = function() {
     if (this.isCTB()) {
       if (!this.actor()) return this.setCTBPhase();
       this.resetNonPartyActorCTB();
+      this._subject = this.actor();
       this.actor().setupCTBCharge();
       if (this.actor().isCTBCharging()) {
         this.actor().spriteStepBack();

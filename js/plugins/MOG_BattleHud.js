@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v2.2) Permite customizar o layout de batalha.
+ * @plugindesc (v2.3) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -624,7 +624,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v2.2) +++
+ * +++ MOG_BattleHud (v2.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -664,6 +664,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (2.3) - Melhoria na codificação.
  * (2.2) - Adição da opção do alinhamento dos números. 
  *       - Adição do layout Overlay. 
  * (2.1) - Compatibilidade com MOG Battle Cursor no modo Front View. 
@@ -2511,7 +2512,7 @@ Battle_Hud.prototype.refresh_at_meter_flow = function(sprite,value,value_max,typ
 Battle_Hud.prototype.at = function() {
  if (Imported.MOG_ATB) {return this._battler._atb};
  if (Imported.Ellye_ATB) {return this._battler.atb};
- if (Imported.YEP_X_BattleSysATB) {return this._battler._atbSpeed};
+ if (Imported.YEP_X_BattleSysATB) {return Math.abs(this._battler._atbSpeed)};
   return -1;	
 }
 
@@ -2521,7 +2522,7 @@ Battle_Hud.prototype.at = function() {
 Battle_Hud.prototype.max_at = function() {
   if (Imported.MOG_ATB) {return this._battler._max_atb};
   if (Imported.Ellye_ATB) {return this._ellye_max_atb};
-  if (Imported.YEP_X_BattleSysATB) {return BattleManager._atbTarget};
+  if (Imported.YEP_X_BattleSysATB) {return Math.abs(BattleManager._atbTarget)};
   return 1;	
 };
 
@@ -2531,7 +2532,7 @@ Battle_Hud.prototype.max_at = function() {
 Battle_Hud.prototype.cast_at = function() {
   if (Imported.MOG_ATB) {return this._battler._cast_atb[1]};
   if (Imported.Ellye_ATB) {return this._battler.current_cast_atb};
-  if (Imported.YEP_X_BattleSysATB) {return this._battler._atbCharge};
+  if (Imported.YEP_X_BattleSysATB) {return Math.abs(this._battler._atbCharge)};
   return 0;	
 };
 
@@ -2541,7 +2542,7 @@ Battle_Hud.prototype.cast_at = function() {
 Battle_Hud.prototype.cast_max_at = function() {
   if (Imported.MOG_ATB) {return this._battler._cast_atb[2]};
   if (Imported.Ellye_ATB) {return this._battler.target_cast_atb};
-  if (Imported.YEP_X_BattleSysATB) {return BattleManager._atbCharge};
+  if (Imported.YEP_X_BattleSysATB) {return Math.abs(BattleManager._atbCharge)};
   return 1;	
 };
 

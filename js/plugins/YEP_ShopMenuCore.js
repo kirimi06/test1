@@ -11,7 +11,7 @@ Yanfly.Shop = Yanfly.Shop || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Revamps the shop menu appearance and provides the
+ * @plugindesc v1.01a Revamps the shop menu appearance and provides the
  * framework for many new shop options.
  * @author Yanfly Engine Plugins
  *
@@ -167,10 +167,11 @@ Yanfly.Shop = Yanfly.Shop || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.01:
+ * Version 1.01a:
  * - Disabled LEFT/RIGHT movement from the status window while inputting an
  * item quantity to buy.
  * - Added a font reset on the number window upon refresh.
+ * - Fixed a visual error with MP recovery displaying a 0 instead of ---.
  *
  * Version 1.00:
  * - Finished Plugin!
@@ -487,6 +488,7 @@ Window_ShopInfo.prototype.drawItemData = function(i, dx, dy, dw) {
     if (i === 3) {
       effect = this.getEffect(Game_Action.EFFECT_RECOVER_MP);
       value = (effect) ? effect.value2 : '---';
+      if (value === 0) value = '---';
     }
     if (i >= 4) {
       icons = this.getItemIcons(i, icons);

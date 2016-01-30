@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.28d Have more control over the flow of the battle system
+ * @plugindesc v1.29 Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -616,6 +616,10 @@ Yanfly.BEC = Yanfly.BEC || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.29:
+ * - Fixed a bug with the 'else if' action sequences not working in the right
+ * order of sequence conditions.
  *
  * Version 1.28d:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
@@ -2113,17 +2117,7 @@ BattleManager.actionConditionsMet = function(actSeq) {
     var targets = this._targets;
     var action = this._action;
     var item = this._action.item();
-    if (actionName.match(/ELSE[ ]*(.*)/i)) {
-      if (this._conditionFlags.length <= 0) return false;
-      if (this._conditionFlags[ci]) {
-        this._conditionFlags[ci] = false;
-        this._trueFlags[ci] = true;
-      } else if (!this._conditionFlags[ci] && !this._trueFlags[ci]) {
-        this._conditionFlags[ci] = true;
-        this._trueFlags[ci] = true;
-      }
-      return false;
-    } else if (actionName.match(/ELSE[ ]IF[ ](.*)/i)) {
+    if (actionName.match(/ELSE[ ]IF[ ](.*)/i)) {
       if (this._conditionFlags.length <= 0) return false;
       if (this._conditionFlags[ci]) {
         this._conditionFlags[ci] = false;
@@ -2132,6 +2126,16 @@ BattleManager.actionConditionsMet = function(actSeq) {
         var text = String(RegExp.$1);
         this._conditionFlags[ci] = eval('(' + text + ')');
         this._trueFlags[ci] = eval('(' + text + ')');
+      }
+      return false;
+    } else if (actionName.match(/ELSE[ ]*(.*)/i)) {
+      if (this._conditionFlags.length <= 0) return false;
+      if (this._conditionFlags[ci]) {
+        this._conditionFlags[ci] = false;
+        this._trueFlags[ci] = true;
+      } else if (!this._conditionFlags[ci] && !this._trueFlags[ci]) {
+        this._conditionFlags[ci] = true;
+        this._trueFlags[ci] = true;
       }
       return false;
     } else if (actionName.toUpperCase() === 'END') {

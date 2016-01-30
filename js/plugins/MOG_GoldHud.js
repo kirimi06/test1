@@ -3,8 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Apresenta uma Hud com a quantidade de dinheiro.
+ * @plugindesc (v1.3) Apresenta uma Hud com a quantidade de dinheiro.
  * @author Moghunter
+ *
+ * @param Initial Visible
+ * @desc Ativar a Hud no inicio do jogo.
+ * @default true 
  *
  * @param Hud X-Axis
  * @desc Definição da posição X-Axis da Hud.
@@ -28,7 +32,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Gold Hud (v1.2) +++
+ * +++ MOG Gold Hud (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -47,6 +51,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (v1.3) - Adição de ocultar a hud no inicio do jogo. 
  * (v1.2) - Correção de piscar a hud no modo ocultar a hud.
  * (v1.1) - Correção na posição da HUD através do setup.
  *        
@@ -71,6 +76,7 @@
 	Moghunter.ghud_number_pos_x = Number(Moghunter.parameters['Number X-Axis'] || 240);
 	Moghunter.ghud_number_pos_y = Number(Moghunter.parameters['Number Y-Axis'] || 24);
 	Moghunter.ghud_fade_limit = Number(Moghunter.parameters['Fade Max'] || 60);
+	Moghunter.ghud_hudvisible = String(Moghunter.parameters['Initial Visible'] || "true");
 	
 //=============================================================================
 // ** Game_System
@@ -82,7 +88,7 @@
 var _alias_mog_ghud_sys_initialize = Game_System.prototype.initialize;
 Game_System.prototype.initialize = function() {
 	_alias_mog_ghud_sys_initialize.call(this);
-	this._ghud_visible = true;	
+	this._ghud_visible = String(Moghunter.ghud_hudvisible) === "true" ? true : false;
 };
 
 //=============================================================================

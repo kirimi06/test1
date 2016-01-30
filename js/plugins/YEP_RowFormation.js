@@ -11,7 +11,7 @@ Yanfly.Row = Yanfly.Row || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05 Places party members into row formations to give
+ * @plugindesc v1.06 Places party members into row formations to give
  * them distinct advantages based on row location.
  * @author Yanfly Engine Plugins
  *
@@ -66,6 +66,11 @@ Yanfly.Row = Yanfly.Row || {};
  *
  * @param ---Menu Settings---
  * @default
+ *
+ * @param Use Map Sprite
+ * @desc Use map sprite instead of sideview sprite for menu?
+ * NO - false     YES - true
+ * @default false
  *
  * @param Front Buffer Y
  * @desc The sprite buffer Y formula if you're using front view.
@@ -670,6 +675,11 @@ Yanfly.Row = Yanfly.Row || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.06:
+ * - Fixed a bug where Lunatic Mode effects weren't working properly.
+ * - Added a 'Use Map Sprite' plugin parameter for those using battlers that
+ * are too big for the Row changing menu.
+ *
  * Version 1.05:
  * - Fixed a bug with user row changing notetags not working properly.
  *
@@ -725,6 +735,7 @@ Yanfly.Param.RowDefault = Number(Yanfly.Parameters['Default Row']);
 Yanfly.Param.RowDefault = Yanfly.Param.RowDefault.clamp(1, 10);
 Yanfly.Param.RowEnemyLock = eval(String(Yanfly.Parameters['Enemy Row Lock']));
 
+Yanfly.Param.RowMapSprite = eval(String(Yanfly.Parameters['Use Map Sprite']));
 Yanfly.Param.RowFrontBufferY = String(Yanfly.Parameters['Front Buffer Y']);
 Yanfly.Param.RowSideBufferY = String(Yanfly.Parameters['Side Buffer Y']);
 
@@ -1171,6 +1182,7 @@ Game_Battler.prototype.targetRowEval = function(code, user, item) {
     var s = $gameSwitches._data;
     var v = $gameVariables._data;
     eval(code);
+    if (currentRow !== row) this.setRow(row);
     var changed = currentRow !== this._row;
     if ($gameParty.inBattle() && changed) BattleManager.requestRefreshRows();
 };
@@ -1187,6 +1199,7 @@ Game_Battler.prototype.userRowEval = function(code, target, item) {
     var s = $gameSwitches._data;
     var v = $gameVariables._data;
     eval(code);
+    if (currentRow !== row) this.setRow(row);
     var changed = currentRow !== this._row;
     if ($gameParty.inBattle() && changed) BattleManager.requestRefreshRows();
 };
@@ -1715,10 +1728,10 @@ Window_RowFormation.prototype.getActor = function(index) {
 };
 
 Window_RowFormation.prototype.getImage = function(actor) {
-    if ($gameSystem.isSideView()) {
-      var image = ImageManager.loadSvActor(actor.battlerName());
-    } else {
+    if (Yanfly.Param.RowMapSprite) {
       var image = ImageManager.loadCharacter(actor.characterName());
+    } else {
+      var image = ImageManager.loadSvActor(actor.battlerName());
     }
     return image;
 };
@@ -1777,16 +1790,16 @@ Window_RowFormation.prototype.drawDarkRect = function(dx, dy, dw, dh) {
 Window_RowFormation.prototype.drawActorRowPosition = function(actor, index) {
     var img = this.getImage(actor);
     var rect = this.rowRect(index, actor.row());
-    if ($gameSystem.isSideView()) {
-      var buffer = eval(Yanfly.Param.RowSideBufferY);
-      var wx = Math.floor(rect.x + rect.width / 2);
-      var wy = Math.floor(rect.y + rect.height - buffer);
-      this.drawSvActor(actor, wx, wy)
-    } else {
+    if (Yanfly.Param.RowMapSprite) {
       var buffer = eval(Yanfly.Param.RowFrontBufferY);
       var wx = Math.floor(rect.x + rect.width / 2);
       var wy = Math.floor(rect.y + rect.height - buffer);
       this.drawActorCharacter(actor, wx, wy);
+    } else {
+      var buffer = eval(Yanfly.Param.RowSideBufferY);
+      var wx = Math.floor(rect.x + rect.width / 2);
+      var wy = Math.floor(rect.y + rect.height - buffer);
+      this.drawSvActor(actor, wx, wy)
     }
 };
 

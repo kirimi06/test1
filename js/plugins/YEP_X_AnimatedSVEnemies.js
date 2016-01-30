@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.06a (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -713,10 +713,11 @@ Yanfly.SVE = Yanfly.SVE || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06:
+ * Version 1.06a:
  * - Fixed a bug that prevented animated sideview enemies from not mirroring.
  * - Added <Sideview Show State Overlay> and <Sideview Hide State Overlay>
  * notetags to make certain enemies show/hide state overlays.
+ * - Fixed a bug that was caused by motion notetags not retrieved properly.
  *
  * Version 1.05:
  * - Made adjustments to the <Sprite Height: x> notetag to also affect the
@@ -870,7 +871,7 @@ DataManager.processSVENotetags1 = function(group) {
 			} else if (line.match(/<(?:SIDEVIEW IDLE MOTION):[ ](.*)>/i)) {
 				obj.sideviewIdleMotion.push(String(RegExp.$1).toLowerCase());
 			} else if (line.match(/<(?:SIDEVIEW DAMAGE MOTION):[ ](.*)>/i)) {
-				obj.sideviewDmgMotion.push(String(RegExp.$1).toLowerCase());
+				obj.sideviewDmgMotion = String(RegExp.$1).toLowerCase();
 			} else if (line.match(/<(?:SIDEVIEW EVADE MOTION):[ ](.*)>/i)) {
 				obj.sideviewEvadeMotion = String(RegExp.$1).toLowerCase();
 			} else if (line.match(/<(?:SIDEVIEW ESCAPE MOTION):[ ](.*)>/i)) {

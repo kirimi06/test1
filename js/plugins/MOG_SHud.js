@@ -3,8 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Apresenta uma Hud com a quantidade hp em cima do personagem.
+ * @plugindesc (v1.2) Apresenta uma Hud com a quantidade hp em cima do personagem.
  * @author Moghunter
+ *
+ * @param Initial Visible
+ * @desc Ativar a Hud no inicio do jogo.
+ * @default true 
  *
  * @param Hud X-Axis
  * @desc Definição da posição X-Axis da Hud.
@@ -24,7 +28,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG S Hud (v1.1) +++
+ * +++ MOG S Hud (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -43,6 +47,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.2) - Adição de ocultar a hud no inicio do jogo.  
  * (v1.1) - Correção de piscar a hud no modo ocultar a hud.
  *        
  */
@@ -65,6 +70,7 @@
 	Moghunter.shud_pos_y = Number(Moghunter.parameters['Hud Y-Axis'] || 0);
 	Moghunter.shud_meter_x = Number(Moghunter.parameters['Meter X-Axis'] || 3);
 	Moghunter.shud_meter_y = Number(Moghunter.parameters['Meter Y-Axis'] || 2);
+	Moghunter.shud_hudvisible = String(Moghunter.parameters['Initial Visible'] || "true");
 	
 //=============================================================================
 // ** Game_System
@@ -76,7 +82,7 @@
 var _alias_mog_shud_sys_initialize = Game_System.prototype.initialize;
 Game_System.prototype.initialize = function() {
 	_alias_mog_shud_sys_initialize.call(this);
-	this._shud_visible = true;	
+	this._shud_visible = String(Moghunter.shud_hudvisible) === "true" ? true : false;
 };
 
 //=============================================================================

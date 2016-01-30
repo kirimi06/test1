@@ -4,7 +4,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) Adiciona efeitos animados nos battlers.
+ * @plugindesc (v1.4) Adiciona efeitos animados nos battlers.
  * @author Moghunter
  *
  * @param Shake Effect Actor
@@ -21,7 +21,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battler Motion (v1.3) +++
+ * +++ MOG - Battler Motion (v1.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -50,6 +50,7 @@
  * =============================================================================
  * Histórico.
  * =============================================================================
+ * (1.4) Correção da animação de ação em ações forçadas.  
  * (1.3) Correção do Crash relativo as Notetags.  
  * (1.2) - Correção de não atualizar o efeito ao transformar o inimigo.
  *       - Correção do efeito tremer ao reviver o aliado.
@@ -95,23 +96,7 @@ Game_System.prototype.initialize = function() {
 var _alias_mog_bmotion_gaction_prepare = Game_Action.prototype.prepare
 Game_Action.prototype.prepare = function() {	
 	_alias_mog_bmotion_gaction_prepare.call(this);
-	if (this.subject().isEnemy()){this.set_bmotion_action();};
-};
-
-//==============================
-// * Set Bmotion Action
-//==============================
-Game_Action.prototype.set_bmotion_action = function() {	
-    if (!this._item || !this._item.object()) {return};
-	var item_notes = this._item.object().note.split(/[\r\n]+/);
-    item_notes.forEach(function(note) {
-         var note_data = note.split(': ')
-		 if (note_data[0].toLowerCase() == "motion action"){
-			 var par = note_data[1].split(':');
-			   this.subject().clear_action_data();
-               this.subject()._motion_action_data[0] = Number(par[0]);
-         }
-	},this);
+	if (this.subject().isEnemy()){this.subject().set_bmotion_action(this._item)};
 };
 
 //=============================================================================
@@ -160,6 +145,7 @@ Game_Battler.prototype.clear_action_data = function() {
 	this._motion_action_xy = [0,0];
 	this._motion_action_scale = [0,0];
 	this._motion_action_rotation = 0;
+	if (Imported.MOG_EnemyPoses) {this._batPoses[2] = 1};
 };
 
 //==============================
@@ -250,6 +236,31 @@ Game_Battler.prototype.is_swing_mode = function() {
 //==============================
 Game_Battler.prototype.motion_shake = function() {
 	this._motion_damage_duration = 30;
+};
+
+//==============================
+// * Force Action
+//==============================
+var _mog_batmotion_forceAction = Game_Battler.prototype.forceAction;
+Game_Battler.prototype.forceAction = function(skillId, targetIndex) {
+	 _mog_batmotion_forceAction.call(this,skillId, targetIndex);	
+	 if (this._actions[0]) {this.set_bmotion_action(this._actions[0]._item)};
+};
+
+//==============================
+// * Set Bmotion Action
+//==============================
+Game_Battler.prototype.set_bmotion_action = function(item) {	
+    if (!item || !item.object()) {return};
+	var item_notes = item.object().note.split(/[\r\n]+/);
+    item_notes.forEach(function(note) {
+         var note_data = note.split(': ')
+		 if (note_data[0].toLowerCase() == "motion action"){
+			 var par = note_data[1].split(':');
+			   this.clear_action_data();
+               this._motion_action_data[0] = Number(par[0]);
+         }
+	},this);
 };
 
 //=============================================================================

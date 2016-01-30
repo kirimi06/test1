@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Adiciona poses nos battlers dos inimigos.
+ * @plugindesc (v1.2) Adiciona poses nos battlers dos inimigos.
  * @author Moghunter
  *
  * @help  
  * =============================================================================
- * +++ MOG Enemy Poses (v1.1) +++
+ * +++ MOG Enemy Poses (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -35,7 +35,8 @@
  * 
  * =============================================================================
  * HISTÓRICO
- * ============================================================================= 
+ * =============================================================================
+ * (1.2) - Correção da não atualizar as poses no efeito transformação.
  * (1.1) - Correção da pose de forçar a ação.
  */
 
@@ -62,7 +63,7 @@
 var _mog_battlerposes_gbat_initMembers = Game_Battler.prototype.initMembers;
 Game_Battler.prototype.initMembers = function() {
 	_mog_battlerposes_gbat_initMembers.call(this);
-	this._batPoses = [false,0,0,-1];
+	this._batPoses = [false,0,0,-1,false];
 };
 
 //==============================
@@ -97,6 +98,14 @@ Game_Battler.prototype.notetags = function() {
 	if (this.isActor()) {return this.actor().note.split(/[\r\n]+/)};
 };
 
+//==============================
+// * check Bat Poses
+//==============================
+Game_Battler.prototype.checkBatPoses = function() {
+    this.notetags().forEach(function(note) {
+    if (note === "Battler Poses"){this._batPoses[0] = true;};},this);
+};
+
 //=============================================================================
 // ** Game Enemy
 //=============================================================================
@@ -107,7 +116,19 @@ Game_Battler.prototype.notetags = function() {
 var _mog_batposes_setup = Game_Enemy.prototype.setup;
 Game_Enemy.prototype.setup = function(enemyId, x, y) {
 	_mog_batposes_setup.call(this,enemyId, x, y);
-    this.notetags().forEach(function(note) {
+    this.checkBatPoses();
+};
+
+//==============================
+// * Transform
+//==============================
+var _alias_batposes_transform = Game_Enemy.prototype.transform
+Game_Enemy.prototype.transform = function(enemyId) {
+    _alias_batposes_transform.call(this,enemyId) 
+	var enmy = $dataEnemies[enemyId]
+    var enmynotes = enmy.note.split(/[\r\n]+/)
+	this._batPoses = [false,0,0,-1,false];
+	enmynotes.forEach(function(note) {
     if (note === "Battler Poses"){this._batPoses[0] = true;};},this);
 };
 

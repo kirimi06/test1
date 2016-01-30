@@ -2,8 +2,12 @@
 // MOG_TimeSystem_Hud.js
 //=============================================================================
 /*:
- * @plugindesc (v1.1) Adiciona uma HUD apresentando o tempo. 
+ * @plugindesc (v1.3) Adiciona uma HUD apresentando o tempo. 
  * @author Moghunter
+ *
+ * @param Initial Visible
+ * @desc Ativar a Hud no inicio do jogo.
+ * @default true 
  *
  * @param X-axis
  * @desc Definição da posição X-Axis da Hud.
@@ -115,7 +119,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG Time System Hud (v1.1) +++
+ * +++ MOG Time System Hud (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -132,7 +136,8 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
- * (v1.1) Correção de piscar a hud no modo ocultar a hud.
+ * (v1.3) Adição de ocultar a hud no inicio do jogo.
+ * (v1.2) Correção de piscar a hud no modo ocultar a hud.
  *        
  */
  
@@ -174,8 +179,18 @@
 	Moghunter.timehud_timer_visible = String(Moghunter.parameters['Timer Visible'] || "false");
 	Moghunter.timehud_timer_x = Number(Moghunter.parameters['Timer X-axis'] || 63);
 	Moghunter.timehud_timer_y = Number(Moghunter.parameters['Timer Y-axis'] || 66);			
-	
+	Moghunter.timehud_hudvisible = String(Moghunter.parameters['Initial Visible'] || "true");	
+
 if (Imported.MOG_TimeSystem) {
+	
+//==============================
+// * Setup Time System
+//==============================
+var _mog_tmSysmhud_setup_time_system = Game_System.prototype.setup_time_system;
+Game_System.prototype.setup_time_system = function() {	
+    _mog_tmSysmhud_setup_time_system.call(this);
+	this._time_window_visible = String(Moghunter.timehud_hudvisible) === "true" ? true : false;
+};
 	
 //=============================================================================
 // ** Game Character Base 

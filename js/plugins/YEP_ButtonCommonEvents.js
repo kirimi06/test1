@@ -11,7 +11,7 @@ Yanfly.BCE = Yanfly.BCE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 On the field map, call common events when certain
+ * @plugindesc v1.01 On the field map, call common events when certain
  * buttons are pressed on the keyboard.
  * @author Yanfly Engine Plugins
  *
@@ -525,6 +525,17 @@ Yanfly.BCE = Yanfly.BCE || {};
  *   - This will cause the game to simulate triggering the button command of
  *   one of those original functions even if there is a common event bound to
  *   all of the keys of that original function.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Changed buttons from triggering to repeating so that common events can
+ * continuously run while being held down.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -844,7 +855,7 @@ Scene_Map.prototype.updateButtonEvents = function() {
     for (var key in Yanfly.Param.BCEList) {
       var eventId = Yanfly.Param.BCEList[key];
       if (eventId <= 0) continue;
-      if (!Input.isTriggered(key)) continue;
+      if (!Input.isRepeated(key)) continue;
       $gameTemp.reserveCommonEvent(eventId);
       break;
     }

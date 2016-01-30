@@ -9,19 +9,19 @@
  * @param Mode
  * @desc Definição do tipo de comando.
  * 0 - Normal     1 - Ring Menu
- * @default 0
+ * @default 1
  *
  * @param Layout X-axis
  * @desc Definição X-Axis da imagem.
- * @default -45
+ * @default 22
  *
  * @param Layout Y-axis
  * @desc Definição Y-Axis da imagem.
- * @default -25 
+ * @default 15 
  *
  * @param Com X-axis
  * @desc Definição X-Axis da imagem.
- * @default -10 
+ * @default 0 
  *
  * @param Com Y-axis
  * @desc Definição Y-Axis da imagem.
@@ -29,7 +29,7 @@
  *
  * @param Arrow
  * @desc Ativar a imagem das flechas.
- * @default true
+ * @default false
  *
  * @param Arrow X-axis
  * @desc Definição X-Axis da imagem.
@@ -57,11 +57,11 @@
  *
  * @param Slide Animation
  * @desc Ativar animação de deslize.
- * @default true 
+ * @default false
  *
  * @param Slide X
  * @desc Definição da distância X.
- * @default 30  
+ * @default 0
  *
  * @param Slide Y
  * @desc Definição da distância Y.
@@ -69,7 +69,7 @@
  *
  * @param Com Name
  * @desc Ativar o nome do comando.
- * @default false
+ * @default true
  *
  * @param Com Name X-axis
  * @desc Definição X-Axis do nome.
@@ -85,7 +85,7 @@
  *
  * @param Cursor
  * @desc Ativar cursor.
- * @default true
+ * @default false
  *
  * @param Cursor X-axis
  * @desc Definição X-Axis do cursor.
@@ -97,7 +97,7 @@
  *
  * @param Cursor Slide
  * @desc Ativar a animação de deslize.
- * @default true
+ * @default false 
  *
  * @param Row Max
  * @desc Definição da quantidade comandos visíveis.
@@ -153,12 +153,12 @@
 　　var Moghunter = Moghunter || {}; 
 
     Moghunter.parameters = PluginManager.parameters('MOG_BattleCommands');
-	Moghunter.bcom_mode = Number(Moghunter.parameters['Mode'] || 0);
-    Moghunter.bcom_lay_x = Number(Moghunter.parameters['Layout X-axis'] || -45);
-    Moghunter.bcom_lay_y = Number(Moghunter.parameters['Layout Y-axis'] || -25);
-	Moghunter.bcom_com_x = Number(Moghunter.parameters['Com X-axis'] || -10);
+	Moghunter.bcom_mode = Number(Moghunter.parameters['Mode'] || 1);
+    Moghunter.bcom_lay_x = Number(Moghunter.parameters['Layout X-axis'] || 22);
+    Moghunter.bcom_lay_y = Number(Moghunter.parameters['Layout Y-axis'] || 15);
+	Moghunter.bcom_com_x = Number(Moghunter.parameters['Com X-axis'] || 0);
 	Moghunter.bcom_com_y = Number(Moghunter.parameters['Com Y-axis'] || 0);
-	Moghunter.bcom_arrow = String(Moghunter.parameters['Arrow'] || true);
+	Moghunter.bcom_arrow = String(Moghunter.parameters['Arrow'] || false);
 	Moghunter.bcom_arrow_x = Number(Moghunter.parameters['Arrow X-axis'] || 5);
 	Moghunter.bcom_arrow_y = Number(Moghunter.parameters['Arrow Y-axis'] || 0);
 	Moghunter.bcom_row_max = Number(Moghunter.parameters['Row Max'] || 4);
@@ -166,21 +166,21 @@
 	Moghunter.bcom_zoom_rate = Number(Moghunter.parameters['Zoom Rate'] || 1.30);
 	Moghunter.bcom_zoom_speed = Number(Moghunter.parameters['Zoom Speed'] || 0.015);
 	Moghunter.bcom_zoom_loop = String(Moghunter.parameters['Zoom Loop'] || true);
-	Moghunter.bcom_slide_effect = String(Moghunter.parameters['Slide Animation'] || true);
-	Moghunter.bcom_slide_x = Number(Moghunter.parameters['Slide X'] || 30);
+	Moghunter.bcom_slide_effect = String(Moghunter.parameters['Slide Animation'] || false);
+	Moghunter.bcom_slide_x = Number(Moghunter.parameters['Slide X'] || 0);
 	Moghunter.bcom_slide_y = Number(Moghunter.parameters['Slide Y'] || 0);
-	Moghunter.bcom_com_name = String(Moghunter.parameters['Com Name'] || false);
+	Moghunter.bcom_com_name = String(Moghunter.parameters['Com Name'] || true);
 	Moghunter.bcom_com_name_x = Number(Moghunter.parameters['Com Name X-axis'] || 55);
 	Moghunter.bcom_com_name_y = Number(Moghunter.parameters['Com Name Y-axis'] || 75);
-	Moghunter.bcom_com_font_size = Number(Moghunter.parameters['Com Font Size'] || 22);
+	Moghunter.bcom_com_font_size = Number(Moghunter.parameters['Com Font Sizew'] || 22);
 	Moghunter.bcom_ring_range = Number(Moghunter.parameters['Ring Range'] || 70);
 	Moghunter.bcom_pi_range = Number(Moghunter.parameters['Pi Range'] || 2.0);
 	Moghunter.bcom_ring_anime = String(Moghunter.parameters['Ring Motion'] || true);
 	Moghunter.bcom_side_input = String(Moghunter.parameters['Side Input'] || true);
-    Moghunter.bcom_cursor = String(Moghunter.parameters['Cursor'] || true);	
+    Moghunter.bcom_cursor = String(Moghunter.parameters['Cursor'] || false);	
     Moghunter.bcom_cursor_x = Number(Moghunter.parameters['Cursor X-axis'] || 0);
     Moghunter.bcom_cursor_y = Number(Moghunter.parameters['Cursor Y-axis'] || 0)
-    Moghunter.bcom_cursor_slide = String(Moghunter.parameters['Cursor Slide'] || true);
+    Moghunter.bcom_cursor_slide = String(Moghunter.parameters['Cursor Slide'] || false);
 	
 if (Imported.MOG_BattleHud) {
 //=============================================================================

@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.3) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -48,7 +48,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cursor (v1.2) +++
+ * +++ MOG - Battle Cursor (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -73,6 +73,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.3) - Correção de não atualizar o nome no efeito transformação.
  * (v1.2) - Correção de não selecionar o alvo no modo "All Allies (Dead)"
  * (v1.1) - Correção na definição Offset das Tags.
  *        - Melhoria na codificação.
@@ -138,6 +139,19 @@ Game_Action.prototype.needsSelection = function() {
 };
 
 //=============================================================================
+// ** Game_Enemy
+//=============================================================================
+
+//==============================
+// * Transform
+//==============================
+var _alias_mog_bcursor_transform = Game_Enemy.prototype.transform
+Game_Enemy.prototype.transform = function(enemyId) {
+    _alias_mog_bcursor_transform.call(this,enemyId) 
+	this._refCursor = true;	
+};
+
+//=============================================================================
 // ** Scene Battle
 //=============================================================================
 
@@ -175,6 +189,7 @@ Game_Battler.prototype.initMembers = function() {
 	this._arrowVisible = false;
 	this._arrowX = 0;
 	this._arrowY = 0;
+	this._refCursor = false;
 };
 
 //==============================
@@ -297,6 +312,7 @@ Spriteset_Battle.prototype.create_arrow_enemy = function() {
 // * Refresh Arrow Name
 //==============================
 Spriteset_Battle.prototype.refresh_arrow_name = function(battler,sprite) {
+	battler._refCursor = false;
 	sprite.opacity = 255;
 	sprite.bitmap.clear();
 	sprite.bitmap.drawText(battler.name(),0,0,120,32,"center");
@@ -367,7 +383,8 @@ Spriteset_Battle.prototype.isTouchOnTarget = function(sprite,battler,type) {
 //==============================
 Spriteset_Battle.prototype.update_arrow_name = function(sprite,target,battler,type) {
 	 if (!battler) {return};
-	 if (sprite.opacity === 100 || $gameTemp._arrow_need_refresh) this.refresh_arrow_name(battler,sprite);
+	 if (sprite.opacity === 100 || $gameTemp._arrow_need_refresh) {this.refresh_arrow_name(battler,sprite)};
+	 if (battler._refCursor) {this.refresh_arrow_name(battler,sprite)};
 	 sprite.x = target.x + Moghunter.bcursor_name_x;
 	 sprite.y = target.y - target.height + Moghunter.bcursor_name_y;
 	 sprite.visible = target.visible;
@@ -379,8 +396,8 @@ Spriteset_Battle.prototype.update_arrow_name = function(sprite,target,battler,ty
 //==============================
 Spriteset_Battle.prototype.update_arrow = function(sprite,target,battler,type) {
 	if (!this.isArrowVisible(sprite,target,battler,type)) {this.hide_arrow(sprite,type);return};
-	sprite.opacity = 255//target.opacity; 
-	sprite.visible = true//target.visible;
+	sprite.opacity = 255; 
+	sprite.visible = true;
 	if (type === 0) {var yf = target.height / 2} else {
 		if (target._mainSprite) {var yf = target._mainSprite.height} else {var yf = 0};
 	};

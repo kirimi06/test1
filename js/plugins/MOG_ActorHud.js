@@ -3,8 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Adiciona uma Hud com os parâmetros do personagem.
+ * @plugindesc (v1.3) Adiciona uma Hud com os parâmetros do personagem.
  * @author Moghunter
+ *
+ * @param Initial Visible
+ * @desc Ativar a Hud no inicio do jogo.
+ * @default true
  *
  * @param Hud X-Axis
  * @desc Definição da posição X-Axis da Hud.
@@ -263,7 +267,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Actor Hud (v1.1) +++
+ * +++ MOG Actor Hud (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -301,6 +305,8 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.3) - Adição de ocultar a hud no inicio do jogo.. 
+ * (v1.2) - Correção do setup da posição do numero de HP. 
  * (v1.1) - Correção de piscar a hud no modo ocultar a hud.
  *        
  */
@@ -345,8 +351,8 @@
 	
 	// HP NUMBER POSITION
 	Moghunter.ahud_hp_number_visible  = String(Moghunter.parameters['HP Number Visible'] || true);
-	Moghunter.ahud_hp_number_pos_x  = Number(Moghunter.parameters['HP Number X-Axis2'] || 270);
-	Moghunter.ahud_hp_number_pos_y  = Number(Moghunter.parameters['HP Number Y-Axis2'] || 70);
+	Moghunter.ahud_hp_number_pos_x  = Number(Moghunter.parameters['HP Number X-Axis'] || 270);
+	Moghunter.ahud_hp_number_pos_y  = Number(Moghunter.parameters['HP Number Y-Axis'] || 70);
 	Moghunter.ahud_maxhp_number_visible  = String(Moghunter.parameters['MaxHP Number Visible'] || false);
 	Moghunter.ahud_maxhp_number_pos_x  = Number(Moghunter.parameters['MaxHP Number X-Axis'] || 185);
 	Moghunter.ahud_maxhp_number_pos_y  = Number(Moghunter.parameters['MaxHP Number Y-Axis'] || 40);	
@@ -397,6 +403,7 @@
 	Moghunter.ahud_states_pos_x = Number(Moghunter.parameters['States X-Axis'] || 5);
 	Moghunter.ahud_states_pos_y = Number(Moghunter.parameters['States Y-Axis'] || 64);	
 
+    Moghunter.ahud_hudvisible = String(Moghunter.parameters['Initial Visible'] || "false");	
 
 //=============================================================================
 // ** ImageManager
@@ -420,7 +427,7 @@ var _alias_mog_ahud_sys_initialize = Game_System.prototype.initialize;
 Game_System.prototype.initialize = function() {
 	_alias_mog_ahud_sys_initialize.call(this);
 	this._ahud_position = [0,0];
-	this._ahud_visible = true;
+	this._ahud_visible = String(Moghunter.ahud_hudvisible) === "true" ? true : false;
 };
 
 //=============================================================================
@@ -528,7 +535,7 @@ Actor_Hud.prototype.initialize = function(hud_id) {
 	this._hud_size = [-1,-1,-1,-1];
     this.base_parameter_clear();
     this.load_img();
-	this.opacity = $gameSystem._ahud_visible ? 255 : 0;
+	this.visible = $gameSystem._ahud_visible ? true : false;
 };
 
 //==============================

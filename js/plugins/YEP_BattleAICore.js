@@ -11,7 +11,7 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 This plugin allows you to structure battle A.I.
+ * @plugindesc v1.04a This plugin allows you to structure battle A.I.
  * patterns with more control.
  * @author Yanfly Engine Plugins
  *
@@ -372,8 +372,9 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.04:
+ * Version 1.04a:
  * - Fixed a bug that would cause a crash with the None scope for skills.
+ * - Switched over a function to operate in another for better optimization.
  *
  * Version 1.03:
  * - Fixed a bug that returned the wrong MP% rate.
@@ -644,9 +645,9 @@ Game_Troop.prototype.updateAIPatterns = function() {
     }
 };
 
-Yanfly.CoreAI.Game_Troop_onBattleStart = Game_Troop.prototype.onBattleStart;
-Game_Troop.prototype.onBattleStart = function() {
-    Yanfly.CoreAI.Game_Troop_onBattleStart.call(this);
+Yanfly.CoreAI.Game_Troop_setup = Game_Troop.prototype.setup;
+Game_Troop.prototype.setup = function(troopId) {
+    Yanfly.CoreAI.Game_Troop_setup.call(this, troopId);
     this._aiKnownElementRates = {};
 };
 
