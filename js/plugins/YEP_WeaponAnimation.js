@@ -11,7 +11,7 @@ Yanfly.WA = Yanfly.WA || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 This plugin allows you to go past the standard
+ * @plugindesc v1.01 This plugin allows you to go past the standard
  * weapon images and even using custom images.
  * @author Yanfly Engine Plugins
  *
@@ -129,6 +129,16 @@ Yanfly.WA = Yanfly.WA || {};
  *
  * As long as you make them in that format, the weapon sheets will work with
  * RPG Maker's default battlers.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Fixed a conflict with sideview enemies using no weapon animations.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -404,7 +414,7 @@ Game_Enemy.prototype.getUniqWeapAniId = function() {
         this._cacheWeaponHue = this.enemy().weaponHue;
       return this._cacheWeaponImage;
     }
-    this._cacheWeaponImage = 0;
+    this._cacheWeaponImage = undefined;
     return this._cacheWeaponImage;
 };
 
@@ -453,7 +463,7 @@ Game_Enemy.prototype.attackMotion = function() {
 Yanfly.WA.Game_Enemy_weaponImageId = Game_Enemy.prototype.weaponImageId;
 Game_Enemy.prototype.weaponImageId = function() {
     if (this._cacheWeaponImage !== undefined) return this._cacheWeaponImage;
-    return Yanfly.WA.Game_Enemy_weaponImageId;
+    return Yanfly.WA.Game_Enemy_weaponImageId.call(this);
 };
 
 }; // Imported.YEP_X_AnimatedSVEnemies

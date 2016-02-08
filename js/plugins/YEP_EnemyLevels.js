@@ -11,7 +11,7 @@ Yanfly.ELV = Yanfly.ELV || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 This plugin enables giving your enemies levels and
+ * @plugindesc v1.02 This plugin enables giving your enemies levels and
  * parameter changes with those levels.
  * @author Yanfly Engine Plugins
  *
@@ -310,6 +310,11 @@ Yanfly.ELV = Yanfly.ELV || {};
  *   level y to be able to use it. If the enemy is under level y, the skill
  *   will be sealed and cannot be used.
  *
+ *   <Ignore Level Bonus>
+ *   This will cause the enemy to ignore all the stat changes added by levels
+ *   and use its base stats as its current level stats. Any changes to its
+ *   current level will not alter the enemy's stats.
+ *
  * Skill and Item Notetags:
  *
  *   <Reset Enemy Level>
@@ -474,6 +479,21 @@ Yanfly.ELV = Yanfly.ELV || {};
  *
  *   EnemyLevelResetAll
  *   - This will reset all enemy levels to their original levels.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - Fixed a bug regarding a line of code that wasn't added properly.
+ *
+ * Version 1.01:
+ * - Added <Ignore Level Bonus> notetag. This causes enemies to maintain their
+ * current level but ignore any bonus stats applied by the level difference. If
+ * the enemy's level is altered, its stats remain static and unchanging.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -565,6 +585,7 @@ DataManager.processELVNotetags1 = function(group) {
     var notedata = obj.note.split(/[\r\n]+/);
 
     obj.showLevel = Yanfly.Param.ELVShow;
+    obj.ignoreLevelBonuses = false;
     obj.minLevel = Yanfly.Param.ELVMinLv;
     obj.maxLevel = Yanfly.Param.ELVMaxLv;
     obj.levelType = Yanfly.Param.ELVDefaultType;
@@ -584,6 +605,8 @@ DataManager.processELVNotetags1 = function(group) {
         obj.showLevel = true;
       } else if (line.match(/<(?:HIDE LEVEL)>/i)) {
         obj.showLevel = false;
+      } else if (line.match(/<(?:IGNORE LEVEL BONUS|IGNORE LEVEL BONUSES)>/i)) {
+        obj.ignoreLevelBonuses = true;
       } else if (line.match(/<(?:MIN LEVEL|MINIMUM LEVEL):[ ](\d+)>/i)) {
         obj.minLevel = parseInt(RegExp.$1);
       } else if (line.match(/<(?:MAX LEVEL|MAXIMUM LEVEL):[ ](\d+)>/i)) {
@@ -918,6 +941,10 @@ Game_Enemy.prototype.paramBase = function(paramId) {
     this._cacheBaseParam = this._cacheBaseParam || {};
     if (this._cacheBaseParam[paramId]) return this._cacheBaseParam[paramId];
     var base = Yanfly.ELV.Game_Enemy_paramBase.call(this, paramId);
+    if (this.enemy().ignoreLevelBonuses) {
+      this._cacheBaseParam[paramId] = base;
+      return this._cacheBaseParam[paramId];
+    }
     var level = this.level;
     var formula = this.enemy().baseParamFormula[paramId];
     var rate = this.enemy().baseParamRate[paramId];
@@ -935,6 +962,10 @@ Game_Enemy.prototype.exp = function() {
     this._cacheBaseParam = this._cacheBaseParam || {};
     if (this._cacheBaseParam[paramId]) return this._cacheBaseParam[paramId];
     var base = Yanfly.ELV.Game_Enemy_exp.call(this);
+    if (this.enemy().ignoreLevelBonuses) {
+      this._cacheBaseParam[paramId] = base;
+      return this._cacheBaseParam[paramId];
+    }
     var level = this.level;
     var formula = this.enemy().baseParamFormula[paramId];
     var rate = this.enemy().baseParamRate[paramId];
@@ -952,6 +983,10 @@ Game_Enemy.prototype.gold = function() {
     this._cacheBaseParam = this._cacheBaseParam || {};
     if (this._cacheBaseParam[paramId]) return this._cacheBaseParam[paramId];
     var base = Yanfly.ELV.Game_Enemy_gold.call(this);
+    if (this.enemy().ignoreLevelBonuses) {
+      this._cacheBaseParam[paramId] = base;
+      return this._cacheBaseParam[paramId];
+    }
     var level = this.level;
     var formula = this.enemy().baseParamFormula[paramId];
     var rate = this.enemy().baseParamRate[paramId];
@@ -1134,7 +1169,7 @@ Game_Troop.prototype.highestLevel = function() {
 Yanfly.ELV.Game_Action_applyItemUserEffect =
     Game_Action.prototype.applyItemUserEffect;
 Game_Action.prototype.applyItemUserEffect = function(target) {
-    Yanfly.ELV.Game_Action_applyItemUserEffect.call(this);
+    Yanfly.ELV.Game_Action_applyItemUserEffect.call(this, target);
     if (target && target.isEnemy()) this.applyItemEnemyLevelEffects(target);
 };
 

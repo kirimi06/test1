@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.29 Have more control over the flow of the battle system
+ * @plugindesc v1.30b Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -117,7 +117,7 @@ Yanfly.BEC = Yanfly.BEC || {};
  * @param Home Position Y
  * @desc This formula determines the actor's home Y position.
  * Default: 280 + index * 48
- * @default screenHeight - statusHeight - maxSize * 48 + (index+1) * 48 - 16
+ * @default screenHeight - statusHeight - maxSize * 48 + (index+1) * 48 - 32
  *
  * @param Side Sprite Priority
  * @desc Give actor sprites the priority of always being on top?
@@ -616,6 +616,12 @@ Yanfly.BEC = Yanfly.BEC || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.30b:
+ * - Optimization update.
+ * - Fixed a bug that prevented added state effects be unable to apply if they
+ * are an added Death state.
+ * - Battlelog lines are now able to display text codes.
  *
  * Version 1.29:
  * - Fixed a bug with the 'else if' action sequences not working in the right
@@ -2839,6 +2845,22 @@ Game_Action.prototype.apply = function(target) {
     }
 };
 
+Game_Action.prototype.itemEffectAddAttackState = function(target, effect) {
+    this.subject().attackStates().forEach(function(stateId) {
+        var chance = effect.value1;
+        chance *= target.stateRate(stateId);
+        chance *= this.subject().attackStatesRate(stateId);
+        chance *= this.lukEffectRate(target);
+        if (Math.random() < chance) {
+            if (stateId === target.deathStateId()) {
+              if (target.isImmortal()) target.removeImmortal();
+            }
+            target.addState(stateId);
+            this.makeSuccess(target);
+        }
+    }.bind(this), target);
+};
+
 Game_Action.prototype.itemEffectAddNormalState = function(target, effect) {
     var stateId = effect.dataId;
     var chance = effect.value1;
@@ -4295,6 +4317,16 @@ Window_EnemyVisualSelect.prototype.updateWindowSize = function() {
     this.height = height;
     this.createContents();
     this._requestRefresh = true;
+    this.makeWindowBoundaries();
+};
+
+Window_EnemyVisualSelect.prototype.makeWindowBoundaries = function() {
+    if (!this._requestRefresh) return;
+    this._minX = -1 * this.standardPadding();
+    this._maxX = Graphics.boxWidth - this.width + this.standardPadding();
+    this._minY = -1 * this.standardPadding();
+    this._maxY = Graphics.boxHeight - this.height + this.standardPadding();
+    this._maxY -= SceneManager._scene._statusWindow.height;
 };
 
 Window_EnemyVisualSelect.prototype.updateWindowPosition = function() {
@@ -4303,6 +4335,8 @@ Window_EnemyVisualSelect.prototype.updateWindowPosition = function() {
     this.y = -1 * this.height + this.standardPadding();
     this.x += this._battler.spritePosX();
     this.y += this._battler.spritePosY();
+    this.x = this.x.clamp(this._minX, this._maxX);
+    this.y = this.y.clamp(this._minY, this._maxY);
 };
 
 Window_EnemyVisualSelect.prototype.updateOpacity = function() {
@@ -4537,11 +4571,17 @@ Window_BattleLog.prototype.drawLineText = function(index) {
     }
 };
 
+Window_BattleLog.prototype.textWidthEx = function(text) {
+    return this.drawTextEx(text, 0, this.contents.height);
+};
+
 Window_BattleLog.prototype.drawCenterLine = function(index) {
     var text = this._lines[index].replace('<CENTER>', '');
     var rect = this.itemRectForText(index);
     this.contents.clearRect(rect.x, rect.y, rect.width, rect.height);
-    this.drawText(text, rect.x, rect.y, Graphics.boxWidth, 'center');
+    var tw = this.textWidthEx(text);
+    var wx = rect.x + (rect.width - tw) / 2;
+    this.drawTextEx(text, wx, rect.y);
 };
 
 Window_BattleLog.prototype.drawSimpleActionLine = function(index) {

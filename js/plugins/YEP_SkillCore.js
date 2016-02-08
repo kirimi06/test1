@@ -11,7 +11,7 @@ Yanfly.Skill = Yanfly.Skill || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.06a Skills are now given more functions and the ability
+ * @plugindesc v1.07 Skills are now given more functions and the ability
  * to require different types of costs.
  * @author Yanfly Engine Plugins
  *
@@ -321,6 +321,9 @@ Yanfly.Skill = Yanfly.Skill || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.07:
+ * - Fixed a bug that prevented immortal actors at 0 HP from using skills.
  *
  * Version 1.06a:
  * - Added <Hide in Battle> and <Hide in Field> notetags.
@@ -727,7 +730,9 @@ Game_BattlerBase.prototype.canPaySkillCost = function(skill) {
 };
 
 Game_BattlerBase.prototype.canPaySkillHpCost = function(skill) {
-    return this._hp > this.skillHpCost(skill);
+    var cost = this.skillHpCost(skill);
+    if (cost <= 0) return true;
+    return this._hp > cost;
 };
 
 Yanfly.Skill.Game_BattlerBase_paySkillCost =
@@ -1057,7 +1062,7 @@ Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
 };
 
 //=============================================================================
-// Window_SkillList
+// Window_SkillType
 //=============================================================================
 
 Window_SkillType.prototype.itemTextAlign = function() {

@@ -11,7 +11,7 @@ Yanfly.IS = Yanfly.IS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 Players can now craft their own items in-game
+ * @plugindesc v1.03a Players can now craft their own items in-game
  * through an item synthesis system.
  * @author Yanfly Engine Plugins
  *
@@ -254,8 +254,9 @@ Yanfly.IS = Yanfly.IS || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.03:
+ * Version 1.03a:
  * - Fixed a bug that caused a crash for OpenSynthesis recipe commands.
+ * - Fixed an issue with recipe counts not appearing right.
  *
  * Version 1.02:
  * - Added 'Equipped Recipes' plugin parameter. If enabled, this will allow the
@@ -320,6 +321,10 @@ DataManager.isDatabaseLoaded = function() {
     this.processISNotetagsI($dataItems);
     this.processISNotetagsW($dataWeapons);
     this.processISNotetagsA($dataArmors);
+    Yanfly.IS.SynthesisRecipeCount = 0;
+    Yanfly.IS.SynthesisItemTotal   = 0;
+    Yanfly.IS.SynthesisWeaponTotal = 0;
+    Yanfly.IS.SynthesisArmorTotal  = 0;
 		this.processISNotetags1($dataItems, 0);
 	  this.processISNotetags1($dataWeapons, 1);
 	  this.processISNotetags1($dataArmors, 2);
@@ -517,10 +522,6 @@ DataManager.getSynthesisQuantity = function(item, index) {
     return item.synthIngredients[index][2];
 };
 
-Yanfly.IS.SynthesisRecipeCount = 0;
-Yanfly.IS.SynthesisItemTotal   = 0;
-Yanfly.IS.SynthesisWeaponTotal = 0;
-Yanfly.IS.SynthesisArmorTotal  = 0;
 DataManager.processRecipeCounts = function(obj) {
     if (obj.recipeItem.length > 0 || obj.recipeWeapon.length > 0 ||
     obj.recipeArmor.length > 0) {

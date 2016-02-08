@@ -11,7 +11,7 @@ Yanfly.Gab = Yanfly.Gab || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03a The Gab Window functions as a window for random
+ * @plugindesc v1.04 The Gab Window functions as a window for random
  * jibber jabber that does not require a message window.
  * @author Yanfly Engine Plugins
  *
@@ -185,6 +185,10 @@ Yanfly.Gab = Yanfly.Gab || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.04:
+ * - Fixed an issue with ForceGab that didn't make it work properly with text
+ * coded Gabs.
  *
  * Version 1.03a:
  * - Fixed a bug with GabSound that didn't load the proper sound filenames.
@@ -496,10 +500,7 @@ Window_Gab.prototype.addGabData = function(gabData) {
 
 Window_Gab.prototype.forceGabData = function(gabData) {
     if (!gabData) return;
-    if (this.checkCurrentGab(gabData)) return;
-    this._gabQueue = [];
-    this._currentGab = [];
-    this._showCount = 0;
+    this.clearGabData();
     this._gabQueue.push(gabData);
 };
 

@@ -11,7 +11,7 @@ Yanfly.ATB = Yanfly.ATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.19 (Requires YEP_BattleEngineCore.js) Add ATB (Active
+ * @plugindesc v1.20 (Requires YEP_BattleEngineCore.js) Add ATB (Active
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -433,6 +433,9 @@ Yanfly.ATB = Yanfly.ATB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.20:
+ * - Updated plugin to update the AI more accordingly with Battle AI Core.
  *
  * Version 1.19:
  * - Fixed a bug where forced actions clear out an action's effects before the
@@ -1023,6 +1026,7 @@ BattleManager.isBattlerATBReady = function(battler) {
     if (battler.atbRate() < 1) return false;
     if (battler.isATBCharging()) return false;
     if (battler.currentAction() && battler.currentAction().item()) {
+      battler.makeActions();
       battler.setupATBCharge();
       return false;
     }

@@ -11,7 +11,7 @@ Yanfly.JP = Yanfly.JP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05 This plugin by itself doesn't do much, but it enables
+ * @plugindesc v1.06 This plugin by itself doesn't do much, but it enables
  * actors to acquire JP (job points) used for other plugins.
  * @author Yanfly Engine Plugins
  *
@@ -54,6 +54,11 @@ Yanfly.JP = Yanfly.JP || {};
  * @desc Adjusts how the gained JP text is shown after battle.
  * %1 - Actor     %2 Value     %3 JP
  * @default %1 gains %2%3!
+ *
+ * @param Alive Actors
+ * @desc Actors must be alive to receive JP earned from enemies.
+ * NO - false     YES - true
+ * @default true
  *
  * @param ---Menu---
  * @default
@@ -186,6 +191,11 @@ Yanfly.JP = Yanfly.JP || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.06:
+ * - Added 'Alive Actors' plugin parameter to prevent dead actors from gaining
+ * JP from enemies. Any JP that currently dead actors earned in battle from
+ * actions will still be 'earned' at the end of battle.
+ *
  * Version 1.05:
  * - Updated compatibility for Subclasses gaining JP.
  *
@@ -223,8 +233,11 @@ Yanfly.Param.JpPerAction = String(Yanfly.Parameters['JP Per Action']);
 Yanfly.Param.JpPerEnemy = String(Yanfly.Parameters['JP Per Enemy']);
 Yanfly.Param.JpShowResults = eval(String(Yanfly.Parameters['Show Results']));
 Yanfly.Param.JpTextFormat = String(Yanfly.Parameters['JP Gained in Battle']);
+Yanfly.Param.JpAliveActors = eval(String(Yanfly.Parameters['Alive Actors']));
+
 Yanfly.Param.JpShowMenu = String(Yanfly.Parameters['Show In Menu']);
 Yanfly.Param.JpMenuFormat = String(Yanfly.Parameters['Menu Format']);
+
 Yanfly.Param.JpPerLevel = String(Yanfly.Parameters['JP Per Level']);
 Yanfly.Param.JpEnableAftermath = String(Yanfly.Parameters['Enable Aftermath']);
 Yanfly.Param.JpAftermathText = String(Yanfly.Parameters['Aftermath Text']);
@@ -342,7 +355,12 @@ BattleManager.makeRewards = function() {
 BattleManager.gainJp = function() {
 		var jp = $gameTroop.jpTotal();
 		$gameMessage.newPage();
-		$gameParty.members().forEach(function(actor) {
+    if (Yanfly.Param.JpAliveActors) {
+      var members = $gameParty.aliveMembers();
+    } else {
+      var members = $gameParty.members();
+    }
+		members.forEach(function(actor) {
 			actor.gainJp(jp);
 		});
 };

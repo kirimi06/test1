@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.09 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.10 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -387,6 +387,9 @@ Yanfly.CTB = Yanfly.CTB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.10:
+ * - Updated plugin to update the AI more accordingly with Battle AI Core.
  *
  * Version 1.09:
  * - Fixed a bug where forced actions clear out an action's effects before the
@@ -932,6 +935,7 @@ BattleManager.isBattlerCTBReady = function(battler) {
     if (battler.isCTBCharging()) return false;
     if (battler.currentAction() && battler.currentAction().item()) {
       this._subject = battler;
+      battler.makeActions();
       battler.setupCTBCharge();
       return true;
     }

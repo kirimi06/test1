@@ -11,7 +11,7 @@ Yanfly.CCC = Yanfly.CCC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05 This plugin creates a system where your player
+ * @plugindesc v1.06 This plugin creates a system where your player
  * can change classes through the main menu.
  * @author Yanfly Engine Plugins
  *
@@ -202,6 +202,11 @@ Yanfly.CCC = Yanfly.CCC || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.06:
+ * - Made an update to the 'Change Actor Images' to give changes to actor
+ * images priority over class images. Setting the 'Change Actor Images' to
+ * (None) will return it back to using class images.
  *
  * Version 1.05:
  * - If using the Skill Learn System and Skill Menu Integration, the
@@ -513,8 +518,24 @@ Game_Actor.prototype.classLevel = function(classId) {
     return level;
 };
 
+Yanfly.CCC.Game_Actor_setCharacterImage =
+    Game_Actor.prototype.setCharacterImage;
+Game_Actor.prototype.setCharacterImage = function(name, index) {
+    if (name !== '') {
+      this._priorityCharacterName = name;
+      this._priorityCharacterIndex = index;
+    } else {
+      this._priorityCharacterName = undefined;
+      this._priorityCharacterIndex = undefined;
+      Yanfly.CCC.Game_Actor_setCharacterImage.call(this, name, index);
+    }
+};
+
 Yanfly.CCC.Game_Actor_characterName = Game_Actor.prototype.characterName;
 Game_Actor.prototype.characterName = function() {
+    if (this._priorityCharacterName !== undefined) {
+      return this._priorityCharacterName;
+    }
     if (this.actor().classCharacter) {
       if (this.actor().classCharacter[this._classId] !== undefined) {
         return this.actor().classCharacter[this._classId][0];
@@ -525,6 +546,9 @@ Game_Actor.prototype.characterName = function() {
 
 Yanfly.CCC.Game_Actor_characterIndex = Game_Actor.prototype.characterIndex;
 Game_Actor.prototype.characterIndex = function() {
+    if (this._priorityCharacterIndex !== undefined) {
+      return this._priorityCharacterIndex;
+    }
     if (this.actor().classCharacter) {
       if (this.actor().classCharacter[this._classId] !== undefined) {
         return this.actor().classCharacter[this._classId][1];
@@ -533,8 +557,23 @@ Game_Actor.prototype.characterIndex = function() {
     return Yanfly.CCC.Game_Actor_characterIndex.call(this);
 };
 
+Yanfly.CCC.Game_Actor_setFaceImage = Game_Actor.prototype.setFaceImage;
+Game_Actor.prototype.setFaceImage = function(name, index) {
+    if (name !== '') {
+      this._priorityFaceName = name;
+      this._priorityFaceIndex = index;
+    } else {
+      this._priorityFaceName = undefined;
+      this._priorityFaceIndex = undefined;
+      Yanfly.CCC.Game_Actor_setFaceImage.call(this, name, index);
+    }
+};
+
 Yanfly.CCC.Game_Actor_faceName = Game_Actor.prototype.faceName;
 Game_Actor.prototype.faceName = function() {
+    if (this._priorityFaceName !== undefined) {
+      return this._priorityFaceName;
+    }
     if (this.actor().classFace) {
       if (this.actor().classFace[this._classId] !== undefined) {
         return this.actor().classFace[this._classId][0];
@@ -545,6 +584,9 @@ Game_Actor.prototype.faceName = function() {
 
 Yanfly.CCC.Game_Actor_faceIndex = Game_Actor.prototype.faceIndex;
 Game_Actor.prototype.faceIndex = function() {
+    if (this._priorityFaceIndex !== undefined) {
+      return this._priorityFaceIndex;
+    }
     if (this.actor().classFace) {
       if (this.actor().classFace[this._classId] !== undefined) {
         return this.actor().classFace[this._classId][1];
@@ -553,8 +595,21 @@ Game_Actor.prototype.faceIndex = function() {
     return Yanfly.CCC.Game_Actor_faceIndex.call(this);
 };
 
+Yanfly.CCC.Game_Actor_setBattlerImage = Game_Actor.prototype.setBattlerImage;
+Game_Actor.prototype.setBattlerImage = function(name) {
+    if (name !== '') {
+      this._priorityBattlerName = name;
+    } else {
+      this._priorityBattlerName = undefined;
+      Yanfly.CCC.Game_Actor_setBattlerImage.call(this, name);
+    }
+};
+
 Yanfly.CCC.Game_Actor_battlerName = Game_Actor.prototype.battlerName;
 Game_Actor.prototype.battlerName = function() {
+    if (this._priorityBattlerName !== undefined) {
+      return this._priorityBattlerName;
+    }
     if (this.actor().classBattler) {
       if (this.actor().classBattler[this._classId] !== undefined) {
         return this.actor().classBattler[this._classId];

@@ -11,7 +11,7 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 (Requires YEP_MessageCore.js) Letter Sounds, NameBox
+ * @plugindesc v1.03 (Requires YEP_MessageCore.js) Letter Sounds, NameBox
  * Background Types, Choice Control, and more!
  * @author Yanfly Engine Plugins
  *
@@ -322,6 +322,12 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
+ *  Enemy Name     Effect:
+ *  \en[x]         - Gets the name of the enemy in Database position x.
+ *  \et[x]         - Gets the name of the enemy in Troop position x.
+ *
+ * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *
  *  NameWindow: Effect:
  *  \n<x>       - Creates a name box with x string. Left side.
  *  \nc<x>      - Creates a name box with x string. Centered.
@@ -528,6 +534,27 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
  *   - Resets both the Message Window's X and Y Positions to its automatic
  *   positions and not adjusted to its anchor points. The Message Width and the
  *   Message Rows.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.03:
+ * - Fixed a bug that caused \., \|, \w[x] to not stall the \auto notetags.
+ * - Fixed a bug involving show/enable switches.
+ *
+ * Version 1.02:
+ * - Added \en[x] and \et[x] text codes to display database enemy names and
+ * troop position enemy names respectively.
+ *
+ * Version 1.01:
+ * - Fixed a bug where using an \auto text code with a \! in the same message
+ * would cause a pause with an empty message.
+ * - When using \|, \., or \w[x], the Letter Sound intervals will reset to 0 to
+ * keep the Letter Sound feeling more natural.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -561,8 +588,8 @@ Yanfly.Param.EMP1ChoiceOn = [];
 for (Yanfly.i = 1; Yanfly.i < 21; Yanfly.i += 1) {
   Yanfly.sName = 'Choice ' + Yanfly.i + ' Show Switch';
   Yanfly.oName = 'Choice ' + Yanfly.i + ' On Switch';
-  Yanfly.Param.EMP1ChoiceShow.push(String(Yanfly.Parameters[Yanfly.sName]));
-  Yanfly.Param.EMP1ChoiceOn.push(String(Yanfly.Parameters[Yanfly.oName]));
+  Yanfly.Param.EMP1ChoiceShow.push(Number(Yanfly.Parameters[Yanfly.sName]));
+  Yanfly.Param.EMP1ChoiceOn.push(Number(Yanfly.Parameters[Yanfly.oName]));
 };
 
 //=============================================================================
@@ -890,7 +917,8 @@ Yanfly.EMP1.Window_Base_convertExtraEscapeCharacters =
     Window_Base.prototype.convertExtraEscapeCharacters;
 Window_Base.prototype.convertExtraEscapeCharacters = function(text) {
   text = this.convertPlaytime(text);
-  text = this.convertMapname(text);
+  text = this.convertMapName(text);
+  text = this.convertEnemyName(text);
   text = Yanfly.EMP1.Window_Base_convertExtraEscapeCharacters.call(this, text);
   text = this.convertDigitGrouping(text);
   return text;
@@ -903,12 +931,31 @@ Window_Base.prototype.convertPlaytime = function(text) {
     return text;
 };
 
-Window_Base.prototype.convertMapname = function(text) {
+Window_Base.prototype.convertMapName = function(text) {
     text = text.replace(/\x1bMAP\[(\d+)\]/gi, function() {
       var mapId = arguments[1];
       if (mapId <= 0) mapId = $gameMap.mapId();
       name = $dataMapInfos[mapId].name;
       return name;
+    }.bind(this));
+    return text;
+};
+
+Window_Base.prototype.convertEnemyName = function(text) {
+    text = text.replace(/\x1bEN\[(\d+)\]/gi, function() {
+      var enemyId = arguments[1];
+      if (enemyId <= 0) return '';
+      name = $dataEnemies[enemyId].name;
+      return name;
+    }.bind(this));
+    text = text.replace(/\x1bET\[(\d+)\]/gi, function() {
+      var index = Math.max(1, arguments[1] - 1);
+      var enemy = $gameTroop.allMembers()[index];
+      if (enemy) {
+        return enemy.name();
+      } else {
+        return '';
+      }
     }.bind(this));
     return text;
 };
@@ -962,10 +1009,10 @@ Window_ChoiceList.prototype.numVisibleRows = function() {
     var numLines = choices.length;
     var maxLines = $gameSystem.getMessageChoiceRows();
     if (messageY < centerY && messageY + messageHeight > centerY) {
-        maxLines = 4;
+      maxLines = 4;
     }
     if (numLines > maxLines) {
-        numLines = maxLines;
+      numLines = maxLines;
     }
     return Math.max(1, numLines);
 };
@@ -1493,6 +1540,19 @@ Window_Message.prototype.updateLockedPosition = function() {
     this.updatePositionPlacement();
     this._nameWindow.adjustPositionX();
     this._nameWindow.adjustPositionY();
+};
+
+Yanfly.EMP1.Window_Message_startWait = Window_Message.prototype.startWait;
+Window_Message.prototype.startWait = function(count) {
+    if (this._checkingWidth) return;
+    Yanfly.EMP1.Window_Message_startWait.call(this, count);
+    this._soundCount = 0;
+};
+
+Yanfly.EMP1.Window_Message_startPause = Window_Message.prototype.startPause;
+Window_Message.prototype.startPause = function() {
+  if (this._checkingWidth) return;
+  Yanfly.EMP1.Window_Message_startPause.call(this);
 };
 
 //=============================================================================
