@@ -159,6 +159,8 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"PD_TweenAnimation","status":true,"description":"SpriteにTweenアニメーション機能を追加します。","parameters":{}},
 {"name":"PD_FaceChat","status":false,"description":"某テイルズオブシリーズ風のフェイスチャットによる会話機能を追加します。","parameters":{"Face size":"128","Margin":"32","Eye Anim Num":"3","Mouse Anim Num":"4","File Name":"face01,face02,face03"}},
+{"name":"PD_DelayTitle","status":true,"description":"タイトル画面の各画像の表示にディレイとフェードイン機能を追加します。","parameters":{"Delay BG1":"0","Fade BG1":"60","Delay BG2":"60","Fade BG2":"60","Delay Title":"120","Fade Title":"60","Delay Command":"180","Pass To Decide":"1"}},
+{"name":"PD_FootStepSound","status":true,"description":"プレイヤーの移動に合わせて足音を再生するプラグインです。","parameters":{"File Name":"Equip3_"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"LotteryBox","status":true,"description":"ランダムでアイテムや装備、お金が手に入る抽選箱を提供します。","parameters":{"Result Variable Number":"0","Name Variable Number":"0","Auto Empty Mode":"ON"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
