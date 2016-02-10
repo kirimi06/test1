@@ -174,5 +174,9 @@ var $plugins =
 {"name":"Otiba_riru","status":true,"description":"落ち葉を降らせます","parameters":{"Otiba Pattern":"18","Otiba Cell":"5","Otiba Number":"30","Otiba Yure":"3"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"AB_EnemyBook","status":true,"description":"戦闘中も確認できるモンスター図鑑です。属性、ステートの耐性の確認もできます。","parameters":{"ShowCommandInBattle":"1","ResisterTiming":"2","ShowCurrentStatus":"0","---用語、アイコン---":"","EnemyBookCommandName":"敵の情報","UnknownEnemy":"？？？？？？","UnknownData":"？？？","WeakElementName":"弱点属性","ResistElementName":"耐性属性","WeakStateName":"弱点ステート","ResistStateName":"耐性ステート","UnknownDropItemIcon":"16","AddEnemySkillMessage":"%1を図鑑に登録した！","FailToAddEnemySkillMessage":"%1は図鑑には載せられない！","FailToCheckEnemySkillMessage":"%1の情報はわからなかった！","---表示項目---":"","DispHP":"1","DispMP":"1","DispATK":"1","DispDEF":"1","DispMAT":"1","DispMDF":"1","DispAGI":"1","DispLUK":"1","DispDropItems":"1","DispWeakElement":"1","DispResistElement":"1","DispWeakState":"1","DispResistState":"1","DispDescribe":"1"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"AltMenuScreen3","status":false,"description":"レイアウトの異なるメニュー画面","parameters":{"bgBitmapMenu":"","bgBitmapItem":"","bgBitmapSkill":"","bgBitmapEquip":"","bgBitmapStatus":"","bgBitmapOptions":"","bgBitmapFile":"","bgBitmapGameEnd":"","maxColsMenu":"4","commandRows":"2","isDisplayStatus":"1"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"TitleCommandPosition","status":true,"description":"タイトルコマンドウィンドウの位置を変更します。","parameters":{"Offset X":"0","Offset Y":"0","Width":"240","Background":"1"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];
