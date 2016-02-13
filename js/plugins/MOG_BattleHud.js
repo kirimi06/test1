@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v2.3) Permite customizar o layout de batalha.
+ * @plugindesc (v2.4) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -624,7 +624,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v2.3) +++
+ * +++ MOG_BattleHud (v2.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -664,6 +664,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (2.4) - Correção de não apresentar os ícones de Buff e Debuff. 
  * (2.3) - Melhoria na codificação.
  * (2.2) - Adição da opção do alinhamento dos números. 
  *       - Adição do layout Overlay. 
@@ -2593,29 +2594,20 @@ Battle_Hud.prototype.refresh_states = function() {
 	this._states_data[0] = 0;
 	this._states_data[2] = 0;
 	this._state_icon.visible = false;
-	if (this._battler.states().length == 0) {this._states_data[1] = 0;return};
-	if (this._battler.states()[this._states_data[1]]) {
-		var state_id = this._battler.states()[this._states_data[1]].id;
-		if ($dataStates[state_id].iconIndex == 0) {
-			for (var i = 0; i < this._battler.states().length; i++) {
-			this._states_data[1] += 1;
-         	if (this._states_data[1] >= this._battler.states().length) {
-	        	this._states_data[1] = 0};			
-		        var state_id = this._battler.states()[this._states_data[1]].id;
-				if ($dataStates[state_id].iconIndex > 0) {break};
-		   };
-		};		
-		this._states_data[0] = $dataStates[state_id].iconIndex;
+	if (this._battler.allIcons().length == 0) {this._states_data[1] = 0;return};
+       if (this._battler.allIcons()[this._states_data[1]]) {	
+		this._states_data[0] = this._battler.allIcons()[this._states_data[1]];
 		this._state_icon.visible = true;
 		var sx = this._states_data[0] % 16 * 32;
 		var sy = Math.floor(this._states_data[0] / 16) * 32;
 		this._state_icon.setFrame(sx, sy, 32, 32);
-		this._battler.need_refresh_bhud_states = false;
-	};
-	this._states_old = this._battler.states();
+		this._battler.need_refresh_bhud_states = false;	
+	
+	   };
 	this._states_data[1] += 1;
-	if (this._states_data[1] >= this._battler.states().length) {
-		this._states_data[1] = 0};
+	if (this._states_data[1] >= this._battler.allIcons().length) {
+		this._states_data[1] = 0
+	};
 };
 
 //==============================

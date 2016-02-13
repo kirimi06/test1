@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.4) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -48,7 +48,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cursor (v1.3) +++
+ * +++ MOG - Battle Cursor (v1.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -73,6 +73,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.4) - Correção de não piscar todos os battler na seleção de todos alvos.
  * (v1.3) - Correção de não atualizar o nome no efeito transformação.
  * (v1.2) - Correção de não selecionar o alvo no modo "All Allies (Dead)"
  * (v1.1) - Correção na definição Offset das Tags.
@@ -470,6 +471,25 @@ Spriteset_Battle.prototype.update_arrow_slide = function() {
 };
 
 //=============================================================================
+// ** Game Party
+//=============================================================================	
+
+//==============================
+// * Select
+//==============================
+var _mog_bat_cursor_gparty_select = Game_Party.prototype.select;
+Game_Party.prototype.select = function(activeMember) {
+	if ($gameTemp._arrowAllTargets[1]) {
+        this.members().forEach(function(member) {
+           member.select();
+        });
+		return;
+	};
+	_mog_bat_cursor_gparty_select.call(this,activeMember);
+};
+
+
+//=============================================================================
 // ** Window BattleActor
 //=============================================================================	
 
@@ -515,8 +535,8 @@ Window_BattleActor.prototype.arrow_clear = function(index) {
 //==============================
 var _alias_mog_wba_hide = Window_BattleActor.prototype.hide;
 Window_BattleActor.prototype.hide = function() {
-    _alias_mog_wba_hide.call(this);
 	$gameTemp._arrowAllTargets[1] = false;
+    _alias_mog_wba_hide.call(this);
 	this.arrow_clear();
 };
 
@@ -590,6 +610,23 @@ Window_BattleActor.prototype.processTouch = function() {
 	_alias_mog_bcursor_wactor_processTouch.call(this);
 };
 
+//=============================================================================
+// ** Game Troop
+//=============================================================================	
+
+//==============================
+// * Select
+//==============================
+var _mog_bat_cursor_gtroop_select = Game_Troop.prototype.select;
+Game_Troop.prototype.select = function(activeMember) {
+	if ($gameTemp._arrowAllTargets[0]) {
+        this.members().forEach(function(member) {
+           member.select();
+        });
+		return;
+	};
+	_mog_bat_cursor_gtroop_select.call(this,activeMember);
+};
 
 //=============================================================================
 // ** Window BattleEnemy
@@ -637,8 +674,8 @@ Window_BattleEnemy.prototype.arrow_clear = function(index) {
 //==============================
 var _alias_mog_wbe_hide = Window_BattleEnemy.prototype.hide; 
 Window_BattleEnemy.prototype.hide = function() {
-	_alias_mog_wbe_hide.call(this);
 	$gameTemp._arrowAllTargets[0] = false;
+	_alias_mog_wbe_hide.call(this);
 	this.arrow_clear();
 };
 
