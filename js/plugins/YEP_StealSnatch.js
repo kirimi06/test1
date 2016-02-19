@@ -11,7 +11,7 @@ Yanfly.Steal = Yanfly.Steal || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Allows your actors to be able to steal and snatch
+ * @plugindesc v1.03 Allows your actors to be able to steal and snatch
  * items from enemies.
  * @author Yanfly Engine Plugins
  *
@@ -87,6 +87,11 @@ Yanfly.Steal = Yanfly.Steal || {};
  * @desc How the gold format will look when it's stolen.
  * %1 - Amount     %2 - Gold
  * @default %1 %2
+ *
+ * @param Steal Wait
+ * @desc If using the Battle Engine Core, this is how many frames
+ * the message will wait.
+ * @default 60
  *
  * @param ---Snatch Window---
  * @default
@@ -419,6 +424,10 @@ Yanfly.Steal = Yanfly.Steal || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Added 'Steal Wait' plugin parameter to add a wait time for those using the
+ * Battle Engine Core.
+ *
  * Version 1.02:
  * - Message Core's WordWrap will now apply to snatch item descriptions.
  *
@@ -456,6 +465,7 @@ Yanfly.Param.StealFail = String(Yanfly.Parameters['Fail Text']);
 Yanfly.Param.StealSuccess = String(Yanfly.Parameters['Success Text']);
 Yanfly.Param.StealEmpty = String(Yanfly.Parameters['Steal Empty']);
 Yanfly.Param.StealGoldFmt = String(Yanfly.Parameters['Gold Format']);
+Yanfly.Param.StealWait = Number(Yanfly.Parameters['Steal Wait']);
 
 Yanfly.Param.SnatchHelpText = String(Yanfly.Parameters['Gold Help Text']);
 Yanfly.Param.SnatchFontSize = Number(Yanfly.Parameters['Success Font Size']);
@@ -1163,6 +1173,7 @@ Game_Action.prototype.getStealableItem = function(target, stealable) {
       }
       break;
     }
+    this.makeBattleEngineCoreStealWait();
     var fmt = Yanfly.Param.StealSuccess;
     if (fmt === '') return;
     var text = fmt.format(this.subject().name(), target.name(), name, icon);
@@ -1171,6 +1182,12 @@ Game_Action.prototype.getStealableItem = function(target, stealable) {
 
 Game_Action.prototype.afterStealEffect = function(target, item) {
     this.subject().afterStealEval(target, this.item(), item);
+};
+
+Game_Action.prototype.makeBattleEngineCoreStealWait = function() {
+    if (!Imported.YEP_BattleEngineCore) return;
+    var frames = Yanfly.Param.StealWait;
+    if (frames > 0) BattleManager._actionList.push(['WAIT', [frames]]);
 };
 
 Game_Action.prototype.displayStealText = function(text) {
@@ -1195,6 +1212,7 @@ Game_Action.prototype.displayStealFailure = function(target) {
     if (fmt === '') return;
     var text = fmt.format(this.subject().name(), target.name());
     this.displayStealText(text);
+    this.makeBattleEngineCoreStealWait();
 };
 
 Game_Action.prototype.displayStealEmpty = function(target) {
@@ -1203,6 +1221,7 @@ Game_Action.prototype.displayStealEmpty = function(target) {
     if (fmt === '') return;
     var text = fmt.format(target.name());
     this.displayStealText(text);
+    this.makeBattleEngineCoreStealWait();
 };
 
 Game_Action.prototype.setSnatchTarget = function(index) {

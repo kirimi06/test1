@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.30b Have more control over the flow of the battle system
+ * @plugindesc v1.32b Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -552,7 +552,7 @@ Yanfly.BEC = Yanfly.BEC || {};
  * event you have a sideview battler that doesn't conform to those standards,
  * you can 'anchor' them a different way.
  *
- * Actor Notetags:
+ * Actor, Class, Weapon, Armor, State Notetags:
  *   <Anchor X: y.z>
  *   <Anchor Y: y.z>
  *   This sets the anchor location for the actor's sideview battler at y.z.
@@ -561,6 +561,18 @@ Yanfly.BEC = Yanfly.BEC || {};
  *   more than 0.5 to make the X anchor more towards the right. To raise the
  *   Y anchor, set the number value to less than 1.0. Keep adjusting until you
  *   find that perfect anchor setting.
+ *
+ * If an anchor has multiple traits that yield different anchors, it will be
+ * used in a priority list akin to this order:
+ *
+ *   States
+ *   Weapons
+ *   Armors
+ *   Class
+ *   Actor
+ *   Default
+ *
+ * The higher it is on the priority list, the higher its priority.
  *
  * ============================================================================
  * Enemy Attack Animation
@@ -602,6 +614,13 @@ Yanfly.BEC = Yanfly.BEC || {};
  *   upon applying the state, the state will be removed a random number of
  *   turns from x to y.
  *
+ * States with Action End have a unique trait to them where if the caster of
+ * the state is the current active battler (subject) and if the state is then
+ * applied on the user itself, they will gain a 'free turn'. The 'free turn' is
+ * to mitigate the user from losing 1 duration of the turn since with an Action
+ * End timing, they would lose the benefit of being under the state for that
+ * turn's timing.
+ *
  * ============================================================================
  * Action Sequences
  * ============================================================================
@@ -617,7 +636,25 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.30b:
+ * Version 1.32b:
+ * - Fixed a bug that caused a crash when an actor died.
+ * - Added a motion engine to be used for future plugins.
+ * - Preparation for a future plugin.
+ * - <Anchor X: y.z> and <Anchor Y: y.z> notetags for actors are now extended
+ * to actors, classes, weapons, armors, and states.
+ *
+ * Version 1.31b:
+ * - States with Action End now have a unique trait to them where if the caster
+ * of the state is the current active battler (subject) and if the state is
+ * then applied on the user itself, they will gain a 'free turn'. The 'free
+ * turn' is to mitigate the user from losing 1 duration of the turn since with
+ * an Action End timing, they would lose the benefit of being under the state
+ * for that turn's timing.
+ * - Added failsafes for Free Turns in case other plugins have overwritten the
+ * on battle start functions.
+ * - Added a compatibility update to Animated SV Enemies for dead motion.
+ *
+ * Version 1.30:
  * - Optimization update.
  * - Fixed a bug that prevented added state effects be unable to apply if they
  * are an added Death state.
@@ -902,7 +939,11 @@ DataManager.isDatabaseLoaded = function() {
     this.processBECNotetags4($dataArmors);
     this.processBECNotetags4($dataEnemies);
     this.processBECNotetags4($dataStates);
-    this.processBECNotetags5($dataActors);
+    this.processBECNotetags5($dataActors, true);
+    this.processBECNotetags5($dataClasses, false);
+    this.processBECNotetags5($dataWeapons, false);
+    this.processBECNotetags5($dataArmors, false);
+    this.processBECNotetags5($dataStates, false);
     this.processBECNotetags6($dataStates);
     return true;
 };
@@ -1162,13 +1203,15 @@ DataManager.processBECNotetags4 = function(group) {
   }
 };
 
-DataManager.processBECNotetags5 = function(group) {
+DataManager.processBECNotetags5 = function(group, isActor) {
   for (var n = 1; n < group.length; n++) {
     var obj = group[n];
     var notedata = obj.note.split(/[\r\n]+/);
 
-    obj.anchorX = Yanfly.Param.BECAnchorX;
-    obj.anchorY = Yanfly.Param.BECAnchorY;
+    if (isActor) {
+      obj.anchorX = Yanfly.Param.BECAnchorX;
+      obj.anchorY = Yanfly.Param.BECAnchorY;
+    }
 
     for (var i = 0; i < notedata.length; i++) {
       var line = notedata[i];
@@ -2617,6 +2660,32 @@ Sprite_Actor.prototype.updateFrame = function() {
     }
 };
 
+Yanfly.BEC.Sprite_Actor_refreshMotion = Sprite_Actor.prototype.refreshMotion;
+Sprite_Actor.prototype.refreshMotion = function() {
+    var actor = this._actor;
+    if (!actor) return;
+    var stateMotion = actor.stateMotionIndex();
+    if (actor.isInputting() || actor.isActing()) {
+      this.startMotion(actor.idleMotion());
+    } else if (stateMotion === 3) {
+      this.startMotion(actor.deadMotion());
+    } else if (stateMotion === 2) {
+      this.startMotion(actor.sleepMotion());
+    } else if (actor.isChanting()) {
+      this.startMotion(actor.chantMotion());
+    } else if (actor.isGuard() || actor.isGuardWaiting()) {
+      this.startMotion(actor.guardMotion());
+    } else if (stateMotion === 1) {
+      this.startMotion(actor.abnormalMotion());
+    } else if (actor.isDying()) {
+      this.startMotion(actor.dyingMotion());
+    } else if (actor.isUndecided()) {
+      this.startMotion(actor.idleMotion());
+    } else {
+      this.startMotion(actor.waitMotion());
+    }
+};
+
 //=============================================================================
 // Sprite_Enemy
 //=============================================================================
@@ -2943,13 +3012,19 @@ Game_BattlerBase.prototype.updateStateTurns = function() {
 Game_BattlerBase.prototype.updateStateTurnTiming = function(timing) {
     if (this.isBypassUpdateTurns()) return;
     var statesRemoved = [];
+    this._freeStateTurn = this._freeStateTurn || [];
     for (var i = 0; i < this._states.length; ++i) {
       var stateId = this._states[i];
       var state = $dataStates[stateId];
       if (!state) continue;
       if (state.autoRemovalTiming !== timing) continue;
       if (!this._stateTurns[stateId]) continue;
-      this._stateTurns[stateId] -= 1;
+      if (this._freeStateTurn.contains(stateId)) {
+        var index = this._freeStateTurn.indexOf(stateId);
+        this._freeStateTurn.splice(index, 1);
+      } else {
+        this._stateTurns[stateId] -= 1;
+      }
       if (this._stateTurns[stateId] <= 0) statesRemoved.push(stateId);
     }
     for (var i = 0; i < statesRemoved.length; ++i) {
@@ -3025,6 +3100,7 @@ Game_Battler.prototype.useItem = function(item) {
 Yanfly.BEC.Game_Battler_onBattleStart = Game_Battler.prototype.onBattleStart;
 Game_Battler.prototype.onBattleStart = function() {
     Yanfly.BEC.Game_Battler_onBattleStart.call(this);
+    this._freeStateTurn = [];
     this._immortalState = false;
     this._selfTurnCount = 0;
 };
@@ -3032,6 +3108,7 @@ Game_Battler.prototype.onBattleStart = function() {
 Yanfly.BEC.Game_Battler_onBattleEnd = Game_Battler.prototype.onBattleEnd;
 Game_Battler.prototype.onBattleEnd = function() {
     Yanfly.BEC.Game_Battler_onBattleEnd.call(this);
+    this._freeStateTurn = [];
     this._immortalState = false;
 };
 
@@ -3119,7 +3196,7 @@ Yanfly.BEC.Game_Battler_performCollapse =
     Game_Battler.prototype.performCollapse;
 Game_Battler.prototype.performCollapse = function() {
     Yanfly.BEC.Game_Battler_performCollapse.call(this);
-    if ($gameParty.inBattle()) this.forceMotion('dead');
+    if ($gameParty.inBattle()) this.forceMotion(this.deadMotion());
 };
 
 Game_Battler.prototype.performResultEffects = function() {
@@ -3441,10 +3518,11 @@ Game_Battler.prototype.forceMotionRefresh = function() {
 };
 
 Game_Battler.prototype.requestMotionRefresh = function() {
-    if (this.isDead() && this._motionType !== 'dead') {
-      this.requestMotion('dead');
+    var deadMotion = this.deadMotion();
+    if (this.isDead() && this._motionType !== deadMotion) {
+      this.requestMotion(deadMotion);
     }
-    if (this.isDead() && this._motionType === 'dead') return;
+    if (this.isDead() && this._motionType === deadMotion) return;
     if (this._motionType === 'victory') return;
     if (this._motionType === 'escape' && !BattleManager.isInputting()) return;
     if (this._motionType === 'guard' && !BattleManager.isInputting()) return;
@@ -3498,12 +3576,65 @@ Game_Battler.prototype.createActions = function() {
     this.makeActions();
 };
 
+Yanfly.BEC.Game_Battler_addState = Game_Battler.prototype.addState;
+Game_Battler.prototype.addState = function(stateId) {
+    Yanfly.BEC.Game_Battler_addState.call(this, stateId);
+    if (this.canAddStateFreeTurn(stateId)) this.setStateFreeTurn(stateId);
+};
+
+Game_Battler.prototype.canAddStateFreeTurn = function(stateId) {
+    if (!$gameParty.inBattle()) return false;
+    if (!this.isStateAffected(stateId)) return false;
+    if (BattleManager._subject !== this) return false;
+    if ($dataStates[stateId].autoRemovalTiming !== 1) return false;
+    return true;
+};
+
+Game_Battler.prototype.setStateFreeTurn = function(stateId) {
+    this._freeStateTurn = this._freeStateTurn || [];
+    this._freeStateTurn.push(stateId);
+};
+
+Game_Battler.prototype.idleMotion = function() {
+    return 'walk';
+};
+
+Game_Battler.prototype.deadMotion = function() {
+    return 'dead';
+};
+
+Game_Battler.prototype.sleepMotion = function() {
+    return 'sleep';
+};
+
+Game_Battler.prototype.chantMotion = function() {
+    return 'chant';
+};
+
+Game_Battler.prototype.guardMotion = function() {
+    return 'guard';
+};
+
+Game_Battler.prototype.abnormalMotion = function() {
+    return 'abnormal';
+};
+
+Game_Battler.prototype.dyingMotion = function() {
+    return 'dying';
+};
+
+Game_Battler.prototype.waitMotion = function() {
+    return 'wait';
+};
+
 //=============================================================================
 // Game_Actor
 //=============================================================================
 
 Yanfly.BEC.Game_Actor_refresh = Game_Actor.prototype.refresh;
 Game_Actor.prototype.refresh = function() {
+    this._anchorX = undefined;
+    this._anchorY = undefined;
     Yanfly.BEC.Game_Actor_refresh.call(this);
     if ($gameParty.inBattle()) this.requestStatusRefresh();
 };
@@ -3556,11 +3687,55 @@ Game_Actor.prototype.spriteHeight = function() {
 };
 
 Game_Actor.prototype.anchorX = function() {
-    return this.actor().anchorX;
+    if (this._anchorX !== undefined) return this._anchorX;
+    var length = this.states().length;
+    for (var i = 0; i < length; ++i) {
+      var obj = this.states()[i];
+      if (obj && obj.anchorX !== undefined) {
+        this._anchorX = obj.anchorX;
+        return this._anchorX;
+      }
+    }
+    length = this.equips().length;
+    for (var i = 0; i < length; ++i) {
+      var obj = this.equips()[i];
+      if (obj && obj.anchorX !== undefined) {
+        this._anchorX = obj.anchorX;
+        return this._anchorX;
+      }
+    }
+    if (this.currentClass().anchorX !== undefined) {
+      this._anchorX = this.currentClass().anchorX;
+      return this._anchorX;
+    }
+    this._anchorX = this.actor().anchorX;
+    return this._anchorX;
 };
 
 Game_Actor.prototype.anchorY = function() {
-    return this.actor().anchorY;
+    if (this._anchorY !== undefined) return this._anchorY;
+    var length = this.states().length;
+    for (var i = 0; i < length; ++i) {
+      var obj = this.states()[i];
+      if (obj && obj.anchorY !== undefined) {
+        this._anchorY = obj.anchorY;
+        return this._anchorY;
+      }
+    }
+    length = this.equips().length;
+    for (var i = 0; i < length; ++i) {
+      var obj = this.equips()[i];
+      if (obj && obj.anchorY !== undefined) {
+        this._anchorY = obj.anchorY;
+        return this._anchorY;
+      }
+    }
+    if (this.currentClass().anchorY !== undefined) {
+      this._anchorY = this.currentClass().anchorY;
+      return this._anchorY;
+    }
+    this._anchorY = this.actor().anchorY;
+    return this._anchorY;
 };
 
 Game_Actor.prototype.spriteFacePoint = function(pointX, pointY) {
@@ -4126,7 +4301,7 @@ WindowLayer.prototype._webglMaskWindow = function(renderSession, win) {
 Yanfly.BEC.Window_BattleEnemy_maxCols =
     Window_BattleEnemy.prototype.maxCols;
 Window_BattleEnemy.prototype.maxCols = function() {
-    if (eval(Yanfly.Param.BECEnemySelect)) return this.allowedTargets().length;
+    if (eval(Yanfly.Param.BECEnemySelect)) return this._enemies.length;
     return Yanfly.BEC.Window_BattleEnemy_maxCols.call(this);
 };
 
@@ -4137,7 +4312,7 @@ Window_BattleEnemy.prototype.allowedTargets = function() {
 };
 
 Window_BattleEnemy.prototype.refresh = function() {
-    this._enemies = $gameTroop.aliveMembers();
+    this._enemies = this.allowedTargets();
     this.sortTargets();
     Window_Selectable.prototype.refresh.call(this);
 };
@@ -4356,7 +4531,7 @@ Window_EnemyVisualSelect.prototype.isShowWindow = function() {
     if (this._battler.isDead()) {
       return enemyWindow._selectDead;
     }
-    return true;
+    return enemyWindow._enemies.contains(this._battler);
 };
 
 Window_EnemyVisualSelect.prototype.updateCursor = function() {

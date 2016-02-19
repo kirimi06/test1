@@ -11,7 +11,7 @@ Yanfly.Row = Yanfly.Row || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 Places party members into row formations to give
+ * @plugindesc v1.06a Places party members into row formations to give
  * them distinct advantages based on row location.
  * @author Yanfly Engine Plugins
  *
@@ -627,6 +627,26 @@ Yanfly.Row = Yanfly.Row || {};
  * behind that row will move forward one row until all the empty rows are gone.
  *
  * ============================================================================
+ * Main Menu Manager - Positioning the Row Command
+ * ============================================================================
+ *
+ * For those using the Main Menu Manager and would like to position the Row
+ * command in a place you'd like, use the following format:
+ *
+ *       Name: Yanfly.Param.RowCmdName
+ *     Symbol: row
+ *       Show: $gameSystem.isShowRowMenu()
+ *    Enabled: $gameSystem.isEnabledRowMenu()
+ *        Ext: 
+ *  Main Bind: this.commandRow.bind(this)
+ * Actor Bind:
+ *
+ * Insert the above setup within a Main Menu Manager slot. Provided you copy
+ * the exact settings to where you need it, it will appear there while using
+ * all of the naming, enabling, disabling, hiding, and showing effects done by
+ * the plugin parameters.
+ *
+ * ============================================================================
  * Plugin Commands
  * ============================================================================
  *
@@ -675,10 +695,12 @@ Yanfly.Row = Yanfly.Row || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.06:
+ * Version 1.06a:
  * - Fixed a bug where Lunatic Mode effects weren't working properly.
  * - Added a 'Use Map Sprite' plugin parameter for those using battlers that
  * are too big for the Row changing menu.
+ * - Added new section to Help File on how to place Row Formation into the
+ * Main Menu Manager.
  *
  * Version 1.05:
  * - Fixed a bug with user row changing notetags not working properly.

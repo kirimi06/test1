@@ -11,7 +11,7 @@ Yanfly.Message = Yanfly.Message || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.09 Adds more features to the Message Window to customized
+ * @plugindesc v1.10 Adds more features to the Message Window to customized
  * the way your messages appear and functions.
  * @author Yanfly Engine Plugins
  *
@@ -48,7 +48,7 @@ Yanfly.Message = Yanfly.Message || {};
  * @default false
  *
  * @param Description Wrap
- * @desc Use this to enable or disable word wrapping for descriptions.
+ * @desc Enable or disable word wrapping for descriptions.
  * OFF - false     ON - true
  * @default false
  *
@@ -290,6 +290,10 @@ Yanfly.Message = Yanfly.Message || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.10:
+ * - Updated the Message Row system for Extended Message Pack 1's Autosizing
+ * feature to work with extended heights.
+ *
  * Version 1.09:
  * - Replaced 'Fast Forward' parameter with the 'Fast Forward Key' parameter
  * and 'Enable Fast Forward' parameter. Two new Plugin Commands are added. They
@@ -395,7 +399,7 @@ Game_System.prototype.initMessageSystem = function() {
 
 Game_System.prototype.messageRows = function() {
 		var rows = eval(this._messageRows) || eval(Yanfly.Param.MSGDefaultRows);
-		return Math.max(1, parseInt(rows));
+		return Math.max(1, Number(rows));
 };
 
 Game_System.prototype.messageWidth = function() {
@@ -523,8 +527,8 @@ Window_Base.prototype.setWordWrap = function(text) {
 		if (this._wordWrap) {
       var replace = Yanfly.Param.MSGWrapSpace ? ' ' : '';
 			text = text.replace(/[\n\r]+/g, replace);
-			text = text.replace(/<(?:BR|line break)>/gi, '\n');
 		}
+    text = text.replace(/<(?:BR|line break)>/gi, '\n');
 		return text;
 };
 
@@ -861,13 +865,6 @@ Window_NameBox.prototype.initialize = function(parentWindow) {
 		this.hide();
 };
 
-Yanfly.Message.WindowLayer_webglMaskWindow =
-		WindowLayer.prototype._webglMaskWindow;
-WindowLayer.prototype._webglMaskWindow = function(renderSession, win) {
-    if (win._ignoreMask) return;
-    Yanfly.Message.WindowLayer_webglMaskWindow.call(this, renderSession, win);
-};
-
 Window_NameBox.prototype.windowWidth = function() {
 		this.resetFontSettings();
     var dw = this.textWidthEx(this._text);
@@ -1116,11 +1113,11 @@ Window_Message.prototype.convertNameBox = function(text) {
 
 Window_Message.prototype.convertMessageCharacters = function(text) {
 		text = text.replace(/\x1bAF\[(\d+)\]/gi, function() {
-				var i = parseInt(arguments[1])
+				var i = parseInt(arguments[1]);
 				return this.convertActorFace($gameActors.actor(i));
 		}.bind(this));
 		text = text.replace(/\x1bPF\[(\d+)\]/gi, function() {
-				var i = parseInt(arguments[1])
+				var i = parseInt(arguments[1]);
 				return this.convertActorFace($gameParty.members()[i - 1]);
 		}.bind(this));
     return text;

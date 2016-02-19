@@ -11,7 +11,7 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 (Requires YEP_MessageCore.js) Letter Sounds, NameBox
+ * @plugindesc v1.04a (Requires YEP_MessageCore.js) Letter Sounds, NameBox
  * Background Types, Choice Control, and more!
  * @author Yanfly Engine Plugins
  *
@@ -539,6 +539,11 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04a:
+ * - Updated the Autosizing feature to work with \{ and \} text codes. Requires
+ * v1.10 of Message Core.
+ * - Fixed a bug that caused \msgRows[auto] to crash.
+ *
  * Version 1.03:
  * - Fixed a bug that caused \., \|, \w[x] to not stall the \auto notetags.
  * - Fixed a bug involving show/enable switches.
@@ -995,6 +1000,21 @@ Window_Base.prototype.processEscapeCharacter = function(code, textState) {
   }
 };
 
+Window_Base.prototype.textHeightEx = function(text) {
+    return this.getTextExHeight(text, 0, 0);
+};
+
+Window_Base.prototype.getTextExHeight = function(text, x, y) {
+    if (text) {
+        var textState = { index: 0, x: x, y: y, left: x };
+        textState.text = this.convertEscapeCharacters(text);
+        textState.height = this.calcTextHeight(textState, true);
+        return textState.height;
+    } else {
+        return 0;
+    }
+};
+
 //=============================================================================
 // Window_ChoiceList
 //=============================================================================
@@ -1241,8 +1261,7 @@ Window_Message.prototype.convertMessagePositions = function(text) {
         this._needsMessageReset = true;
         this.setMessagePositionEvent(arguments[1]);
         this._checkingWidth = true;
-        var value = this.getFittedMessageRows(text);
-        $gameSystem._messageRows = value;
+        this.getFittedMessageRows(text);
         var value = this.getFittedMessageWidth(text);
         $gameSystem._messageWidth = value;
         this._checkingWidth = false;
@@ -1257,8 +1276,7 @@ Window_Message.prototype.convertMessagePositions = function(text) {
         if (actorId === 0) actorId = $gameParty.members()[0]._actorId;
         this.setMessagePositionEvent(actorId);
         this._checkingWidth = true;
-        var value = this.getFittedMessageRows(text);
-        $gameSystem._messageRows = value;
+        this.getFittedMessageRows(text);
         var value = this.getFittedMessageWidth(text);
         $gameSystem._messageWidth = value;
         this._checkingWidth = false;
@@ -1278,8 +1296,7 @@ Window_Message.prototype.convertMessagePositions = function(text) {
         }
         this.setMessagePositionEvent(actorId);
         this._checkingWidth = true;
-        var value = this.getFittedMessageRows(text);
-        $gameSystem._messageRows = value;
+        this.getFittedMessageRows(text);
         var value = this.getFittedMessageWidth(text);
         $gameSystem._messageWidth = value;
         this._checkingWidth = false;
@@ -1296,8 +1313,7 @@ Window_Message.prototype.convertMessagePositions = function(text) {
           this.setMessagePositionEvent(-enemyId);
         }
         this._checkingWidth = true;
-        var value = this.getFittedMessageRows(text);
-        $gameSystem._messageRows = value;
+        this.getFittedMessageRows(text);
         var value = this.getFittedMessageWidth(text);
         $gameSystem._messageWidth = value;
         this._checkingWidth = false;
@@ -1306,11 +1322,18 @@ Window_Message.prototype.convertMessagePositions = function(text) {
     }.bind(this));
     // MSGROWS
     text = text.replace(/\x1bMSGROWS\[(.*?)\]/gi, function() {
-      var value = 0;
-      this._needsMessageReset = true;
-      value = (arguments[1].match(/auto/i)) ? 'auto' : parseInt(arguments[1]);
-      if (value === 'auto') value = this.getFittedMessageRows(text);
-      $gameSystem._messageRows = value;
+      if (!this._checkingWidth) {
+        this._checkingWidth = true;
+        this._needsMessageReset = true;
+        var value = 0;
+        value = (arguments[1].match(/auto/i)) ? 'auto' : parseInt(arguments[1]);
+        if (value === 'auto') {
+          this.getFittedMessageRows(text);
+        } else {
+          $gameSystem._messageRows = value;
+        }
+        this._checkingWidth = false;
+      }
       return '';
     }.bind(this));
     // MSGWIDTH
@@ -1331,8 +1354,7 @@ Window_Message.prototype.convertMessagePositions = function(text) {
       if (!this._checkingWidth) {
         this._checkingWidth = true;
         this._needsMessageReset = true;
-        var value = this.getFittedMessageRows(text);
-        $gameSystem._messageRows = value;
+        this.getFittedMessageRows(text);
         var value = this.getFittedMessageWidth(text);
         $gameSystem._messageWidth = value;
         this._checkingWidth = false;
@@ -1353,13 +1375,11 @@ Window_Message.prototype.setMessagePositionEvent = function(eventId) {
 };
 
 Window_Message.prototype.getFittedMessageRows = function(text) {
-    var value = 1;
-    value += text.split(/\n/g).length - 1;
-    if (this.newLineX() && Yanfly.Param.EMP1FullFace) {
-      var max = Math.ceil(Window_Base._faceHeight / this.lineHeight());
-      value = Math.max(max, value);
+    var height = this.textHeightEx(text);
+    if (Yanfly.Param.EMP1FullFace && this.newLineX() > 0) {
+      height = Math.max(height, Window_Base._faceHeight);
     }
-    return value;
+    $gameSystem._messageRows = height / this.lineHeight();
 };
 
 Window_Message.prototype.getFittedMessageWidth = function(text) {

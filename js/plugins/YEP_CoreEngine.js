@@ -11,7 +11,7 @@ Yanfly.Core = Yanfly.Core || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.11 Needed for the majority of Yanfly Engine Scripts. Also
+ * @plugindesc v1.12 Needed for the majority of Yanfly Engine Scripts. Also
  * contains bug fixes found inherently in RPG Maker.
  * @author Yanfly Engine Plugins
  *
@@ -445,6 +445,10 @@ Yanfly.Core = Yanfly.Core || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.12:
+ * - Fixed a bug with a notetag: <Learn at Level: x>. Now, the notetag works
+ * with both <Learn at Level: x> and <Learn Level: x>
+ *
  * Version 1.11:
  * - Made fixes to the MV Source Code where FaceWidth was using a hard-coded
  * 144 value regardless of what was changed for the Face Width parameter.
@@ -786,7 +790,7 @@ DataManager.processCORENotetags4 = function(group) {
     var notedata = obj.note.split(/[\r\n]+/);
 
     obj.learnings.forEach(function(learning) {
-      if (learning.note.match(/<(?:LEARN LEVEL):[ ](\d+)>/i)) {
+      if (learning.note.match(/<(?:LEARN LEVEL|LEARN AT LEVEL):[ ](\d+)>/i)) {
         learning.level = parseInt(RegExp.$1);
         if (learning.level < 1) obj.maxLevel = 1;
       }

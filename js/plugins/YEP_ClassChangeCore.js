@@ -11,7 +11,7 @@ Yanfly.CCC = Yanfly.CCC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 This plugin creates a system where your player
+ * @plugindesc v1.07 This plugin creates a system where your player
  * can change classes through the main menu.
  * @author Yanfly Engine Plugins
  *
@@ -202,6 +202,10 @@ Yanfly.CCC = Yanfly.CCC || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.07:
+ * - Fixed a bug that carried over a previously changed actor's stats into the
+ * stat comparison window.
  *
  * Version 1.06:
  * - Made an update to the 'Change Actor Images' to give changes to actor
@@ -1218,7 +1222,7 @@ Scene_Class.prototype.onItemCancel = function() {
     this._commandWindow.activate();
     this._helpWindow.setItem(null);
     this._itemWindow.refresh();
-    this._compareWindow.setTempActor(this._actor);
+    this._compareWindow.setTempActor(null);
 };
 
 Scene_Class.prototype.onActorChange = function() {

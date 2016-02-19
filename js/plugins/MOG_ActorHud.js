@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) Adiciona uma Hud com os parâmetros do personagem.
+ * @plugindesc (v1.4) Adiciona uma Hud com os parâmetros do personagem.
  * @author Moghunter
  *
  * @param Initial Visible
@@ -267,7 +267,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Actor Hud (v1.3) +++
+ * +++ MOG Actor Hud (v1.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -305,7 +305,8 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
- * (v1.3) - Adição de ocultar a hud no inicio do jogo.. 
+ * (v1.4) - Correção do crash quando o states está em false.
+ * (v1.3) - Adição de ocultar a hud no inicio do jogo.
  * (v1.2) - Correção do setup da posição do numero de HP. 
  * (v1.1) - Correção de piscar a hud no modo ocultar a hud.
  *        
@@ -1379,6 +1380,7 @@ Actor_Hud.prototype.refresh_states = function() {
 // * Update States
 //==============================
 Actor_Hud.prototype.update_states = function() {
+	if (!this._state_icon) {return};
 	this._states_data[2] += 1;
 	if (this.need_refresh_states()) {this.refresh_states();};
 };

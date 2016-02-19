@@ -11,7 +11,7 @@ Yanfly.PLG = Yanfly.PLG || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 (Requires YEP_SkillCore.js) A party-wide skill
+ * @plugindesc v1.02a (Requires YEP_SkillCore.js) A party-wide skill
  * resource is accessible across all members of a unit.
  * @author Yanfly Engine Plugins
  *
@@ -487,6 +487,11 @@ Yanfly.PLG = Yanfly.PLG || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02a:
+ * - Fixed a bug that caused certain notetags to crash the game.
+ * - Battle Engine Core's 'Hide Battle HUD' will now hide the Party Limit Gauge
+ * as well.
+ *
  * Version 1.01:
  * - Added 'ShowPartyLimitGauge', 'HidePartyLimitGauge', 'ShowTroopLimitGauge',
  * 'HideTroopLimitGauge' Plugin Commands to hide/show the Party Limit Gauges
@@ -796,7 +801,7 @@ Game_Battler.prototype.partyLimitCostRate = function() {
     for (var i = 0; i < length; ++i) {
       var obj = this.states()[i];
       if (obj && obj.partyLimitGaugeRate !== undefined) {
-        value *= obj.partyLimitGaugeRate;
+        rate *= obj.partyLimitGaugeRate;
       }
     }
     return rate;
@@ -885,7 +890,7 @@ Game_Actor.prototype.partyLimitCostRate = function() {
     for (var i = 0; i < length; ++i) {
       var obj = this.equips()[i];
       if (obj && obj.partyLimitGaugeRate !== undefined) {
-        value *= obj.partyLimitGaugeRate;
+        rate *= obj.partyLimitGaugeRate;
       }
     }
     return rate;
@@ -1377,6 +1382,7 @@ Window_PartyLimitGauge.prototype.initialize = function(unit) {
     } else {
       this._lowerWindows = false;
     }
+    this._windowLayer = SceneManager._scene._windowLayer;
     Window_Base.prototype.initialize.call(this, wx, wy, ww, wh);
     this._visibleSetting = false;
     this.visible = false;
@@ -1394,7 +1400,8 @@ Window_PartyLimitGauge.prototype.standardPadding = function() {
 
 Window_PartyLimitGauge.prototype.getPositionX = function() {
     var width = this.windowWidth();
-    return eval(this._unit.partyLimitGaugePosX());
+    var x = eval(this._unit.partyLimitGaugePosX());
+    return x;
 };
 
 Window_PartyLimitGauge.prototype.getPositionY = function() {
@@ -1447,6 +1454,8 @@ Window_PartyLimitGauge.prototype.updateOpacity = function() {
     } else if (BattleManager._victoryPhase) {
       visible = false;
       this._permInvisible = true;
+    } else if (this._windowLayer && this._windowLayer.x !== 0) {
+      visible = false;
     } else if (!this._lowerWindows) {
       if (SceneManager._scene._itemWindow.visible) visible = false;
       if (SceneManager._scene._skillWindow.visible) visible = false;

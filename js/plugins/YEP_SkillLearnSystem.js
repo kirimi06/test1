@@ -11,7 +11,7 @@ Yanfly.SLS = Yanfly.SLS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06b Allows actors to learn skills from the skill menu
+ * @plugindesc v1.07 Allows actors to learn skills from the skill menu
  * through crafting them via items or otherwise.
  * @author Yanfly Engine Plugins
  *
@@ -228,6 +228,10 @@ Yanfly.SLS = Yanfly.SLS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated the <Learn Require Level: x> notetag. If you are using the Class
+ * Change Core, the requirement will now depend on the level of the class.
+ *
  * Version 1.06b:
  * - Added 'Confirm Window', 'Confirm Text', 'Confirm Yes', 'Confirm No' to the
  * plugin's parameters. This confirm window only appears for non-integrated
@@ -293,11 +297,11 @@ Yanfly.Param.SLSDefaultJp = Number(Yanfly.Parameters['Default JP Cost']);
 Yanfly.SLS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
     if (!Yanfly.SLS.DataManager_isDatabaseLoaded.call(this)) return false;
-    DataManager.processSLSNotetagsI($dataItems);
-    DataManager.processSLSNotetagsW($dataWeapons);
-    DataManager.processSLSNotetagsA($dataArmors);
-    DataManager.processSLSNotetags1($dataClasses);
-    DataManager.processSLSNotetags2($dataSkills);
+    this.processSLSNotetagsI($dataItems);
+    this.processSLSNotetagsW($dataWeapons);
+    this.processSLSNotetagsA($dataArmors);
+    this.processSLSNotetags1($dataClasses);
+    this.processSLSNotetags2($dataSkills);
     return true;
 };
 
@@ -799,7 +803,12 @@ Window_SkillLearn.prototype.includes = function(skill) {
 Window_SkillLearn.prototype.meetsRequirements = function(skill) {
     var evalValue = this.getEvalLine(skill.learnShowEval);
     if (evalValue !== undefined) return evalValue;
-    if (skill.learnRequireLevel > this._actor.level) return false;
+    if (Imported.YEP_ClassChangeCore) {
+      var classLevel = this._actor.classLevel(this._classId);
+      if (skill.learnRequireLevel > classLevel) return false;
+    } else {
+      if (skill.learnRequireLevel > this._actor.level) return false;
+    }
     for (var i = 0; i < skill.learnRequireSkill.length; ++i) {
       var skillId = skill.learnRequireSkill[i];
       if (!$dataSkills[skillId]) continue;

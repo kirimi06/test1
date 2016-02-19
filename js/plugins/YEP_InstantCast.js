@@ -11,7 +11,7 @@ Yanfly.Instant = Yanfly.Instant || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06c Allows skills/items to be instantly cast after being
+ * @plugindesc v1.07a Allows skills/items to be instantly cast after being
  * selected in the battle menu.
  * @author Yanfly Engine Plugins
  *
@@ -148,6 +148,11 @@ Yanfly.Instant = Yanfly.Instant || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.07a:
+ * - Optimized to fit Tick-Based Battle Systems better.
+ * - Fixed a bug where if the user uses an instant action self-berserks itself,
+ * the user will still be able to input an action.
  *
  * Version 1.06c:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
@@ -332,9 +337,10 @@ BattleManager.endActorInstantCast = function() {
     user.makeActions();
     if (this.checkBattleEnd()) return;
     this._phase = 'input';
-    if (user.canMove()) {
+    if (user.canMove() && user.canInput()) {
       user.endInstantCast();
     } else {
+      user.makeActions();
       this.selectNextCommand();
     }
     this.refreshStatus()
@@ -352,6 +358,8 @@ BattleManager.endEnemyInstantCastAction = function() {
 };
 
 BattleManager.addInstantCastAction = function(battler) {
+    if (Imported.YEP_X_BattleSysATB && this.isATB()) return;
+    if (Imported.YEP_X_BattleSysCTB && this.isCTB()) return;
     var action = new Game_Action(battler);
     battler._actions.push(action);
     battler.makeActions();
@@ -379,7 +387,8 @@ BattleManager.setPreForceActionSettings = function() {
 Yanfly.Instant.BattleManager_resetPreForceActionSettings =
 BattleManager.resetPreForceActionSettings;
 BattleManager.resetPreForceActionSettings = function(settings) {
-    Yanfly.Instant.BattleManager_resetPreForceActionSettings.call(this, settings);
+    Yanfly.Instant.BattleManager_resetPreForceActionSettings.call(this,
+      settings);
     this._instantCasting = settings['instantCasting'];
 };
 
@@ -439,6 +448,21 @@ Game_Battler.prototype.checkCancelInstantCast = function(obj, item) {
       if (obj.cancelInstantItem.contains(id)) return true;
     }
     return false;
+};
+
+Yanfly.Instant.Game_Battler_onRestrict = Game_Battler.prototype.onRestrict;
+Game_Battler.prototype.onRestrict = function() {
+    var instant = false;
+    if ($gameParty.inBattle()) {
+      if (BattleManager._subject === this && BattleManager._instantCasting) {
+        instant = true;
+        var currentAction = this.currentAction();
+      }
+    }
+    Yanfly.Instant.Game_Battler_onRestrict.call(this);
+    if (instant) {
+      this.setAction(0, currentAction);
+    }
 };
 
 //=============================================================================

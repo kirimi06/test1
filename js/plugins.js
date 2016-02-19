@@ -71,6 +71,8 @@ var $plugins =
 {"name":"MOG_CharacterMotion","status":true,"description":"(v1.0) Sistema de animações dos sprites dos personagens.","parameters":{}},
 {"name":"MOG_EventText","status":true,"description":"(v1.0) Adiciona um texto em cima do evento.","parameters":{"X axis":"0","Y axis":"0","Font Size":"18"}},
 {"name":"MOG_EventSensor","status":true,"description":"(v1.0) Sistema de distância de eventos.","parameters":{"Self Switch Key":"D"}},
+{"name":"MOG_PictureEffects","status":true,"description":"(v1.1) Adiciona novas funções no sistema de mostrar imagens.","parameters":{}},
+{"name":"MOG_PixiFilters","status":true,"description":"(v1.3) Ativa alguns filtros gráficos padrões do Rpg Maker MV.","parameters":{"Blur Loop":"false","Pixelate Loop":"false"}},
 {"name":"MOG_TimeSystem","status":true,"description":"(v1.3) Sistema dinámico de tempo.","parameters":{">> MAIN ===================":"","Active Time":"true","Stop During EventRunning":"true","Stop During Dialogs":"true","Time Speed":"120","Tint Screen":"true","Transition Speed":"160",">> WORDS ===================":"","Day Week Names":"Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday","Season Names":"Spring,Summer,Fall,Winter","Month Names":"January,February,March,April,May,June,July,August,September,October,November,December","Time Word":"Time","Day Word":"Day","Day Week Word":"Day of Week","Month Word":"Month","Season Word":"Season","Year Word":"Year","Play Time Word":"Play Time",">> SWITCHES ===================":"","Dawn Switch ID":"21","Sunrise Switch ID":"22","Day Switch ID":"23","Sunset Switch ID":"24","Dusk Switch ID":"25","Night Switch ID":"26","Day Shift Switch ID":"27","Night Shift Switch ID":"28","Day Week Switches IDs":"29,30,31,32,33,34,35","Month Switches IDs":"40,41,42,43,44,45,46,47,48,49,50,51","Season Switches IDs":"36,37,38,39",">> VARIABLES ===================":"","Hour Variable ID":"10","Day Variable ID":"11","Year Variable ID":"12",">> TIME MAX ===================":"","Max Minute":"60","Max Day":"30","Max Day Week":"7","Max Month":"12","Max Season":"4","Season Interval":"3",">> START TIME ===================":"","Start Hour":"12","Start Day":"1","Start Month":"1","Start Season":"1","Start Year":"1",">> TONES ===================":"","Sunset Tone":"48,-14,-14,0","Dusk Tone":"-90,-90,-90,0","Night Tone":"-128,-128,-128,0","Dawn Tone":"-90,-90,-90,0","Sunrise Tone":"60,60,60,0","Day Tone":"0,0,0,0",">> WINDOWS ===================":"","Display PM Mode":"true","Window Time Map Visible":"true","Window Time Menu Visible":"true","Window Time Map X-Axis":"576","Window Time Map Y-Axis":"0","Window Time Menu X-Axis":"0","Window Time Menu Y-Axis":"324"}},
 {"name":"MOG_Weather_EX","status":true,"description":"(v1.5) Adiciona novos efeitos de climas.","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
@@ -144,6 +146,7 @@ var $plugins =
 {"name":"AdjustPictureGraphical","status":true,"description":"ピクチャのグラフィカルな位置調整プラグイン","parameters":{}},
 {"name":"ParallaxesNonBlur","status":false,"description":"視差ゼロ遠景のぼかし除去プラグイン","parameters":{}},
 {"name":"ItemNameEscape","status":true,"description":"項目名の制御文字適用プラグイン","parameters":{}},
+{"name":"FootstepSound","status":true,"description":"足音プラグイン","parameters":{"イベント実行中無効":"OFF"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"TDDP_BindPicturesToMap","status":false,"description":"画像をマップに固定したり、レイヤーの変更をすることができます。","parameters":{}},
 {"name":"TDDP_FluidTimestep","status":true,"description":"1.0.2 Fixes MV's framerate dependent timestepping. Makes the gamespeed the same regardless of framerate.","parameters":{}},
@@ -186,5 +189,11 @@ var $plugins =
 {"name":"Rem_Menu_Scene","status":false,"description":"","parameters":{}},
 {"name":"Untitled-2","status":false,"description":"レイアウトの異なるメニュー画面","parameters":{"bgBitmapItem":"","bgBitmapSkill":"","bgBitmapEquip":"","bgBitmapStatus":"","bgBitmapOptions":"","bgBitmapFile":"","bgBitmapGameEnd":"","maxRowsMenu":"4","commandCols":"1","isDisplayStatus":"1"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"VersionSpecified","status":true,"description":"【MMP ver.1.0】タイトル画面にバージョンを明記します。","parameters":{"version":"Version 1.0.0","fontSize":"20","fontColor":"rgb(255, 255, 255)","windowX":"540","windowY":"560"}}
+{"name":"VersionSpecified","status":true,"description":"【MMP ver.1.0】タイトル画面にバージョンを明記します。","parameters":{"version":"Version 1.0.0","fontSize":"20","fontColor":"rgb(255, 255, 255)","windowX":"540","windowY":"560"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"ROCK_CheckAction","status":true,"description":"決定キーで実行するイベントが無い場合にコモンイベントを呼ぶプラグイン","parameters":{"CommonEventId":"20"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"RS_TitleManagerEx","status":false,"description":"After finishing the game's Ending, this plugin changes a title image\nand background-music in your game title screen and displays a specific command.","parameters":{"ending1":"[\"Book\", \"\", \"Theme1\"]","ending2":"[\"Devil\", \"\", \"Field2\"]","ending3":"[\"Book\", \"\", \"Theme1\"]","ending4":"[\"Book\", \"\", \"Theme1\"]","Map ID":"1","Map X":"0","Map Y":"0","specific command":"specific command","show specific command":"true"}},
+{"name":"RS_ChangeTitle","status":false,"description":"This plugin changes the title screen image after a certain time.","parameters":{"FILE":"Book Castle CrossedSwords Crystal DemonCastle","TIME":"2"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];

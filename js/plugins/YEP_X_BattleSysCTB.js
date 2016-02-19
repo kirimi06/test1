@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.10 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.10a (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -388,8 +388,10 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.10:
+ * Version 1.10a:
  * - Updated plugin to update the AI more accordingly with Battle AI Core.
+ * - Optimized CTB Turn Order further to reduce lag when there are larger
+ * quantities of battle members.
  *
  * Version 1.09:
  * - Fixed a bug where forced actions clear out an action's effects before the
@@ -696,6 +698,7 @@ BattleManager.startBattle = function() {
     Yanfly.CTB.BattleManager_startBattle.call(this);
     if (this.isCTB()) {
       this._phase = null;
+      this.ctbTicksToReadyClear();
       this.startCTB();
     }
 };
@@ -703,6 +706,7 @@ BattleManager.startBattle = function() {
 Yanfly.CTB.BattleManager_endBattle = BattleManager.endBattle;
 BattleManager.endBattle = function(result) {
     Yanfly.CTB.BattleManager_endBattle.call(this, result);
+    this.ctbTicksToReadyClear();
     this.clearCTBData();
 };
 
@@ -815,6 +819,14 @@ BattleManager.ctbTurnOrder = function() {
       return 0;
     });
     return battlers;
+};
+
+BattleManager.ctbTicksToReadyClear = function() {
+    var length = this.allBattleMembers().length;
+    for (var i = 0; i < length; ++i) {
+      var member = this.allBattleMembers()[i];
+      if (member) member._ctbTicksToReady = undefined;
+    }
 };
 
 Yanfly.CTB.BattleManager_update = BattleManager.update;
@@ -1418,11 +1430,12 @@ Game_Action.prototype.rebalanceCTBSpeed = function(target) {
 
 Yanfly.CTB.Game_BattlerBase_refresh = Game_BattlerBase.prototype.refresh;
 Game_BattlerBase.prototype.refresh = function() {
-    Yanfly.CTB.Game_BattlerBase_refresh.call(this);
     if (BattleManager.isCTB() && $gameParty.inBattle()) {
+      BattleManager.ctbTicksToReadyClear();
       this._ctbTickValue = undefined;
       this.clearCTBCommandWindowCache();
     }
+    Yanfly.CTB.Game_BattlerBase_refresh.call(this);
 };
 
 Game_BattlerBase.prototype.clearCTBCommandWindowCache = function() {
@@ -1501,6 +1514,7 @@ Game_Battler.prototype.onBattleEnd = function() {
 };
 
 Game_Battler.prototype.ctbTicksToReady = function() {
+    if (this._ctbTicksToReady !== undefined) return this._ctbTicksToReady;
     var goal = BattleManager.ctbTarget();
     if (this.isCTBCharging()) goal += this.ctbChargeDestination();
     goal -= this.ctbSpeed();
@@ -1510,7 +1524,8 @@ Game_Battler.prototype.ctbTicksToReady = function() {
       var item = this.ctbTicksToReadyActionCheck();
       if (item.speed < 0) goal -= item.speed;
     }
-    return goal / Math.max(1, rate);
+    this._ctbTicksToReady = goal / Math.max(1, rate);
+    return this._ctbTicksToReady;
 };
 
 Game_Battler.prototype.ctbTicksToReadyActionCheck = function() {
@@ -2068,6 +2083,18 @@ Window_Help.prototype.meetCTBConditions = function(item) {
     if (!item) return false;
     if (!BattleManager.isCTB()) return false;
     return item.ctbHelp !== undefined;
+};
+
+//=============================================================================
+// Window_Selectable
+//=============================================================================
+
+Yanfly.CTB.Window_Selectable_select = Window_Selectable.prototype.select;
+Window_Selectable.prototype.select = function(index) {
+    if ($gameParty.inBattle() && BattleManager.isCTB()) {
+      BattleManager.ctbTicksToReadyClear();
+    }
+    Yanfly.CTB.Window_Selectable_select.call(this, index);
 };
 
 //=============================================================================
