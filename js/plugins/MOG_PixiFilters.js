@@ -1,4 +1,4 @@
-﻿//=============================================================================
+//=============================================================================
 // MOG_PixiFilters.js
 //=============================================================================
 
@@ -75,7 +75,7 @@
 
   　Moghunter.parameters = PluginManager.parameters('MOG_PixiFilters');
     Moghunter.pixiFilter_BlurLoop = String(Moghunter.parameters['Blur Loop'] || "false");
-    Moghunter.pixiFilter_PixelateLoop = String(Moghunter.parameters['Pixelate Loop'] || "false");
+	Moghunter.pixiFilter_PixelateLoop = String(Moghunter.parameters['Pixelate Loop'] || "false");
 	
 //=============================================================================
 // ** Game_Interpreter

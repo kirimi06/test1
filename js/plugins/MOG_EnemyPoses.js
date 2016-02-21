@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Adiciona poses nos battlers dos inimigos.
+ * @plugindesc (v1.3) Adiciona poses nos battlers dos inimigos.
  * @author Moghunter
  *
  * @help  
  * =============================================================================
- * +++ MOG Enemy Poses (v1.2) +++
+ * +++ MOG Enemy Poses (v1.3) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -36,6 +36,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (1.3) - Correção do glich de piscar o baltter na "morte subita".
  * (1.2) - Correção da não atualizar as poses no efeito transformação.
  * (1.1) - Correção da pose de forçar a ação.
  */
@@ -219,7 +220,7 @@ var _mog_batposes_apply = Game_Action.prototype.apply;
 Game_Action.prototype.apply = function(target) {
 	 var oldhp = target.hp;
 	 _mog_batposes_apply.call(this,target);
-	 if (oldhp > target.hp) {target.setBPose(3);
+	 if (oldhp > target.hp && this.item().damage.type != 0) {target.setBPose(3);
 	 } else if (oldhp < target.hp) {target.setBPose(1)};
 };
 
