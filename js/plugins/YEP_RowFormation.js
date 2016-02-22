@@ -11,7 +11,7 @@ Yanfly.Row = Yanfly.Row || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06a Places party members into row formations to give
+ * @plugindesc v1.07 Places party members into row formations to give
  * them distinct advantages based on row location.
  * @author Yanfly Engine Plugins
  *
@@ -694,6 +694,9 @@ Yanfly.Row = Yanfly.Row || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.07:
+ * - Fixed a bug that prevented the Row command in-battle from updating.
  *
  * Version 1.06a:
  * - Fixed a bug where Lunatic Mode effects weren't working properly.
@@ -1410,6 +1413,16 @@ Game_Party.prototype.loadActorImages = function() {
       ImageManager.loadFace(actor.faceName());
       ImageManager.loadCharacter(actor.characterName());
     }
+};
+
+//=============================================================================
+// Game_Troop
+//=============================================================================
+
+Yanfly.Row.Game_Troop_increaseTurn = Game_Troop.prototype.increaseTurn;
+Game_Troop.prototype.increaseTurn = function() {
+    Yanfly.Row.Game_Troop_increaseTurn.call(this);
+    $gameSystem.updateBattleRowCooldown();
 };
 
 //=============================================================================

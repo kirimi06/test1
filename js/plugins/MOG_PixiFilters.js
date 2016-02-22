@@ -1,4 +1,4 @@
-﻿//=============================================================================
+//=============================================================================
 // MOG_PixiFilters.js
 //=============================================================================
 
@@ -402,6 +402,33 @@ Spriteset_Base.prototype.refreshPixiFilter = function() {
    };
 };
 
-
+//==============================
+// * setPixiFilter
+//==============================
+Spriteset_Base.prototype.setPixiFilter = function() {
+   if ($gameSystem._pixiFilterData[1] === 0) {
+       return new PIXI.BlurFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 1) {
+	   return new PIXI.PixelateFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 2) {
+	   return new PIXI.InvertFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 3) {
+	   return new PIXI.GrayFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 4) {
+	   return new PIXI.DotScreenFilter();	
+   } else if ($gameSystem._pixiFilterData[1] === 5) {   			
+       var filter = new PIXI.ColorStepFilter();
+	   filter.step = 2; return filter;
+   } else if ($gameSystem._pixiFilterData[1] === 6) {
+	  return new PIXI.CrossHatchFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 7) {		
+	  return new PIXI.RGBSplitFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 8) {		
+	  return new PIXI.TwistFilter();
+   } else if ($gameSystem._pixiFilterData[1] === 9) {
+	   var bitmap = ImageManager.loadSystem("Test")
+	  return new PIXI.DisplacementFilter(bitmap);	  
+   } else {$gameSystem._pixiFilterData[1] = -1;
+	  return false;
    };
 };

@@ -11,7 +11,7 @@ Yanfly.Instant = Yanfly.Instant || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07a Allows skills/items to be instantly cast after being
+ * @plugindesc v1.07b Allows skills/items to be instantly cast after being
  * selected in the battle menu.
  * @author Yanfly Engine Plugins
  *
@@ -149,10 +149,12 @@ Yanfly.Instant = Yanfly.Instant || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.07a:
+ * Version 1.07b:
  * - Optimized to fit Tick-Based Battle Systems better.
  * - Fixed a bug where if the user uses an instant action self-berserks itself,
  * the user will still be able to input an action.
+ * - Added failsafes for those using independent items and then adding this
+ * plugin later. Effects are not applied retroactively.
  *
  * Version 1.06c:
  * - Fixed a bug if instant casting a skill that would make an opponent battler
@@ -432,9 +434,12 @@ Game_Battler.prototype.isCancelInstantCast = function(item) {
 
 Game_Battler.prototype.checkInstantCast = function(obj, item) {
     var id = item.id;
+    if (!obj) return false;
     if (DataManager.isSkill(item)) {
+      if (!obj.instantSkill) return false;
       if (obj.instantSkill.contains(id)) return true;
     } else if (DataManager.isItem(item)) {
+      if (!obj.instantItem) return false;
       if (obj.instantItem.contains(id)) return true;
     }
     return false;
@@ -442,9 +447,12 @@ Game_Battler.prototype.checkInstantCast = function(obj, item) {
 
 Game_Battler.prototype.checkCancelInstantCast = function(obj, item) {
     var id = item.id;
+    if (!obj) return false;
     if (DataManager.isSkill(item)) {
+      if (!obj.cancelInstantSkill) return false;
       if (obj.cancelInstantSkill.contains(id)) return true;
     } else if (DataManager.isItem(item)) {
+      if (!obj.cancelInstantItem) return false;
       if (obj.cancelInstantItem.contains(id)) return true;
     }
     return false;
