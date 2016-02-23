@@ -3,12 +3,12 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.7) Adiciona a animação de aura e partículas nos inimigos.
+ * @plugindesc (v1.8) Adiciona a animação de aura e partículas nos inimigos.
  * @author Moghunter
  + 
  * @help  
  * =============================================================================
- * +++ MOG - Aura Effects (v1.7) +++
+ * +++ MOG - Aura Effects (v1.8) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -49,6 +49,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.8) - Melhoria na compatibilidade de plugins. 
  * (v1.7) Correção da rotação não aconpanhar o battler.
  *        Posição da aura atrás do battler.
  * (v1.6) Correção do Crash relativo as Notetags.
@@ -122,6 +123,8 @@ Spriteset_Battle.prototype.createEnemies = function() {
 	for (var i = 0; i < this._enemySprites.length; i++) {
 		 this._enemySprites[i].add_aura_plane(this._aura_plane[i],0);
 		 this._enemySprites[i].add_aura_plane(this._aura_plane_b[i],1);
+		 this._aura_plane[i].z = 0.5;
+		 this._aura_plane_b[i].z = 2;
 	};
 };
 

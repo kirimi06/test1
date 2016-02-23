@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.3) Ativa alguns filtros gráficos padrões do Rpg Maker MV.
+ * @plugindesc (v1.4) Ativa alguns filtros gráficos padrões do Rpg Maker MV.
  * @author Moghunter
  * 
  * @param Blur Loop
@@ -16,7 +16,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - (Default) Pixi Filters (v1.3) +++
+ * +++ MOG - (Default) Pixi Filters (v1.4) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -61,6 +61,8 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (1.4) - Correção do Bug de resetar os efeitos de outros plugins ao 
+ *         usar a função Clear.
  * (1.3) - Corrigido o efeito do Tint Screen.  
  * (1.2) - Melhoria na velocidade das animações. 
  * (1.1) - Adição da animação dos filtros.
@@ -132,7 +134,6 @@ Game_System.prototype.initialize = function() {
 // * clear PixiFData
 //==============================
 Game_System.prototype.clearPixiFData = function() {
-	_mog_pixifilters_gsys_initialize.call(this);
 	this._pixiFilterData = [true,-1];
 	this._pixiFilterEffects = [true,-1,0,0,0,1,0,0];
 };

@@ -4,7 +4,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.4) Adiciona efeitos animados nos battlers.
+ * @plugindesc (v1.5) Adiciona efeitos animados nos battlers.
  * @author Moghunter
  *
  * @param Shake Effect Actor
@@ -21,7 +21,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battler Motion (v1.4) +++
+ * +++ MOG - Battler Motion (v1.5) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -50,6 +50,7 @@
  * =============================================================================
  * Histórico.
  * =============================================================================
+ * (1.5) Correção do glitch gráfico aleatório no modo flutuar.   
  * (1.4) Correção da animação de ação em ações forçadas.  
  * (1.3) Correção do Crash relativo as Notetags.  
  * (1.2) - Correção de não atualizar o efeito ao transformar o inimigo.
@@ -145,7 +146,7 @@ Game_Battler.prototype.clear_action_data = function() {
 	this._motion_action_xy = [0,0];
 	this._motion_action_scale = [0,0];
 	this._motion_action_rotation = 0;
-	if (Imported.MOG_EnemyPoses) {this._batPoses[2] = 1};
+	if (Imported.MOG_EnemyPoses && this._batPoses) {this._batPoses[2] = 1};
 };
 
 //==============================
@@ -412,7 +413,7 @@ Sprite_Battler.prototype.set_fly_mode = function() {
 		this._battler._motion_fly[2] = Math.floor(Math.random() * 2);
 		this._battler._motion_fly[3] += Math.floor(Math.random() * 5);
 		var rz = (Math.random() * 0.1).toFixed(2);
-		this._battler._motion_fly[4] += Number(rz);	
+		this._battler._motion_fly[4] = 0;	
 		this._battler._motion_idle_xy[1] = -(Math.floor(Math.random() * this._battler._motion_fly[3]));
 };
 
@@ -499,15 +500,18 @@ Sprite_Battler.prototype.update_idle_breath_mode = function() {
 //==============================
 // * Update Idle Fly Mode
 //==============================
-Sprite_Battler.prototype.update_idle_fly_mode = function() {	
+Sprite_Battler.prototype.update_idle_fly_mode = function() {
+	 this._battler._motion_fly[4] ++
+	 if (this._battler._motion_fly[4] < 3) {return};
+	 this._battler._motion_fly[4] = 0;
 	 if (this._battler._motion_fly[2] === 0) {
-     	 this._battler._motion_idle_xy[1] -= this._battler._motion_fly[4];
+     	 this._battler._motion_idle_xy[1] -= 1;
 			 if (this._battler._motion_idle_xy[1] <= -this._battler._motion_fly[3]){
 				 this._battler._motion_idle_xy[1] = -this._battler._motion_fly[3];
 				 this._battler._motion_fly[2] = 1
 			 };
 		 }
-     else { this._battler._motion_idle_xy[1] += this._battler._motion_fly[4];
+     else { this._battler._motion_idle_xy[1] += 1;
 			 if (this._battler._motion_idle_xy[1] >= -20){
 				 this._battler._motion_idle_xy[1] = -20;
 				 this._battler._motion_fly[2] = 0
@@ -739,6 +743,7 @@ SpriteBattlerShadow.prototype.set_data = function(sprite) {
 	this.setBlendColor([0, 0, 0, 255])
 	this.anchor.x = 0.5;
 	this.anchor.y = 0.5;
+	this.z = 1;
 };
 
 //==============================

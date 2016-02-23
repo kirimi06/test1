@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona o efeito de camera de batalha.
+ * @plugindesc (v1.1) Adiciona o efeito de camera de batalha.
  * @author Moghunter
  *
  * @param Cam Rate
@@ -28,7 +28,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Camera (v1.0) +++
+ * +++ MOG - Battle Camera (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -47,7 +47,9 @@
  * camera_speed : X
  *
  * =============================================================================
- * 
+ * HISTÓRICO
+ * ============================================================================= 
+ * (v1.1) - Correção do glich Gráfico de pixels.
  */
 
 //=============================================================================
@@ -523,8 +525,8 @@ Spriteset_Battle.prototype.update_battle_camera = function() {
 	 this.update_cam_position();
 	 var nx = this._center[0] - this._cam_X + this._cam_XF;
 	 var ny = this._center[1] - this._cam_Y + this._cam_YF;
-     this._battleField.x = this.cam_move_to(this._battleField.x,nx,this.cam_speed(),0);
-	 this._battleField.y = this.cam_move_to(this._battleField.y,ny,this.cam_speed(),1);
+     this._battleField.x = Math.floor(this.cam_move_to(this._battleField.x,nx,this.cam_speed(),0));
+	 this._battleField.y = Math.floor(this.cam_move_to(this._battleField.y,ny,this.cam_speed(),1));
      if (Imported.MOG_BattlebackEX) {this.update_bbex_cam()};
 };
 

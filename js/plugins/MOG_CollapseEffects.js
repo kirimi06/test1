@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona efeitos de colapsos animados.
+ * @plugindesc (v1.2) Adiciona efeitos de colapsos animados.
  * @author Moghunter
  *
  * @param Default Collapse
@@ -17,7 +17,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG - Collapse Effects (v1.0) +++
+ * +++ MOG - Collapse Effects (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -55,7 +55,11 @@
  * ANIMATION_ID = Definição da ID da animação do banco de dados.
  *
  * =============================================================================
- * 
+ * HISTÓRICO
+ * =============================================================================
+ * (1.2) - Correção do erro referente ao index. 
+ * (1.1) - Melhoria na codificação.
+ * =============================================================================  
  */
 
 //=============================================================================
@@ -91,11 +95,39 @@ Game_Battler.prototype.notetags = function() {
 };	
 	
 //==============================
-// * Setup
+// * Perform Collapse
 //==============================
-var _mog_coleft_genmy_setup = Game_Enemy.prototype.setup;
-Game_Enemy.prototype.setup = function(enemyId, x, y) {
-	_mog_coleft_genmy_setup.call(this,enemyId, x, y);
+var _mog_colefct_gbattler_performCollapse = Game_Battler.prototype.performCollapse;
+Game_Battler.prototype.performCollapse = function() {
+	_mog_colefct_gbattler_performCollapse.call(this);
+	if (this.isEnemy()) {this.checkCollapseEffect()};
+};
+	
+//==============================
+// * Check Collapse Effect
+//==============================
+Game_Battler.prototype.checkCollapseEffect = function() {
+	if (this._collpaseData[0] === -1) {this.setDefaultCollapse()};
+	if (this._collpaseData[1] > 0) {this.startAnimation(this._collpaseData[1], false, 0)};
+};	
+	
+//==============================
+// * set Default Collapse
+//==============================
+Game_Battler.prototype.setDefaultCollapse = function() {
+   var coltype = Math.min(Math.max(Number(Moghunter.collDefaultCollapse),-2),10);
+   if (coltype === -1) {return};
+   if (coltype === -2) {
+	   this._collpaseData[0] = Math.randomInt(7);	  
+   } else {
+	   this._collpaseData[0] = coltype;
+   };
+};	
+	
+//==============================
+// * Load Collapse Notetags
+//==============================
+Game_Battler.prototype.loadCollapseNotetags = function() {
     this.notetags().forEach(function(note) {
          var note_data = note.split(': ')
 		 if (note_data[0].toLowerCase() == "collapse effect"){
@@ -108,6 +140,19 @@ Game_Enemy.prototype.setup = function(enemyId, x, y) {
 		     this._collpaseData[1] = animation_id;			 
 		 };
 	},this);
+};		
+	
+//=============================================================================
+// ** Game Enemy
+//=============================================================================
+
+//==============================
+// * Setup
+//==============================
+var _mog_coleft_genmy_setup = Game_Enemy.prototype.setup;
+Game_Enemy.prototype.setup = function(enemyId, x, y) {
+	_mog_coleft_genmy_setup.call(this,enemyId, x, y);
+    this.loadCollapseNotetags();
 };	
 	
 //=============================================================================
@@ -120,7 +165,9 @@ Game_Enemy.prototype.setup = function(enemyId, x, y) {
 var _alias_mog_colefct_gaction_apply = Game_Action.prototype.apply;
 Game_Action.prototype.apply = function(target) {
 	 _alias_mog_colefct_gaction_apply.call(this,target);
-     if (target.isEnemy() && target.isDead() && this._item) {this.setCollapseEffect(target)};
+	 if (target.isDead() && this._item) {
+        if (target.isEnemy()) {this.setCollapseEffect(target)};
+	 };
 };	
 	
 //==============================
@@ -140,50 +187,24 @@ Game_Action.prototype.setCollapseEffect = function(target) {
 			 var animation_id = Math.min(Math.max(Number(par[0]),0),2000);
 		     target._collpaseData[1] = animation_id;			 
 		 };
-
 	},this);
 };	
 	
 //=============================================================================
-// ** Game Enemy
-//=============================================================================
-
-//==============================
-// * Perform Collapse
-//==============================
-var _mog_colefct_genmy_performCollapse = Game_Enemy.prototype.performCollapse;
-Game_Enemy.prototype.performCollapse = function() {
-	_mog_colefct_genmy_performCollapse.call(this);
-	if (this._collpaseData[0] === -1) {this.setDefaultCollapse()};
-	if (this._collpaseData[1] > 0) {this.startAnimation(this._collpaseData[1], false, 0)};
-};
-
-//==============================
-// * set Default Collapse
-//==============================
-Game_Enemy.prototype.setDefaultCollapse = function() {
-   var coltype = Math.min(Math.max(Number(Moghunter.collDefaultCollapse),-2),10);
-   if (coltype === -1) {return};
-   if (coltype === -2) {
-	   this._collpaseData[0] = Math.randomInt(7);	  
-   } else {
-	   this._collpaseData[0] = coltype;
-   };
-};
-
-//=============================================================================
 // ** Sprite Enemy
 //=============================================================================
+
+//==============================
+// * set Battler
+//==============================
+var _mog_colefct_sprEnemy_setBattler = Sprite_Enemy.prototype.setBattler;
 Sprite_Enemy.prototype.setBattler = function(battler) {
-    Sprite_Battler.prototype.setBattler.call(this, battler);
-    this._enemy = battler;
-    this.setHome(battler.screenX(), battler.screenY());
-    this._stateIconSprite.setup(battler);
-	if (Imported.MOG_EnemyPoses && battler.isBPose()) {
+    _mog_colefct_sprEnemy_setBattler.call(this,battler)
+	if (Imported.MOG_EnemyPoses && battler && battler.isBPose()) {
 	if ($gameSystem.isSideView()) {
-		this._colpsBitmap = ImageManager.loadSvEnemy(this._enemy.battlerName(), this._enemy.battlerHue());
+		this._colpsBitmap = ImageManager.loadSvEnemy(battler.battlerName(), battler.battlerHue());
 	} else {
-		this._colpsBitmap = ImageManager.loadEnemy(this._enemy.battlerName(), this._enemy.battlerHue());
+		this._colpsBitmap = ImageManager.loadEnemy(battler.battlerName(), battler.battlerHue());
 	};
 	};
 };	
@@ -202,7 +223,7 @@ Sprite_Enemy.prototype.update = function() {
 //==============================
 var _mog_cefc_sprtenmy_updateCollapse = Sprite_Enemy.prototype.updateCollapse;
 Sprite_Enemy.prototype.updateCollapse = function() {
-	if (this._enemy._collpaseData[0] != -1) {this.updateCollapseEffects(); return}
+	if (this._battler._collpaseData[0] != -1) {this.updateCollapseEffects(); return}
 	_mog_cefc_sprtenmy_updateCollapse.call(this)
 };
 
@@ -217,24 +238,28 @@ if (Imported.MOG_BattlerMotion) {
 	};
 };
 
+//=============================================================================
+// ** Sprite Battler
+//=============================================================================
+
 //==============================
 // * collapse Type
 //==============================
-Sprite_Enemy.prototype.collapseType = function() {
-   return this._enemy._collpaseData[0];
+Sprite_Battler.prototype.collapseType = function() {
+   return this._battler._collpaseData[0];
 };
 
 //==============================
 // * Record Pre Collapse
 //==============================
-Sprite_Enemy.prototype.recordPreCollapse = function() {
+Sprite_Battler.prototype.recordPreCollapse = function() {
      this._collData = [0,this.width,this.height,this.rotation,this.scale.x,this.scale.y];
 };
 
 //==============================
 // * load Pre Collapse
 //==============================
-Sprite_Enemy.prototype.loadPreCollapse = function() {
+Sprite_Battler.prototype.loadPreCollapse = function() {
 	 this.rotation = this._collData[3];
 	 this.scale.x = this._collData[4];
 	 this.scale.y = this._collData[5];	 
@@ -244,7 +269,7 @@ Sprite_Enemy.prototype.loadPreCollapse = function() {
 //==============================
 // * remove Collapse Effects
 //==============================
-Sprite_Enemy.prototype.removeCollapseEffects = function() {
+Sprite_Battler.prototype.removeCollapseEffects = function() {
 	 this._effectDuration = 0;
 	 this.filters = null;
 	 if (this._spriteCol) {
@@ -264,7 +289,7 @@ Sprite_Enemy.prototype.removeCollapseEffects = function() {
 //==============================
 // * setup Collapse Effects
 //==============================
-Sprite_Enemy.prototype.setupCollapseEffect = function() {
+Sprite_Battler.prototype.setupCollapseEffect = function() {
 	 if (this.collapseType() < 4 || this.collapseType() > 7) {
         if (this._colpsBitmap) {this.bitmap = this._colpsBitmap;};
 	 } else { 
@@ -290,7 +315,7 @@ Sprite_Enemy.prototype.setupCollapseEffect = function() {
 //==============================
 // * setColSpritePar
 //==============================
-Sprite_Enemy.prototype.setColSpritePar = function(sprite) {	 
+Sprite_Battler.prototype.setColSpritePar = function(sprite) {	 
 	 sprite.anchor.x = this.anchor.x;
 	 sprite.anchor.y = this.anchor.y;
 	 sprite.width = this.width;
@@ -298,13 +323,12 @@ Sprite_Enemy.prototype.setColSpritePar = function(sprite) {
 	 sprite.scale.x = 1.00;
 	 sprite.scale.y = 1.00;
 	 sprite.rotation = this.rotation;
-	 sprite.index = i;
 };	 
 
 //==============================
 // * setup Coll Shatter Point
 //==============================
-Sprite_Enemy.prototype.setupColShatterPoint = function() {	 
+Sprite_Battler.prototype.setupColShatterPoint = function() {	 
 	 this._spriteCol = [];
 	 this._shatterDCol = String(Moghunter.collShatterDirection) === "Left" ? 0 : 1;
 	 var frag_size = Math.floor((this.height + this.width) / 40);
@@ -328,7 +352,7 @@ Sprite_Enemy.prototype.setupColShatterPoint = function() {
 //==============================
 // * update Collapse Shatter Point
 //==============================
-Sprite_Enemy.prototype.updateCollapseShatterPoint= function() {	
+Sprite_Battler.prototype.updateCollapseShatterPoint= function() {	
 	var coldone = true;
 	for (var i = 0; i < this._spriteCol.length; i++) {
 		if (this.collapseType() === 0) {
@@ -348,7 +372,7 @@ Sprite_Enemy.prototype.updateCollapseShatterPoint= function() {
 //==============================
 // * setup Coll Shatter Line
 //==============================
-Sprite_Enemy.prototype.setupColShatterLine = function() {	 
+Sprite_Battler.prototype.setupColShatterLine = function() {	 
 	 this._spriteCol = [];
 	 var frag_size = 6;
 	 var xi = Math.floor(-this.width / 2) + Math.floor(frag_size / 2);
@@ -369,7 +393,7 @@ Sprite_Enemy.prototype.setupColShatterLine = function() {
 //==============================
 // * update Collapse Shatter Line
 //==============================
-Sprite_Enemy.prototype.updateCollapseShatterLine= function() {	
+Sprite_Battler.prototype.updateCollapseShatterLine= function() {	
 	var coldone = true;
 	var d = this.collapseType() === 2 ? 0 : null;
 	for (var i = 0; i < this._spriteCol.length; i++) {
@@ -389,7 +413,7 @@ Sprite_Enemy.prototype.updateCollapseShatterLine= function() {
 //==============================
 // * setup Col Slice Horz
 //==============================
-Sprite_Enemy.prototype.setupColSliceHorz = function() {	 
+Sprite_Battler.prototype.setupColSliceHorz = function() {	 
 	 this._spriteCol = [];
 	 var frag_size = Math.floor(this.height / 2);
      var yi = Math.floor(-this.height + frag_size)
@@ -408,7 +432,7 @@ Sprite_Enemy.prototype.setupColSliceHorz = function() {
 //==============================
 // * update Collapse Slice Horz
 //==============================
-Sprite_Enemy.prototype.updateCollapseSliceHorz = function() {
+Sprite_Battler.prototype.updateCollapseSliceHorz = function() {
 	 var coldone = false;
      if (this._spriteCol[0].x >= this._spriteCol[0].sx) {
 		  this._spriteCol[0].opacity -= 5;
@@ -424,7 +448,7 @@ Sprite_Enemy.prototype.updateCollapseSliceHorz = function() {
 //==============================
 // * setup Col Slice Vert
 //==============================
-Sprite_Enemy.prototype.setupColSliceVert = function() {	 
+Sprite_Battler.prototype.setupColSliceVert = function() {	 
 	 this._spriteCol = [];
 	 var frag_size = Math.floor(this.width / 2);
 	 var xi = Math.floor(-this.width / 2) + Math.floor(frag_size / 2);
@@ -443,7 +467,7 @@ Sprite_Enemy.prototype.setupColSliceVert = function() {
 //==============================
 // * update Collapse Slice Vert
 //==============================
-Sprite_Enemy.prototype.updateCollapseSliceVert = function() {
+Sprite_Battler.prototype.updateCollapseSliceVert = function() {
 	 var coldone = false;
      if (this._spriteCol[0].y >= this._spriteCol[0].sx) {
 		  this._spriteCol[0].opacity -= 5;
@@ -459,14 +483,14 @@ Sprite_Enemy.prototype.updateCollapseSliceVert = function() {
 //==============================
 // * setup Col Fade Zoom
 //==============================
-Sprite_Enemy.prototype.setupColFadeZoom = function() {	 
+Sprite_Battler.prototype.setupColFadeZoom = function() {	 
      this._animeDuration = 0;
 };
 
 //==============================
 // * update Col Fade Zoom
 //==============================
-Sprite_Enemy.prototype.updateColFadeZoom = function() {
+Sprite_Battler.prototype.updateColFadeZoom = function() {
 	this._animeDuration ++;
 	if (this.collapseType() === 4) {
 		this.updateColFazeZoom1(); 
@@ -485,7 +509,7 @@ Sprite_Enemy.prototype.updateColFadeZoom = function() {
 //==============================
 // * update Col Fade Zoom1
 //==============================
-Sprite_Enemy.prototype.updateColFazeZoom1 = function() {
+Sprite_Battler.prototype.updateColFazeZoom1 = function() {
 	this.scale.x += 0.03;
 	this.scale.y -= 0.01;
 	this.opacity -= 3;
@@ -494,7 +518,7 @@ Sprite_Enemy.prototype.updateColFazeZoom1 = function() {
 //==============================
 // * update Col Fade Zoom2
 //==============================
-Sprite_Enemy.prototype.updateColFazeZoom2 = function() {
+Sprite_Battler.prototype.updateColFazeZoom2 = function() {
 	this.scale.x -= 0.01;
 	this.scale.y += 0.03;
 	this.opacity -= 3;
@@ -503,7 +527,7 @@ Sprite_Enemy.prototype.updateColFazeZoom2 = function() {
 //==============================
 // * update Col Fade Zoom3
 //==============================
-Sprite_Enemy.prototype.updateColFazeZoom3 = function() {
+Sprite_Battler.prototype.updateColFazeZoom3 = function() {
 	if (this._animeDuration < 30) {
 		this.scale.x += 0.08;
 		this.scale.y -= 0.04;
@@ -517,7 +541,7 @@ Sprite_Enemy.prototype.updateColFazeZoom3 = function() {
 //==============================
 // * update Col Fade Zoom4
 //==============================
-Sprite_Enemy.prototype.updateColFazeZoom4 = function() {
+Sprite_Battler.prototype.updateColFazeZoom4 = function() {
 	this.scale.x -= 0.01;
 	this.scale.y += 0.04;
 	this.rotation -= 0.1;
@@ -527,7 +551,7 @@ Sprite_Enemy.prototype.updateColFazeZoom4 = function() {
 //==============================
 // * setup Col  Stone
 //==============================
-Sprite_Enemy.prototype.setupColStone = function() {
+Sprite_Battler.prototype.setupColStone = function() {
      this._effectDuration = 30;
 	 var filter = new PIXI.GrayFilter();
 	 this.filters = [filter];
@@ -536,13 +560,13 @@ Sprite_Enemy.prototype.setupColStone = function() {
 //==============================
 // * update Collapse Stone
 //==============================
-Sprite_Enemy.prototype.updateCollapseStone = function() {	   
+Sprite_Battler.prototype.updateCollapseStone = function() {	   
 };
 
 //==============================
 // * update Collapse Effects
 //==============================
-Sprite_Enemy.prototype.updateCollapseEffects = function() {
+Sprite_Battler.prototype.updateCollapseEffects = function() {
 	if (!this._collData) {this.setupCollapseEffect()};
 	if (this.collapseType() <= 1) {
 	    this.updateCollapseShatterPoint();

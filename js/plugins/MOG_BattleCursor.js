@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.4) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.5) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -73,6 +73,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.5) - Melhoria na compatibilidade de plugins.
  * (v1.4) - Correção de não piscar todos os battler na seleção de todos alvos.
  * (v1.3) - Correção de não atualizar o nome no efeito transformação.
  * (v1.2) - Correção de não selecionar o alvo no modo "All Allies (Dead)"
@@ -468,6 +469,15 @@ Spriteset_Battle.prototype.update_arrow_slide = function() {
 	 if (this._arrow_s[3] < 10) {this._arrow_s[2] += 1}
 	 else if (this._arrow_s[3] < 20) {this._arrow_s[2] -= 1}
 	 else {this._arrow_s[2] = 0 ;this._arrow_s[3] = 0};	
+};
+
+//==============================
+// * Set Battler
+//==============================
+var _mog_bcursor_comp_sprenemy_setBattler = Sprite_Enemy.prototype.setBattler;
+Sprite_Enemy.prototype.setBattler = function(battler) {
+    _mog_bcursor_comp_sprenemy_setBattler.call(this,battler)
+	if (this._visualSelectWindow) {this._visualSelectWindow.visible = false};
 };
 
 //=============================================================================

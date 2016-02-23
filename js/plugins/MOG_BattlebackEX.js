@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona multiplos battlebacks no campo de batalha.
+ * @plugindesc (v1.1) Adiciona multiplos battlebacks no campo de batalha.
  * @author Moghunter
  *
  * @param Cam Rate
@@ -28,7 +28,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG Battleback EX (v1.0) +++
+ * +++ MOG Battleback EX (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -64,7 +64,9 @@
  * bb_ex_clear
  *
  * =============================================================================
- * 
+ * HISTÓRICO 
+ * =============================================================================
+ * (1.1) - Melhoria na compatibilidade de plugins.
  */
 
 //=============================================================================
@@ -135,6 +137,7 @@ Spriteset_Battle.prototype.bbexSetup = function() {
 		 if ($gameSystem._bbex_data[i]) {this._bbData.push($gameSystem._bbex_data[i])};
 	};
     this._bbPlaneLower = new Sprite();
+	this._bbPlaneLower.z = 0;
     this._battleField.addChild(this._bbPlaneLower);	
 };
 
@@ -143,6 +146,7 @@ Spriteset_Battle.prototype.bbexSetup = function() {
 //==============================
 Spriteset_Battle.prototype.createBbUpperPlane  = function() {
     this._bbPlaneUpper = new Sprite();
+	this._bbPlaneUpper.z = 10;
     this._battleField.addChild(this._bbPlaneUpper);	
 };
 
@@ -161,7 +165,7 @@ Spriteset_Battle.prototype.setbbBitmap = function(index) {
 // * createActors
 //==============================
 var _alias_mog_bbex_createActors = Spriteset_Battle.prototype.createActors
-Spriteset_Battle.prototype.createActors = function() {
+Spriteset_Battle.prototype.createActors = function() {	
 	_alias_mog_bbex_createActors.call(this);
 	this.createBbUpperPlane();
 };
