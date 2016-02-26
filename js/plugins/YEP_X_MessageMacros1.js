@@ -1384,7 +1384,9 @@ if (Yanfly.Param.QuickMacro) {
 Yanfly.MsgMacro.Window_Base_convertMacroText =
     Window_Base.prototype.convertMacroText;
 Window_Base.prototype.convertMacroText = function(text) {
-    var text = Yanfly.MsgMacro.Window_Base_convertMacroText.call(this, text);
+    text = Yanfly.MsgMacro.Window_Base_convertMacroText.call(this, text);
+    text = text.replace(/\\/g, '\x1b');
+    text = text.replace(/\x1b\x1b/g, 'YANFLYMACROTESTREVERSEDOUBLESLASH');
     var length = Yanfly.MsgMacroArr.length;
     for (var i = 0; i < length; ++i) {
       var code = Yanfly.MsgMacroArr[i];
@@ -1393,6 +1395,7 @@ Window_Base.prototype.convertMacroText = function(text) {
         return Yanfly.MsgMacro[i];
       }.bind(this));
     }
+    text = text.replace(/YANFLYMACROTESTREVERSEDOUBLESLASH/g, '\\\\');
     return text;
 };
 

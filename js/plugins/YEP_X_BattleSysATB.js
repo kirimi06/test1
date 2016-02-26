@@ -11,7 +11,7 @@ Yanfly.ATB = Yanfly.ATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.20 (Requires YEP_BattleEngineCore.js) Add ATB (Active
+ * @plugindesc v1.21 (Requires YEP_BattleEngineCore.js) Add ATB (Active
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -434,6 +434,10 @@ Yanfly.ATB = Yanfly.ATB || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.21:
+ * - Counterattacks no longer cause interrupts if attack actions have interrupt
+ * functionality.
+ *
  * Version 1.20:
  * - Updated plugin to update the AI more accordingly with Battle AI Core.
  *
@@ -801,6 +805,7 @@ BattleManager.startBattle = function() {
     Yanfly.ATB.BattleManager_startBattle.call(this);
     if (this.isATB()) {
       this._phase = null;
+      this._counterAttacking = false;
       this.startATB();
     }
 };
@@ -1189,6 +1194,18 @@ BattleManager.endATBAction = function() {
     }
 };
 
+Yanfly.ATB.BattleManager_invokeCounterAttack =
+    BattleManager.invokeCounterAttack;
+BattleManager.invokeCounterAttack = function(subject, target) {
+    if (this.isATB()) this._counterAttacking = true;
+    Yanfly.ATB.BattleManager_invokeCounterAttack.call(this, subject, target);
+    if (this.isATB()) this._counterAttacking = false;
+};
+
+BattleManager.isCounterAttacking = function() {
+    return this._counterAttacking;
+};
+
 BattleManager.statusUpdateATB = function() {
     this._statusWindow.redrawATB();
 };
@@ -1391,6 +1408,7 @@ Game_Action.prototype.applyItemATBEffect = function(target) {
   this.applyItemATBSetEffects(target);
   this.applyItemATBAddEffects(target);
   this.applyItemATBEvalEffect(target);
+  if (BattleManager.isCounterAttacking()) return;
   this.applyItemATBInterrupt(target);
   this.applyItemATBInterruptEval(target);
 };

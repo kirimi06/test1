@@ -388,6 +388,9 @@ Yanfly.CTB = Yanfly.CTB || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.11:
+ * - Counterattacks no longer cause turn order inconsistencies.
+ *
  * Version 1.10a:
  * - Updated plugin to update the AI more accordingly with Battle AI Core.
  * - Optimized CTB Turn Order further to reduce lag when there are larger
@@ -698,6 +701,7 @@ BattleManager.startBattle = function() {
     Yanfly.CTB.BattleManager_startBattle.call(this);
     if (this.isCTB()) {
       this._phase = null;
+      this._counterAttacking = false;
       this.ctbTicksToReadyClear();
       this.startCTB();
     }
@@ -1129,6 +1133,18 @@ BattleManager.endCTBAction = function() {
     }
 };
 
+Yanfly.CTB.BattleManager_invokeCounterAttack =
+    BattleManager.invokeCounterAttack;
+BattleManager.invokeCounterAttack = function(subject, target) {
+    if (this.isCTB()) this._counterAttacking = true;
+    Yanfly.CTB.BattleManager_invokeCounterAttack.call(this, subject, target);
+    if (this.isCTB()) this._counterAttacking = false;
+};
+
+BattleManager.isCounterAttacking = function() {
+    return this._counterAttacking;
+};
+
 Yanfly.CTB.BattleManager_processEscape = BattleManager.processEscape;
 BattleManager.processEscape = function() {
     if (this.isCTB()) {
@@ -1331,6 +1347,7 @@ Game_Action.prototype.applyItemCTBEffect = function(target) {
   this.applyItemCTBSetEffects(target);
   this.applyItemCTBAddEffects(target);
   this.applyItemCTBEvalEffect(target);
+  if (BattleManager.isCounterAttacking()) return;
   this.rebalanceCTBSpeed(target);
 };
 

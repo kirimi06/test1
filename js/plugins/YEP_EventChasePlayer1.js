@@ -69,7 +69,7 @@ Yanfly.ECP = Yanfly.ECP || {};
  * Insert these lines into the script call window within the Movement Route
  * event to give an event the chase or flee flag.
  *
- * Note: This doesn’t work with players.
+ * Note: This doesn't work with players.
  *
  * Script Call lines
  *  this._chaseRange = x       Event will chase player if reaching x range.
@@ -94,6 +94,126 @@ Yanfly.ECP = Yanfly.ECP || {};
  * is made and ran, which means upon loading a map, if the event with a low
  * frequency hasn't loaded up 'this._chaseRange = x' in its movement queue yet,
  * the event will not chase the player just yet.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - Added 'Return After' parameter where events will return to their original
+ * spot after chasing/fleeing from a player.
+ * - Added 'Return Wait' parameter to determine how long an event will wait in
+ * place before returning after a finished chase/flee.
+ * - Added 'this._returnAfter' and 'this._returnWait' to the list of available
+ * movement route script calls.
+ *
+ * Version 1.01:
+ * - Added 'this._alertSoundPitch' 'this._alertSoundVol' 'this._alertSoundPan'
+ * to the settings you can alter to adjust the alert sound.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
+ */
+ /*:ja
+ * @plugindesc v1.02 プレイヤーが特定のイベントに近づくと、イベントがプレイヤーを追いかけたりプレイヤーから逃げます
+ * @author Yanfly Engine Plugins
+ *
+ * @param Sight Lock
+ * @desc 'SeePlayer'がtrueの時、イベントがプレイヤーを追いかける
+ * 時間を設定します(フレーム単位)
+ * @default 300
+ *
+ * @param See Player
+ * @desc イベントがプレイヤーを認識する必要があるかを設定します
+ * 不要 - false     必要 - true
+ * @default true
+ *
+ * @param Alert Timer
+ * @desc 同じイベント上でフキダシが表示されるまでにかかるフレーム数を指定します
+ * @default 120
+ *
+ * @param Alert Balloon
+ * @desc プレイヤーが認識された際に表示される、フキダシを指定します
+ * (フキダシのIDで指定します)
+ * @default 1
+ *
+ * @param Alert Sound
+ * @desc プレイヤーが認識された際に表示される、サウンドを指定します
+ * @default Attack1
+ *
+ * @param Alert Common Event
+ * @desc 認識された際に再生されるコモンイベントを指定します
+ * 利用しない場合は、0のままにしてください
+ * @default 0
+ *
+ * @param Return After
+ * @desc 追跡または逃走した後に、イベントがもとの位置に戻ります
+ * いいえ - false   はい - true
+ * @default true
+ *
+ * @param Return Wait
+ * @desc 追跡または逃走したあとに、待機するフレーム数を指定します
+ * @default 180
+ *
+ * @help
+ * ============================================================================
+ * Introduction
+ * ============================================================================
+ *
+ * このプラグインでは、プレイヤーを追いかけるイベント、もしくは
+ * プレイヤーから逃げるイベントを作成することができます。
+ * プレイヤーがイベントから一定の距離範囲内に入った時や
+ * イベントがプレイヤーを認識した際に発動させることができます。
+ *
+ * ============================================================================
+ * How to Use
+ * ============================================================================
+ *
+ * 下記のコードをスクリプトコールウィンドウ内の、
+ * Movement Routeイベント内に挿入することで、そのイベントに
+ * 追跡もしくは逃走のフラグを付与することができます。
+ *
+ * 注＊プレイヤーに対しては無効です。
+ *
+ * Script Call lines
+ *  this._chaseRange = x
+ *              →x の距離内に入った時、イベントがプレイヤーを追いかけます
+ *  this._fleeRange = x
+ *              →x の距離内に入った時、イベントはプレイヤーから逃げます
+ *  this._chaseSpeed = x
+ *              →追いかける時のイベントの速度 x を決定します
+ *  this._fleeSpeed = x
+ *              →逃げる時のイベントの速度 x を決定します
+ *  this._sightLock = x
+ *              →イベントは、フレーム数 x だけ追跡/逃走を行います
+ *  this._seePlayer = true
+ *              →イベントはプレイヤーを認識する必要があります
+ *  this._seePlayer = false
+ *              →イベントはプレイヤーを認識する必要がありません
+ *  this._alertBalloon = x
+ *              →プレイヤーが認識されると、x というフキダシを表示します
+ *  this._alertSound = x
+ *              →プレイヤーが認識されると、x というサウンドを再生します
+ *  this._alertSoundVol = x
+ *              →プレイヤーが認識されたときに再生される音の音量を指定します
+ *  this._alertSoundPitch = x
+ *              →プレイヤーが認識されたときに再生される音のピッチを指定します
+ *  this._alertSoundPan = x
+ *              →プレイヤーが認識されたときに再生される音のパンを指定します
+ *  this._alertCommonEvent = x
+ *              →プレイヤーが認識されると、x というイベントを再生します
+ *  this._returnAfter = true
+ *              →イベントを元の位置に戻します
+ *  this._returnAfter = false
+ *              →追跡/逃走が終わってもイベントはそこにとどまります
+ *  this._returnWait = x
+ *              →追跡/逃走が終わったあと x の間待機します
+ *
+ * カスタムした移動ルート内でイベントを再生させる際は、
+ * 移動頻度はなるべく高く設定するようにしてください。
+ * 設定が完了し有効になるまでは、これらのエフェクトは発動しません。
+ * 移動頻度の低いイベントですと、マップロード中に'this._chaseRange = x'の
+ * 読み込みを完了できず、プレイヤーを追いかけなくなってしまう可能性があります。
  *
  * ============================================================================
  * Changelog

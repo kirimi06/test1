@@ -11,7 +11,7 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04a (Requires YEP_MessageCore.js) Letter Sounds, NameBox
+ * @plugindesc v1.05 (Requires YEP_MessageCore.js) Letter Sounds, NameBox
  * Background Types, Choice Control, and more!
  * @author Yanfly Engine Plugins
  *
@@ -494,6 +494,27 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
  *   ChoiceRowMax 4
  *   - This will set the maximum amount of visible choices to 4.
  *
+ *   HideChoice 5
+ *   - This will cause choice 5 to be hidden.
+ *
+ *   ShowChoice 6
+ *   - This will cause choice 6 to be shown and no longer hidden.
+ *
+ *   ClearHiddenChoices
+ *   - All choices become visible and are no longer hidden.
+ *
+ *   DisableChoice 1
+ *   - This will cause choice 1 to be disabled.
+ *
+ *   EnableChoice 2
+ *   - This will cause choice 2 to be enabled.
+ *
+ *   ClearDisabledChoices
+ *   - All choices become enabled and are no longer disabled.
+ *
+ *   ClearChoiceSettings
+ *   - All choices are shown and enabled.
+ *
  *   --- Message Window Positions ---
  *
  *   MessageRows 6
@@ -536,8 +557,44 @@ Yanfly.EMP1 = Yanfly.EMP1 || {};
  *   Message Rows.
  *
  * ============================================================================
+ * Lunatic Mode - New JavaScript Functions
+ * ============================================================================
+ *
+ * For those who would like to use script calls to alter Choice Settings, you
+ * can use the following script calls:
+ *
+ * $gameSystem.hideChoice(x)
+ * - This will cause choice x to be hidden.
+ *
+ * $gameSystem.showChoice(x)
+ * - This will cause choice x to be shown.
+ *
+ * $gameSystem.clearHiddenChoices()
+ * - This will clear all of the hidden choices and they will be shown.
+ *
+ * $gameSystem.disableChoice(x)
+ * - This will cause choice x to be disabled.
+ *
+ * $gameSystem.enableChoice(x)
+ * - This will cause choice x to be enabled.
+ *
+ * $gameSystem.clearDisabledChoices()
+ * - This will clear all of the disabled choices and they will all be enabled.
+ *
+ * $gameSystem.clearChoiceSettings()
+ * - This will clear all hidden and disabled settings.
+ *
+ * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.05:
+ * - Added new plugin commands: HideChoice x, ShowChoice x, ClearHiddenChoices,
+ * DisableChoice x, EnableChoice x, ClearDisabledChoices, ClearChoiceSettings
+ * for those who wish to have more than 20 choices.
+ * - Added new script calls. You can find them in the Lunatic Mode section
+ * under Lunatic Mode - New JavaScript Functions. These are for people who want
+ * to use more than 20 choices.
  *
  * Version 1.04a:
  * - Updated the Autosizing feature to work with \{ and \} text codes. Requires
@@ -666,6 +723,7 @@ Game_System.prototype.getMessageChoiceRows = function() {
 
 Game_System.prototype.initChoiceShow = function() {
     if (this._msgChoiceShowInitialized) return;
+    this._hideChoices = [];
     var length = Yanfly.Param.EMP1ChoiceShow.length;
     for (var i = 0; i < length; ++i) {
       var switchId = Yanfly.Param.EMP1ChoiceShow[i];
@@ -677,6 +735,7 @@ Game_System.prototype.initChoiceShow = function() {
 
 Game_System.prototype.initChoiceEnable = function() {
     if (this._msgChoiceEnableInitialized) return;
+    this._disableChoices = [];
     var length = Yanfly.Param.EMP1ChoiceOn.length;
     for (var i = 0; i < length; ++i) {
       var switchId = Yanfly.Param.EMP1ChoiceOn[i];
@@ -688,12 +747,65 @@ Game_System.prototype.initChoiceEnable = function() {
 
 Game_System.prototype.isChoiceShown = function(id) {
     if (Yanfly.Param.EMP1ChoiceShow[id] <= 0) return true;
+    if (this._hideChoices === undefined) this._hideChoices = [];
+    if (this._hideChoices.contains(id)) return false;
     return $gameSwitches.value(Yanfly.Param.EMP1ChoiceShow[id]);
+};
+
+Game_System.prototype.hideChoice = function(id) {
+    if (this._hideChoices === undefined) this._hideChoices = [];
+    id -= 1;
+    if (id < 0) return;
+    if (this._hideChoices.contains(id)) return;
+    this._hideChoices.push(id);
+};
+
+Game_System.prototype.showChoice = function(id) {
+    if (this._hideChoices === undefined) this._hideChoices = [];
+    id -= 1;
+    if (id < 0) return;
+    if (!this._hideChoices.contains(id)) return;
+    var index = this._hideChoices.indexOf(id);
+    this._hideChoices.splice(index, 1);
 };
 
 Game_System.prototype.isChoiceEnabled = function(id) {
     if (Yanfly.Param.EMP1ChoiceOn[id] <= 0) return true;
+    if (this._disableChoices === undefined) this._disableChoices = [];
+    if (this._disableChoices.contains(id)) return false;
     return $gameSwitches.value(Yanfly.Param.EMP1ChoiceOn[id]);
+};
+
+Game_System.prototype.disableChoice = function(id) {
+    if (this._disableChoices === undefined) this._disableChoices = [];
+    id -= 1;
+    if (id < 0) return;
+    if (this._disableChoices.contains(id)) return;
+    this._disableChoices.push(id);
+};
+
+Game_System.prototype.enableChoice = function(id) {
+    if (this._disableChoices === undefined) this._disableChoices = [];
+    id -= 1;
+    if (id < 0) return;
+    if (!this._disableChoices.contains(id)) return;
+    var index = this._disableChoices.indexOf(id);
+    this._disableChoices.splice(index, 1);
+};
+
+Game_System.prototype.clearHiddenChoices = function() {
+    this._msgChoiceShowInitialized = false;
+    this.initChoiceShow();
+};
+
+Game_System.prototype.clearDisabledChoices = function() {
+    this._msgChoiceEnableInitialized = false;
+    this.initChoiceEnable();
+};
+
+Game_System.prototype.clearChoiceSettings = function() {
+    this.clearHiddenChoices();
+    this.clearDisabledChoices();
 };
 
 Game_System.prototype.initMessagePosition = function() {
@@ -782,45 +894,55 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
   Yanfly.EMP1.Game_Interpreter_pluginCommand.call(this, command, args);
   if ($gameSystem._msgSoundEnable === undefined) {
     $gameSystem.initMessageSounds();
-  }
-  if (command === 'EnableLetterSound') $gameSystem._msgSoundEnable = true;
-  if (command === 'DisableLetterSound') $gameSystem._msgSoundEnable = false;
-  if (command === 'LetterSoundName') this.changeLetterSoundName(args);
-  if (command === 'LetterSoundVolume') {
+  } else if (command === 'EnableLetterSound') {
+    $gameSystem._msgSoundEnable = true;
+  } else if (command === 'DisableLetterSound') {
+    $gameSystem._msgSoundEnable = false;
+  } else if (command === 'LetterSoundName') {
+    this.changeLetterSoundName(args);
+  } else if (command === 'LetterSoundVolume') {
     $gameSystem._msgSoundVol = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundPitch') {
+  } else if (command === 'LetterSoundPitch') {
     $gameSystem._msgSoundPitch = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundPitchVariance') {
+  } else if (command === 'LetterSoundPitchVariance') {
     $gameSystem._msgSoundPitchVar = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundPan') {
+  } else if (command === 'LetterSoundPan') {
     $gameSystem._msgSoundPan = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundPanVariance') {
+  } else if (command === 'LetterSoundPanVariance') {
     $gameSystem._msgSoundPanVar = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundInterval') {
+  } else if (command === 'LetterSoundInterval') {
     $gameSystem._msgSoundInterval = parseInt(args[0]);
-  }
-  if (command === 'LetterSoundReset') $gameSystem.initMessageSounds();
-  if (command === 'ChoiceRowMax') $gameSystem._msgChoiceMax = parseInt(args[0]);
-  if (command === 'MessagePositionX') {
+  } else if (command === 'LetterSoundReset') {
+    $gameSystem.initMessageSounds();
+  } else if (command === 'ChoiceRowMax') {
+    $gameSystem._msgChoiceMax = parseInt(args[0]);
+  } else if (command === 'HideChoice') {
+    $gameSystem.hideChoice(parseInt(args[0]));
+  } else if (command === 'ShowChoice') {
+    $gameSystem.showChoice(parseInt(args[0]));
+  } else if (command === 'ClearHiddenChoices') {
+    $gameSystem.clearHiddenChoices();
+  } else if (command === 'DisableChoice') {
+    $gameSystem.disableChoice(parseInt(args[0]));
+  } else if (command === 'EnableChoice') {
+    $gameSystem.enableChoice(parseInt(args[0]));
+  } else if (command === 'ClearDisabledChoices') {
+    $gameSystem.clearDisabledChoices();
+  } else if (command === 'ClearChoiceSettings') {
+    $gameSystem.clearChoiceSettings();
+  } else if (command === 'MessagePositionX') {
     $gameSystem.setMessagePositionX(parseInt(args[0]));
-  }
-  if (command === 'MessagePositionY') {
+  } else if (command === 'MessagePositionY') {
     $gameSystem.setMessagePositionY(parseInt(args[0]));
-  }
-  if (command === 'MessagePositionXAuto') {
+  } else if (command === 'MessagePositionXAuto') {
     $gameSystem.setMessagePositionX('auto');
-  }
-  if (command === 'MessagePositionYAuto') {
+  } else if (command === 'MessagePositionYAuto') {
     $gameSystem.setMessagePositionY('auto');
-  }
-  if (command === 'MessageAnchorX') this.setMessageAnchor(args[0], 'x');
-  if (command === 'MessageAnchorY') this.setMessageAnchor(args[0], 'y');
-  if (command === 'MessagePositionReset') {
+  } else if (command === 'MessageAnchorX') {
+    this.setMessageAnchor(args[0], 'x');
+  } else if (command === 'MessageAnchorY') {
+    this.setMessageAnchor(args[0], 'y');
+  } else if (command === 'MessagePositionReset') {
     $gameSystem.initMessagePosition();
     $gameSystem._messageRows = eval(Yanfly.Param.MSGDefaultRows);
     $gameSystem._messageWidth = eval(Yanfly.Param.MSGDefaultWidth);

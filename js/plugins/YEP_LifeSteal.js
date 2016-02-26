@@ -521,7 +521,7 @@ Game_Battler.prototype.isLifeStealState = function(type) {
     var length = this.states().length;
     for (var i = 0; i < length; ++i) {
       var obj = this.states()[i];
-      if (obj && obj.lifeSteal[type]) return true;
+      if (obj && obj.lifeSteal && obj.lifeSteal[type]) return true;
     }
     return false;
 };
@@ -587,7 +587,7 @@ Game_Actor.prototype.isLifeStealState = function(type) {
     var length = this.equips().length;
     for (var i = 0; i < length; ++i) {
       var obj = this.equips()[i];
-      if (obj && obj.lifeSteal[type]) return true;
+      if (obj && obj.lifeSteal && obj.lifeSteal[type]) return true;
     }
     if (this.actor().lifeSteal[type]) return true;
     if (this.currentClass().lifeSteal[type]) return true;

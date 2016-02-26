@@ -11,7 +11,7 @@ Yanfly.Steal = Yanfly.Steal || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 Allows your actors to be able to steal and snatch
+ * @plugindesc v1.04 Allows your actors to be able to steal and snatch
  * items from enemies.
  * @author Yanfly Engine Plugins
  *
@@ -423,6 +423,9 @@ Yanfly.Steal = Yanfly.Steal || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.04:
+ * - Fixed a bug with <Steal Rate: +x%> notetag that caused the game to freeze.
  *
  * Version 1.03:
  * - Added 'Steal Wait' plugin parameter to add a wait time for those using the
@@ -852,7 +855,7 @@ DataManager.processStealNotetags4 = function(group) {
       var line = notedata[i];
       if (line.match(/<(?:STEAL RATE):[ ]([\+\-]\d+)([%％])>/i)) {
         var rate = parseFloat(RegExp.$1) * 0.01;
-        for (var i = 0; i < 5; ++i) {
+        for (var j = 0; j < 5; ++j) {
           obj.stealRateBonus[i] += rate;
         }
       } else if (line.match(/<(?:STEAL ITEM RATE):[ ]([\+\-]\d+)([%％])>/i)) {

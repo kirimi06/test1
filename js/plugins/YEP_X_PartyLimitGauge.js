@@ -11,7 +11,7 @@ Yanfly.PLG = Yanfly.PLG || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02a (Requires YEP_SkillCore.js) A party-wide skill
+ * @plugindesc v1.03 (Requires YEP_SkillCore.js) A party-wide skill
  * resource is accessible across all members of a unit.
  * @author Yanfly Engine Plugins
  *
@@ -487,6 +487,9 @@ Yanfly.PLG = Yanfly.PLG || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Fixed a bug with some damage formulas being unable to use 'user'.
+ *
  * Version 1.02a:
  * - Fixed a bug that caused certain notetags to crash the game.
  * - Battle Engine Core's 'Hide Battle HUD' will now hide the Party Limit Gauge
@@ -928,8 +931,8 @@ Game_Enemy.prototype.partyLimitCostRate = function() {
 
 Yanfly.PLG.Game_Action_executeHpDamage = Game_Action.prototype.executeHpDamage;
 Game_Action.prototype.executeHpDamage = function(target, value) {
+    var user = this.subject();
     if (value > 0) {
-      var user = this.subject();
       target.friendsUnit().processPartyLimitGaugeEval(Yanfly.Param.PLGTakeHpDmg,
         user, target, this.item(), value);
       user.friendsUnit().processPartyLimitGaugeEval(Yanfly.Param.PLGDealHpDmg,
@@ -943,8 +946,8 @@ Game_Action.prototype.executeHpDamage = function(target, value) {
 
 Yanfly.PLG.Game_Action_executeMpDamage = Game_Action.prototype.executeMpDamage;
 Game_Action.prototype.executeMpDamage = function(target, value) {
+    var user = this.subject();
     if (value > 0) {
-      var user = this.subject();
       target.friendsUnit().processPartyLimitGaugeEval(Yanfly.Param.PLGTakeMpDmg,
         user, target, this.item(), value);
       user.friendsUnit().processPartyLimitGaugeEval(Yanfly.Param.PLGDealMpDmg,

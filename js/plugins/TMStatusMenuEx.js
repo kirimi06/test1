@@ -1,8 +1,8 @@
 ﻿//=============================================================================
 // TMVplugin - ステータス表示拡張
 // 作者: tomoaky (http://hikimoki.sakura.ne.jp/)
-// Version: 0.1b
-// 最終更新日: 2015/12/27
+// Version: 1.0
+// 最終更新日: 2016/02/26
 //=============================================================================
 
 /*:
@@ -10,20 +10,45 @@
  *
  * @author tomoaky (http://hikimoki.sakura.ne.jp/)
  *
+ * @param descriptionKeyCode
+ * @desc 表示切替ボタンとして使うキー
+ * 初期値: 65（ 65 = A, 66 = B, 67 = C, ... ）
+ * @default 65
+ *
+ * @param useOkKey
+ * @desc 表示切替ボタンとして決定キー（Enter, Z など）を使う
+ * 初期値: 1（ 0 で使わない）
+ * @default 1
+ *
+ * @param horzLineHeight
+ * @desc 横線の余白も含めた高さ
+ * 初期値: 28
+ * @default 28
+ *
+ * @param xparamText
+ * @desc 追加能力値の項目名（カンマ区切りで１０項目）
+ * 初期値: 命中,回避,会心,会心回避,魔法回避,魔法反射,反撃,…
+ * @default 命中,回避,会心,会心回避,魔法回避,魔法反射,反撃,ＨＰ再生,ＭＰ再生,ＴＰ再生
+ *
+ * @param sparamText
+ * @desc 特殊能力値の項目名（カンマ区切りで１０項目）
+ * 初期値: 狙われ率,防御効果,回復効果,薬の知識,ＭＰ消費,…
+ * @default 狙われ率,防御効果,回復効果,薬の知識,ＭＰ消費,ＴＰチャージ,,,床ダメージ,経験値獲得
+ *
  * @param paramNameX
  * @desc 通常能力値名の表示Ｘ座標
  * 初期値: 6
  * @default 6
  *
- * @param paramX
- * @desc 通常能力値の表示Ｘ座標
- * 初期値: 112
- * @default 112
- *
  * @param paramNameWidth
  * @desc 通常能力値名の表示幅
  * 初期値: 96
  * @default 96
+ *
+ * @param paramX
+ * @desc 通常能力値の表示Ｘ座標
+ * 初期値: 112
+ * @default 112
  *
  * @param paramWidth
  * @desc 通常能力値の表示幅
@@ -35,97 +60,97 @@
  * 初期値: 204
  * @default 204
  *
- * @param xparamX
- * @desc 追加能力値の表示Ｘ座標
- * 初期値: 330
- * @default 330
- *
  * @param xparamNameWidth
  * @desc 追加能力値名の表示幅
  * 初期値: 120
  * @default 120
+ *
+ * @param xparamX
+ * @desc 追加能力値の表示Ｘ座標
+ * 初期値: 330
+ * @default 330
  *
  * @param xparamWidth
  * @desc 追加能力値の表示幅
  * 初期値: 60
  * @default 60
  *
- * @param xparamNameCritical
- * @desc 会心率の表示名
- * 初期値: 会心
- * @default 会心
- *
- * @param xparamNameCriticalEva
- * @desc 会心回避率の表示名
- * 初期値: 会心回避
- * @default 会心回避
- *
- * @param xparamNameMagicEva
- * @desc 魔法回避率の表示名
- * 初期値: 魔法回避
- * @default 魔法回避
- *
- * @param xparamNameMagicRef
- * @desc 魔法反射率の表示名
- * 初期値: 魔法反射
- * @default 魔法反射
- *
- * @param xparamNameCounter
- * @desc 反撃率の表示名
- * 初期値: 反撃
- * @default 反撃
- *
  * @param xparamFixed
  * @desc 追加能力値の小数点以下桁数
  * 初期値: 0
  * @default 0
  *
- * @param elementRegistIconX
- * @desc 属性有効度のアイコン表示Ｘ座標
+ * @param sparamNameX
+ * @desc 特殊能力値名の表示Ｘ座標
+ * 初期値: 432
+ * @default 432
+ *
+ * @param sparamNameWidth
+ * @desc 特殊能力値名の表示幅
+ * 初期値: 172
+ * @default 172
+ *
+ * @param sparamX
+ * @desc 特殊能力値の表示Ｘ座標
+ * 初期値: 610
+ * @default 610
+ *
+ * @param sparamWidth
+ * @desc 特殊能力値の表示幅
+ * 初期値: 80
+ * @default 80
+ *
+ * @param sparamFixed
+ * @desc 特殊能力値の小数点以下桁数
+ * 初期値: 0
+ * @default 0
+ *
+ * @param elementResistX
+ * @desc 属性有効度の表示Ｘ座標
  * 初期値: 6
  * @default 6
  *
- * @param elementRegistX
- * @desc 属性有効度の表示Ｘ座標
- * 初期値: 76
- * @default 76
- *
- * @param elementRegistWidth
+ * @param elementResistWidth
  * @desc 属性有効度の表示幅
- * 初期値: 96
- * @default 96
+ * 初期値: 160
+ * @default 160
  *
- * @param elementRegistIds
+ * @param elementResistIds
  * @desc 表示する属性有効度
- * 初期値: 2 3 4 5 6 7 8 9
- * @default 2 3 4 5 6 7 8 9
+ * 初期値: 2,3,4,5,6,7,8,9
+ * @default 2,3,4,5,6,7,8,9
  *
- * @param elementRegistIconIds
+ * @param elementResistIconIds
  * @desc 表示する属性有効度のアイコン番号
- * 初期値: 64 65 66 67 68 69 70 71
- * @default 64 65 66 67 68 69 70 71
+ * 初期値: 64,65,66,67,68,69,70,71
+ * @default 64,65,66,67,68,69,70,71
  *
- * @param stateRegistIconX
- * @desc ステート有効度のアイコン表示Ｘ座標
+ * @param pdrIconId
+ * @desc 物理ダメージ率のアイコン番号（ 0 で非表示）
+ * 初期値: 77
+ * @default 77
+ *
+ * @param mdrIconId
+ * @desc 魔法ダメージ率のアイコン番号（ 0 で非表示）
+ * 初期値: 79
+ * @default 79
+ *
+ * @param stateResistX
+ * @desc ステート有効度の表示Ｘ座標
  * 初期値: 204
  * @default 204
  *
- * @param stateRegistX
- * @desc ステート有効度の表示Ｘ座標
- * 初期値: 264
- * @default 264
- *
- * @param stateRegistWidth
+ * @param stateResistWidth
  * @desc ステート有効度の表示幅
- * 初期値: 96
- * @default 96
+ * 初期値: 160
+ * @default 160
  *
- * @param stateRegistIds
+ * @param stateResistIds
  * @desc 表示するステート有効度
- * 初期値: 4 5 6 7 8 9 10
- * @default 4 5 6 7 8 9 10
+ * 初期値: 4,5,6,7,8,9,10
+ * @default 4,5,6,7,8,9,10
  *
- * @param registFixed
+ * @param resistFixed
  * @desc 有効度の小数点以下桁数
  * 初期値: 1
  * @default 1
@@ -140,32 +165,29 @@
  * 初期値: 160
  * @default 160
  *
- * @param paramNameFontFace
- * @desc 項目名に使用するフォント
- * 初期値: GameFont
- * @default GameFont
+ * @param useNicknameEx
+ * @desc 二つ名と職業をまとめて表示する
+ * 初期値: 0（ 1 で有効）
+ * @default 0
  *
- * @param paramValueFontFace
- * @desc パラメータに使用するフォント
- * 初期値: GameFont
- * @default GameFont
+ * @param useMaxLevel
+ * @desc 最大レベルを表示するかどうか
+ * 初期値: 1（ 0 で無効）
+ * @default 1
+ *
+ * @param maxLevelColor
+ * @desc レベルが最大の場合の文字色番号
+ * 初期値: 5
+ * @default 5
  *
  * @help
- * ステータスシーンで決定キーを押す、あるいは左クリック（シングルタップ）で
- * 表示するパラメータを切り替えることができます。
+ * 使い方:
+ *   ステータスシーンでＡキーを押す、あるいは左クリック（シングルタップ）で
+ *   表示するパラメータを切り替えることができます。
  *
- * paramNameFontFace / paramValueFontFace に設定するフォント名は、
- * 事前に fonts/gamefont.css を編集して追加する必要があります。
- * 元から設定されている GameFont をまるごと（４行）コピペして、
- * font-family: フォント名;
- * src: url("フォントのファイル名");
- * 上記２行を書き換えてください。（最終的には８行になります）
- * gamefont.css が編集できたら、設定した『フォントのファイル名』と同名の
- * フォントファイルを fonts フォルダに置き、プラグインパラメータに
- * 『フォント名』を設定してください。
- *
- * フォントのファイル名に日本語などの2byte文字が含まれていると
- * エラーが発生する場合があります。
+ *   useNicknameEx を 1 に設定することで二つ名と職業をセットで表示できます。
+ *   二つ名を '髪殺しの' とか '邪竜屠りの' とかにすることで、同じ職業でも
+ *   キャラごとの違いを際立たせることができるかもしれません。
  *
  * プラグインコマンドはありません。
  * 
@@ -177,38 +199,93 @@ Imported.TMStatusMenuEx = true;
 (function() {
 
   var parameters = PluginManager.parameters('TMStatusMenuEx');
-  var paramNameX      = Number(parameters['paramNameX']);
-  var paramX          = Number(parameters['paramX']);
-  var paramNameWidth  = Number(parameters['paramNameWidth']);
-  var paramWidth      = Number(parameters['paramWidth']);
-  var xparamNameX     = Number(parameters['xparamNameX']);
-  var xparamX         = Number(parameters['xparamX']);
-  var xparamNameWidth = Number(parameters['xparamNameWidth']);
-  var xparamWidth     = Number(parameters['xparamWidth']);
-  var xparamNameCritical = parameters['xparamNameCritical'];
-  var xparamNameCriticalEva = parameters['xparamNameCriticalEva'];
-  var xparamNameMagicEva = parameters['xparamNameMagicEva'];
-  var xparamNameMagicRef = parameters['xparamNameMagicRef'];
-  var xparamNameCounter = parameters['xparamNameCounter'];
-  var xparamFixed = Number(parameters['xparamFixed']);
-  var elementRegistIconX = Number(parameters['elementRegistIconX']);
-  var elementRegistX = Number(parameters['elementRegistX']);
-  var elementRegistWidth = Number(parameters['elementRegistWidth']);
-  var elementRegistIds = parameters['elementRegistIds'].split(' ');
-  var elementRegistIconIds = parameters['elementRegistIconIds'].split(' ');
-  var stateRegistIconX = Number(parameters['stateRegistIconX']);
-  var stateRegistX = Number(parameters['stateRegistX']);
-  var stateRegistWidth = Number(parameters['stateRegistWidth']);
-  var stateRegistIds = parameters['stateRegistIds'].split(' ');
-  var registFixed = Number(parameters['registFixed']);
-  var paramBackGround = parameters['paramBackGround'] === '1' ? true : false;
-  var paramBackGroundOpacity = Number(parameters['paramBackGroundOpacity']);
-  var paramNameFontFace = parameters['paramNameFontFace'];
-  var paramValueFontFace = parameters['paramValueFontFace'];
+  Input.keyMapper[+parameters['descriptionKeyCode']] = 'description';
+  var useOkButton = parameters['useOkButton'] === '1' ? true : false;
+  var horzLineHeight = +parameters['horzLineHeight'];
+  var xparamText = parameters['xparamText'].split(',');
+  var sparamText = parameters['sparamText'].split(',');
+  var paramNameX      = +parameters['paramNameX'];
+  var paramNameWidth  = +parameters['paramNameWidth'];
+  var paramX          = +parameters['paramX'];
+  var paramWidth      = +parameters['paramWidth'];
+  var xparamNameX     = +parameters['xparamNameX'];
+  var xparamNameWidth = +parameters['xparamNameWidth'];
+  var xparamX         = +parameters['xparamX'];
+  var xparamWidth     = +parameters['xparamWidth'];
+  var xparamFixed     = +parameters['xparamFixed'];
+  var sparamNameX     = +parameters['sparamNameX'];
+  var sparamNameWidth = +parameters['sparamNameWidth'];
+  var sparamX         = +parameters['sparamX'];
+  var sparamWidth     = +parameters['sparamWidth'];
+  var sparamFixed     = +parameters['sparamFixed'];
+  var elementResistX       = +parameters['elementResistX'];
+  var elementResistWidth   = +parameters['elementResistWidth'];
+  var elementResistIds     = parameters['elementResistIds'].split(',');
+  var elementResistIconIds = parameters['elementResistIconIds'].split(',');
+  var pdrIconId            = +parameters['pdrIconId'];
+  var mdrIconId            = +parameters['mdrIconId'];
+  var stateResistX         = +parameters['stateResistX'];
+  var stateResistWidth     = +parameters['stateResistWidth'];
+  var stateResistIds       = parameters['stateResistIds'].split(',');
+  var resistFixed          = +parameters['resistFixed'];
+  var paramBackGround        = parameters['paramBackGround'] === '1' ? true : false;
+  var paramBackGroundOpacity = +parameters['paramBackGroundOpacity'];
+  var useNicknameEx = parameters['useNicknameEx'] === '1' ? true : false;
+  var useMaxLevel = parameters['useMaxLevel'] === '1' ? true : false;
+  var maxLevelColor = +parameters['maxLevelColor'];
   
+  //-----------------------------------------------------------------------------
+  // Window_Base
+  //
+  
+  Window_Base.prototype.levelWidth = function() {
+    return 160;
+  };
+
+  var _Window_Base_drawActorLevel = Window_Base.prototype.drawActorLevel;
+  Window_Base.prototype.drawActorLevel = function(actor, x, y) {
+    if (useMaxLevel) {
+      this.changeTextColor(this.systemColor());
+      this.drawText(TextManager.levelA, x, y, 48);
+      var level = actor.level;
+      var maxLevel = actor.maxLevel();
+      var color1 = level === maxLevel ? this.textColor(maxLevelColor) : this.normalColor();
+      this.drawCurrentAndMax(level, maxLevel, x, y, this.levelWidth(),
+                             color1, this.normalColor());
+    } else {
+      _Window_Base_drawActorLevel.call(this, actor, x, y);
+    }
+  };
+
+  var _Window_Base_drawActorSimpleStatus = Window_Base.prototype.drawActorSimpleStatus;
+  Window_Base.prototype.drawActorSimpleStatus = function(actor, x, y, width) {
+    if (useNicknameEx) {
+      var lineHeight = this.lineHeight();
+      y -= lineHeight * 0.5 - 8;
+      this.contents.fontSize = 20;
+      var text = actor.nickname() + actor.currentClass().name;
+      this.contents.drawText(text, x, y, width, 20, 'left');
+      this.resetFontSettings();
+      var x2 = x + 180;
+      y += 20;
+      var width2 = Math.min(200, width - 180 - this.textPadding());
+      this.drawActorName(actor, x + 20, y);
+      this.drawActorLevel(actor, x, y + lineHeight * 1);
+      this.drawActorIcons(actor, x, y + lineHeight * 2);
+      this.drawActorHp(actor, x2, y + lineHeight * 1, width2);
+      this.drawActorMp(actor, x2, y + lineHeight * 2, width2);
+    } else {
+      _Window_Base_drawActorSimpleStatus.call(this, actor, x, y, width);
+    }
+  };
+
   //-----------------------------------------------------------------------------
   // Window_Status
   //
+
+  Window_Status.prototype.levelWidth = function() {
+    return 186;
+  };
 
   var _Window_Status_initialize = Window_Status.prototype.initialize;
   Window_Status.prototype.initialize = function() {
@@ -220,22 +297,54 @@ Imported.TMStatusMenuEx = true;
     this.contents.clear();
     if (this._actor) {
       var lineHeight = this.lineHeight();
-      this.drawBlock1(lineHeight * 0);
-      this.drawHorzLine(lineHeight * 1);
-      this.drawBlock2(lineHeight * 2 - 20);
-      this.drawHorzLine(lineHeight * 6 - 20);
-      this.drawBlock3(lineHeight * 7 - 40);
-      this.drawHorzLine(500);
-      this.drawBlock4(516);
+      var y = 0;
+      y = this.drawBlock1(y);
+      y = this.drawHorzLine(y);
+      if (this._parameterMode === 0) {
+        y = this.drawBlock2(y);
+        y = this.drawHorzLine(y);
+        this.drawBlock3(y);
+      } else {
+        this.drawBlock5(y);
+      }
+      y = this.contents.height - lineHeight * 2 - horzLineHeight;
+      y = this.drawHorzLine(y);
+      this.drawBlock4(y);
     }
   };
 
+  var _Window_Status_drawBlock1 = Window_Status.prototype.drawBlock1;
+  Window_Status.prototype.drawBlock1 = function(y) {
+    if (useNicknameEx) {
+      this.drawActorName(this._actor, 6, y);
+      this.resetTextColor();
+      var x = this.textWidth(this._actor.name()) + 6;
+      var text = this._actor.nickname() + this._actor.currentClass().name;
+      this.drawText(text, x, y, this.contents.width - x - this.textPadding(), 'right');
+    } else {
+      _Window_Status_drawBlock1.call(this, y);
+    }
+    return y + this.lineHeight() * 1;
+  };
+
+  var _Window_Status_drawBlock2 = Window_Status.prototype.drawBlock2;
+  Window_Status.prototype.drawBlock2 = function(y) {
+    _Window_Status_drawBlock2.call(this, y);
+    return y + this.lineHeight() * 4;
+  };
+
+  Window_Status.prototype.drawBlock5 = function(y) {
+    this.drawElementResists(y);
+    this.drawStateResists(y);
+    this.drawSparams(y);
+  };
+  
   Window_Status.prototype.drawHorzLine = function(y) {
-    var lineY = y + 7;
     this.contents.paintOpacity = 48;
-    this.contents.fillRect(0, lineY, this.contentsWidth(), 2, this.lineColor());
+    this.contents.fillRect(0, y + horzLineHeight / 2 - 1,
+                           this.contentsWidth(), 2, this.lineColor());
     this.contents.paintOpacity = 255;
-    this._horzLineCount++;
+    return y + horzLineHeight;
   };
 
   Window_Status.prototype.drawParamBackGround = function(x, y, width) {
@@ -246,89 +355,123 @@ Imported.TMStatusMenuEx = true;
   };
   
   Window_Status.prototype.drawParameters = function(x, y) {
-    if (this._parameterMode === 1) {
-      this.drawRegists(x, y);
-    } else {
-      x = paramNameX;
-      var w = paramNameWidth;
-      var x2 = paramX;
-      var w2 = paramWidth;
-      var lineHeight = this.lineHeight();
-      for (var i = 0; i < 6; i++) {
-        var y2 = y + lineHeight * i;
-        if (paramBackGround) {
-          this.drawParamBackGround(x, y2, x2 + w2 - x);
-        }
-        var paramId = i + 2;
+    this.drawParams(y);
+    this.drawXparams(y);
+  };
+  
+  Window_Status.prototype.drawParams = function(y) {
+    var x = paramNameX;
+    var w = paramNameWidth;
+    var x2 = paramX;
+    var w2 = paramWidth;
+    var lineHeight = this.lineHeight();
+    for (var i = 0; i < 6; i++) {
+      var paramId = i + 2;
+      if (TextManager.param(paramId)) {
+        if (paramBackGround) this.drawParamBackGround(x, y, x2 + w2 - x);
         this.changeTextColor(this.systemColor());
-        this.contents.fontFace = paramNameFontFace;
-        this.drawText(TextManager.param(paramId), x, y2, w);
+        this.drawText(TextManager.param(paramId), x, y, w);
         this.resetTextColor();
-        this.contents.fontFace = paramValueFontFace;
-        this.drawText(this._actor.param(paramId), x2, y2, w2, 'right');
+        this.drawText(this._actor.param(paramId), x2, y, w2, 'right');
+        y += lineHeight;
       }
-      x = xparamNameX;
-      w = xparamNameWidth;
-      x2 = xparamX;
-      w2 = xparamWidth;
-      if (paramBackGround) {
-        for (var i = 0, n; i < 7; i++) {
-          this.drawParamBackGround(x, y + lineHeight * i, x2 + w2 - x);
-        }
-      }
-      this.changeTextColor(this.systemColor());
-      this.contents.fontFace = paramNameFontFace;
-      this.drawText(TextManager.param(8),  x, y + lineHeight * 0, w);
-      this.drawText(TextManager.param(9),  x, y + lineHeight * 1, w);
-      this.drawText(xparamNameCritical,    x, y + lineHeight * 2, w);
-      this.drawText(xparamNameCriticalEva, x, y + lineHeight * 3, w);
-      this.drawText(xparamNameMagicEva,    x, y + lineHeight * 4, w);
-      this.drawText(xparamNameMagicRef,    x, y + lineHeight * 5, w);
-      this.drawText(xparamNameCounter,     x, y + lineHeight * 6, w);
-      this.resetTextColor();
-      this.contents.fontFace = paramValueFontFace;
-      for (var i = 0, n; i < 7; i++) {
-        n = this._actor.xparam(i) * 100;
-        this.drawText(n.toFixed(xparamFixed), x2, y + lineHeight * i, w2, 'right');
-      }
-      this.contents.fontFace = this.standardFontFace();
     }
   };
   
-  Window_Status.prototype.drawRegists = function(x, y) {
-    this.contents.fontFace = paramValueFontFace;
+  Window_Status.prototype.drawXparams = function(y) {
+    var x = xparamNameX;
+    var w = xparamNameWidth;
+    var x2 = xparamX;
+    var w2 = xparamWidth;
     var lineHeight = this.lineHeight();
-    x = elementRegistIconX;
-    var x2 = elementRegistX;
-    var w2 = elementRegistWidth;
-    for (var i = 0; i < elementRegistIds.length; i++) {
-      var y2 = y + lineHeight * i;
-      if (paramBackGround) {
-        this.drawParamBackGround(x, y2, x2 + w2 - x);
+    for (var i = 0; i < 7; i++) {
+      if (xparamText[i]) {
+        if (paramBackGround) this.drawParamBackGround(x, y, x2 + w2 - x);
+        this.changeTextColor(this.systemColor());
+        this.drawText(xparamText[i], x, y, w);
+        this.resetTextColor();
+        var value = this._actor.xparam(i) * 100;
+        this.drawText(value.toFixed(xparamFixed), x2, y, w2, 'right');
+        y += lineHeight;
       }
-      var elementId = Number(elementRegistIds[i]);
-      this.drawIcon(elementRegistIconIds[i], x, y2);
+    }
+  };
+
+  Window_Status.prototype.drawSparams = function(y) {
+    var x = sparamNameX;
+    var w = sparamNameWidth;
+    var x2 = sparamX;
+    var w2 = sparamWidth;
+    var lineHeight = this.lineHeight();
+    for (var i = 7; i < 10; i++) {
+      if (xparamText[i]) {
+        if (paramBackGround) this.drawParamBackGround(x, y, x2 + w2 - x);
+        this.changeTextColor(this.systemColor());
+        this.drawText(xparamText[i], x, y, w);
+        this.resetTextColor();
+        var value = this._actor.xparam(i) * 100;
+        this.drawText(value.toFixed(xparamFixed) + '%', x2, y, w2, 'right');
+        y += lineHeight;
+      }
+    }
+    for (var i = 0; i < 10; i++) {
+      if (sparamText[i]) {
+        if (paramBackGround) this.drawParamBackGround(x, y, x2 + w2 - x);
+        this.changeTextColor(this.systemColor());
+        this.drawText(sparamText[i], x, y, w);
+        this.resetTextColor();
+        var value = this._actor.sparam(i) * 100;
+        this.drawText(value.toFixed(sparamFixed) + '%', x2, y, w2, 'right');
+        y += lineHeight;
+      }
+    }
+  };
+  
+  Window_Status.prototype.drawElementResists = function(y) {
+    var x = elementResistX;
+    var w = elementResistWidth;
+    var lineHeight = this.lineHeight();
+    if (pdrIconId > 0) {
+      if (paramBackGround) this.drawParamBackGround(x, y, w);
+      this.drawIcon(pdrIconId, x, y);
+      var n = this._actor.pdr * 100;
+      this.drawText(n.toFixed(resistFixed) + '%', x + Window_Base._iconWidth,
+                    y, w - Window_Base._iconWidth, 'right');
+      y += lineHeight;
+    }
+    if (mdrIconId > 0) {
+      if (paramBackGround) this.drawParamBackGround(x, y, w);
+      this.drawIcon(mdrIconId, x, y);
+      var n = this._actor.mdr * 100;
+      this.drawText(n.toFixed(resistFixed) + '%', x + Window_Base._iconWidth,
+                    y, w - Window_Base._iconWidth, 'right');
+      y += lineHeight;
+    }
+    for (var i = 0; i < elementResistIds.length; i++) {
+      if (paramBackGround) this.drawParamBackGround(x, y, w);
+      var elementId = +elementResistIds[i];
+      this.drawIcon(elementResistIconIds[i], x, y);
       var n = this._actor.elementRate(elementId) * 100;
-      this.drawText(n.toFixed(registFixed) + '%', x2, y2, w2, 'right');
+      this.drawText(n.toFixed(resistFixed) + '%', x + Window_Base._iconWidth,
+                    y, w - Window_Base._iconWidth, 'right');
+      y += lineHeight;
     }
-    x = stateRegistIconX;
-    var x2 = stateRegistX;
-    var w2 = stateRegistWidth;
-    for (var i = 0; i < stateRegistIds.length; i++) {
-      var y2 = y + lineHeight * i;
-      if (paramBackGround) {
-        this.drawParamBackGround(x, y2, x2 + w2 - x);
-      }
-      var stateId = Number(stateRegistIds[i]);
-      var state = $dataStates[stateId];
-      this.drawIcon(state.iconIndex, x, y2);
+  };
+  
+  Window_Status.prototype.drawStateResists = function(y) {
+    var x = stateResistX;
+    var w = stateResistWidth;
+    var lineHeight = this.lineHeight();
+    for (var i = 0; i < stateResistIds.length; i++) {
+      if (paramBackGround) this.drawParamBackGround(x, y, w);
+      var stateId = +stateResistIds[i];
+      this.drawIcon($dataStates[stateId].iconIndex, x, y);
       var n = this._actor.stateRate(stateId) * 100;
-      if (this._actor.isStateResist(stateId)) {
-        n = 0;
-      }
-      this.drawText(n.toFixed(registFixed) + '%', x2, y2, w2, 'right');
+      if (this._actor.isStateResist(stateId)) n = 0;
+      this.drawText(n.toFixed(resistFixed) + '%', x + Window_Base._iconWidth,
+                    y, w - Window_Base._iconWidth, 'right');
+      y += lineHeight;
     }
-    this.contents.fontFace = this.standardFontFace();
   };
   
   Window_Status.prototype.changeParameterMode = function() {
@@ -343,7 +486,8 @@ Imported.TMStatusMenuEx = true;
   var _Scene_Status_update = Scene_Status.prototype.update;
   Scene_Status.prototype.update = function() {
     _Scene_Status_update.call(this);
-    if (Input.isTriggered('ok') || TouchInput.isTriggered()) {
+    if (Input.isTriggered('description') || TouchInput.isTriggered() ||
+        (useOkButton && Input.isTriggered('ok'))) {
       SoundManager.playOk();
       this._statusWindow.changeParameterMode();
       this._statusWindow.activate();

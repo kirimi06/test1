@@ -11,7 +11,7 @@ Yanfly.Party = Yanfly.Party || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 Replaces the default 'Formation' command with a new
+ * @plugindesc v1.08 Replaces the default 'Formation' command with a new
  * menu for players to easily change party formations.
  * @author Yanfly Engine Plugins
  *
@@ -41,6 +41,11 @@ Yanfly.Party = Yanfly.Party || {};
  * @desc Maximum number of followers on the map.
  * Default: 4
  * @default 4
+ *
+ * @param EXP Distribution
+ * @desc Divide battle EXP gained across live members?
+ * NO - false     YES - true
+ * @default false
  *
  * @param ---Menu---
  * @default
@@ -210,6 +215,11 @@ Yanfly.Party = Yanfly.Party || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Added 'EXP Distribution' parameter into the plugin parameters. Enabling
+ * this will cause the EXP distributed to party members to be divided based on
+ * the number of alive members at the end of battle.
+ *
  * Version 1.07:
  * - Fixed a bug that caused music to not replay properly when accessing the
  * Party change menu from battle.
@@ -259,6 +269,8 @@ Yanfly.Param.PartyShowBattle = String(Yanfly.Parameters['Show Battle Command']);
 Yanfly.Param.PartyEnBattle = String(Yanfly.Parameters['Enable Battle Command']);
 Yanfly.Param.PartyCooldown = Number(Yanfly.Parameters['Battle Cooldown']);
 Yanfly.Param.PartyMaxFollower = Number(Yanfly.Parameters['Maximum Followers']);
+Yanfly.Param.ParamExpDis = eval(String(Yanfly.Parameters['EXP Distribution']));
+
 Yanfly.Param.PartyHelpWindow = String(Yanfly.Parameters['Help Window']);
 Yanfly.Param.PartyLockFirst = String(Yanfly.Parameters['Lock First Actor']);
 Yanfly.Param.PartyTextAlign = String(Yanfly.Parameters['Text Alignment']);
@@ -278,6 +290,21 @@ Yanfly.Param.PartyDetailWin = String(Yanfly.Parameters['Enable Detail Window']);
 Yanfly.Param.PartyListWidth = Number(Yanfly.Parameters['List Width']);
 Yanfly.Param.PartyDetailParam = String(Yanfly.Parameters['Actor Parameters']);
 Yanfly.Param.PartyDetailEquip = String(Yanfly.Parameters['Actor Equipment']);
+
+//=============================================================================
+// BattleManager
+//=============================================================================
+
+if (Yanfly.Param.ParamExpDis) {
+
+Yanfly.Party.BattleManager_gainExp = BattleManager.gainExp;
+BattleManager.gainExp = function() {
+  var alive = $gameParty.aliveMembers().length;
+  this._rewards.exp = Math.ceil(this._rewards.exp / alive);
+  Yanfly.Party.BattleManager_gainExp.call(this);
+};
+
+}; // Yanfly.Param.ParamExpDis
 
 //=============================================================================
 // Game_System
