@@ -111,7 +111,7 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Yami_8DIR","status":true,"description":"プレイヤーの8方向の移動が可能になります。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"MoveAWSD2","status":true,"description":"AWSDキーで移動可能にするプラグインです。","parameters":{}},
+{"name":"MoveAWSD2","status":false,"description":"AWSDキーで移動可能にするプラグインです。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"dsSVActorForMenu","status":true,"description":"メニューにサイドビューキャラを表示するプラグイン ver1.00","parameters":{"Actor Motion Idle":"walk","Actor Motion Active":"chat"}},
 {"name":"dsJobChange","status":false,"description":"ジョブチェンジシステム ver1.00","parameters":{"Command Name":"ジョブチェンジ","Effect Animation Id":"52","Optimize Equip Enable":"true","Optimize Equip Text":"最強装備にします"}},
