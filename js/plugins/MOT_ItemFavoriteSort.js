@@ -3,13 +3,14 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.8
-// 最終更新日: 2016/02/28
+// Version: 0.9
+// 最終更新日: 2016/02/29
 //=============================================================================
 //■更新履歴
 /*
   2016/02/28 - テスト版公開
-  
+  2016/02/29 - 擬似ダブルタップ(クリック)機能の追加【モバイル専用】
+               ソート画面をアイテムリストがアクティブの時にアイテムリスト以外をタップ(クリックするとソート画面を開く処理を追加)【モバイル専用】
 */
 //=============================================================================
 /*■利用規約
@@ -108,9 +109,10 @@
  * @desc
  * @default 100
  *
- * @param 
- * @desc
- * @default
+ * @param ダブルタップの猶予フレーム
+ * @desc モバイル専用 ダブルタップでお気に入りの登録解除を行う
+ * シングルかどうか判別する必要があるので若干アイテムの使用が遅れてしまう 
+ * @default 20
  *
  * @param ソート画面を開くキー
  * @desc ソート画面を表示させる際に使用するキー a～zのみ対応
@@ -156,7 +158,7 @@ MOT.Param.FavoriteRegSePit     = Number(MOT.Parameters['お気に入り登録時
 MOT.Param.FavoriteRelSeFile    = String(MOT.Parameters['お気に入り解除時のSE:ファイル名']);
 MOT.Param.FavoriteRelSeVol     = Number(MOT.Parameters['お気に入り解除時のSE:ボリューム']);
 MOT.Param.FavoriteRelSePit     = Number(MOT.Parameters['お気に入り解除時のSE:ピッチ']);
-
+MOT.Param.FavoriteDoubleTap    = Number(MOT.Parameters['ダブルタップの猶予フレーム']);
 
 MOT.Param.SortItemKey       = String(MOT.Parameters['ソート画面を開くキー']);
 MOT.Param.SortItemTitle     = String(MOT.Parameters['ソートタイトルに表示される文字列']);
@@ -410,7 +412,11 @@ Window_ItemCategory.prototype.setSortWindow = function(sortWindow) {
 //-----------------------------------------------------------------------------
 Window_ItemList.prototype.update = function() {
     Window_Selectable.prototype.update.call(this);
-    this.updateFavoriteItem();
+	if (Utils.isMobileDevice()) {
+	    this.isDoubleClick();
+	} else {
+	    this.updateFavoriteItem();
+	}
 };
 
 Window_ItemList.prototype.updateFavoriteItem = function() {
@@ -420,8 +426,46 @@ Window_ItemList.prototype.updateFavoriteItem = function() {
         $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
         this.refresh();
     }
-    
 };
+
+if (Utils.isMobileDevice()) {
+	Window_ItemList.prototype.processTouch = function() {
+	    if (this.isOpenAndActive()) {
+	        if (TouchInput.isTriggered() && this.isTouchedInsideFrame()) {
+	            this._touching = true;
+	        } else if (TouchInput.isCancelled()) {
+	            if (this.isCancelEnabled()) {
+	                this.processCancel();
+	            }
+	        }
+	        if (this._touching) {
+	            if (TouchInput.isPressed()) {
+	                this.onTouch(false);
+	            }
+	        }
+	    } else {
+	        this._touching = false;
+	    }
+	};
+	//ダブルクリックの判定を残す
+	Window_ItemList.prototype.isDoubleClick = function() {
+	if (this._doubleFrame === undefined && this._touching) this._doubleFrame = 0;
+		if (this._doubleFrame < MOT.Param.FavoriteDoubleTap && TouchInput.isTriggered() && this._doubleFrame != 0) {
+		console.log(TouchInput.isPressed())
+			this._doubleFrame = undefined;
+			this._touching = false;
+	        $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
+	        this.refresh();
+		}
+	if (this._doubleFrame !== undefined) this._doubleFrame++;
+		if (this._doubleFrame > MOT.Param.FavoriteDoubleTap) {
+			this._doubleFrame = undefined;
+			this._touching = false;
+			this.onTouch(true);
+		}
+	};
+}
+
 Window_ItemList.prototype.drawItemName = function(item, x, y, width) {
     width = width || 312;
     if (item) {
@@ -606,14 +650,25 @@ Scene_Item.prototype.onSortCancel = function() {
 };
 
 Scene_Item.prototype.update = function() {
-    if (Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
-        SoundManager.playOk();
-        this._itemWindow.deactivate();
-        this._sortWindow.activate();
-        this._sortWindow.select(this._itemWindow.getSortMode());
-        this._sortTitleWindow.show();
-        this._sortWindow.show();
-    }
+	if (Utils.isMobileDevice()) {
+	    if (this._itemWindow.active && TouchInput.isTriggered() && !this._itemWindow.isTouchedInsideFrame()) {
+	        SoundManager.playOk();
+	        this._itemWindow.deactivate();
+	        this._sortWindow.activate();
+	        this._sortWindow.select(this._itemWindow.getSortMode());
+	        this._sortTitleWindow.show();
+	        this._sortWindow.show();
+	    }
+	} else {
+	    if (Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
+	        SoundManager.playOk();
+	        this._itemWindow.deactivate();
+	        this._sortWindow.activate();
+	        this._sortWindow.select(this._itemWindow.getSortMode());
+	        this._sortTitleWindow.show();
+	        this._sortWindow.show();
+	    }
+	}    
     Scene_MenuBase.prototype.update.call(this);
 };
 
