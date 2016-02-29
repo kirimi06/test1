@@ -3,7 +3,7 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.9
+// Version: 0.91
 // 最終更新日: 2016/02/29
 //=============================================================================
 //■更新履歴
@@ -11,6 +11,9 @@
   2016/02/28 - テスト版公開
   2016/02/29 - 擬似ダブルタップ(クリック)機能の追加【モバイル専用】
                ソート画面をアイテムリストがアクティブの時にアイテムリスト以外をタップ(クリックするとソート画面を開く処理を追加)【モバイル専用】
+  2016/02/29 - ソート画面をシングルからダブルタップ(クリック)に変更
+               ショップ、戦闘シーンに抜けていた処理を追加
+               範囲外をタップ(クリック)した場合カーソルアップデートが呼ばれるのを強引に呼ばれないようにした
 */
 //=============================================================================
 /*■利用規約
@@ -110,8 +113,8 @@
  * @default 100
  *
  * @param ダブルタップの猶予フレーム
- * @desc モバイル専用 ダブルタップでお気に入りの登録解除を行う
- * シングルかどうか判別する必要があるので若干アイテムの使用が遅れてしまう 
+ * @desc モバイル専用 ダブルタップでソート、お気に入りの登録解除を行う
+ * シングルかどうか判別する必要があるので若干ウェイトがかかる
  * @default 20
  *
  * @param ソート画面を開くキー
@@ -410,6 +413,14 @@ Window_ItemCategory.prototype.setSortWindow = function(sortWindow) {
 //-----------------------------------------------------------------------------
 // Window_ItemList
 //-----------------------------------------------------------------------------
+MOT.ItemFavoriteSort.Window_ItemList_initialize = Window_ItemList.prototype.initialize;
+Window_ItemList.prototype.initialize = function(x, y, width, height) {
+	MOT.ItemFavoriteSort.Window_ItemList_initialize.call(this, x, y, width, height);
+	this._sfMode = 0;
+	this._unIndex = -1;
+};
+
+
 Window_ItemList.prototype.update = function() {
     Window_Selectable.prototype.update.call(this);
 	if (Utils.isMobileDevice()) {
@@ -428,12 +439,21 @@ Window_ItemList.prototype.updateFavoriteItem = function() {
     }
 };
 
+Window_ItemList.prototype.setSortWindow = function(winobj) {
+	this._sortWindow = winobj;
+};
+
 if (Utils.isMobileDevice()) {
 	Window_ItemList.prototype.processTouch = function() {
 	    if (this.isOpenAndActive()) {
 	        if (TouchInput.isTriggered() && this.isTouchedInsideFrame()) {
 	            this._touching = true;
-	        } else if (TouchInput.isCancelled()) {
+	            this._sfMode = 1;
+	        } else if (TouchInput.isTriggered() && !this.isTouchedInsideFrame()) {
+	        	this._touching = true;
+	        	this._sfMode = 2;
+	        }
+	         else if (TouchInput.isCancelled()) {
 	            if (this.isCancelEnabled()) {
 	                this.processCancel();
 	            }
@@ -451,20 +471,55 @@ if (Utils.isMobileDevice()) {
 	Window_ItemList.prototype.isDoubleClick = function() {
 	if (this._doubleFrame === undefined && this._touching) this._doubleFrame = 0;
 		if (this._doubleFrame < MOT.Param.FavoriteDoubleTap && TouchInput.isTriggered() && this._doubleFrame != 0) {
-		console.log(TouchInput.isPressed())
 			this._doubleFrame = undefined;
 			this._touching = false;
-	        $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
-	        this.refresh();
+			if (this._sfMode === 1) {
+		        $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
+		        this.refresh();
+		    } else if (this._sfMode === 2) {
+		    	this.active = false;
+		    	this._sortWindow.show();
+		    	this._sortWindow.active = true;
+		    	SoundManager.playOk();
+		    	this._sortWindow.select(this.getSortMode());
+		    }
+		    this._sfMode = 0;
 		}
 	if (this._doubleFrame !== undefined) this._doubleFrame++;
 		if (this._doubleFrame > MOT.Param.FavoriteDoubleTap) {
 			this._doubleFrame = undefined;
 			this._touching = false;
+		    this._sfMode = 0;
 			this.onTouch(true);
 		}
 	};
-}
+
+	//_stayCount対策用
+	Window_ItemList.prototype.onTouch = function(triggered) {
+	    var lastIndex = this.index();
+	    var x = this.canvasToLocalX(TouchInput.x);
+	    var y = this.canvasToLocalY(TouchInput.y);
+	    var hitIndex = this.hitTest(x, y);
+	    if (hitIndex >= 0) {
+	        if (hitIndex === this.index()) {
+	            if (triggered && this.isTouchOkEnabled()) {
+	                this.processOk();
+	            }
+	        } else if (this.isCursorMovable()) {
+	            this.select(hitIndex);
+	        }
+	    } else if (this._stayCount >= 10 && this._sfMode !== 2) {
+	        if (y < this.padding) {
+	            this.cursorUp();
+	        } else if (y >= this.height - this.padding) {
+	            this.cursorDown();
+	        }
+	    }
+	    if (this.index() !== lastIndex) {
+	        SoundManager.playCursor();
+	    }
+	};
+};
 
 Window_ItemList.prototype.drawItemName = function(item, x, y, width) {
     width = width || 312;
@@ -610,7 +665,7 @@ Window_ItemList.prototype.changeStrCode = function(item) {
         var chr = match.charCodeAt(0) - 0x60;
         return String.fromCharCode(chr);
     },this);
-}
+};
 //-----------------------------------------------------------------------------
 // Scene_Item
 //-----------------------------------------------------------------------------
@@ -632,6 +687,7 @@ Scene_Item.prototype.createSortWindow = function() {
     this._sortWindow.setHandler('cancel', this.onSortCancel.bind(this));
     this._categoryWindow.setSortWindow(this._sortWindow);
     this.addWindow(this._sortWindow);
+    this._itemWindow.setSortWindow(this._sortWindow);
 };
 
 Scene_Item.prototype.onSortOk = function() {
@@ -650,25 +706,14 @@ Scene_Item.prototype.onSortCancel = function() {
 };
 
 Scene_Item.prototype.update = function() {
-	if (Utils.isMobileDevice()) {
-	    if (this._itemWindow.active && TouchInput.isTriggered() && !this._itemWindow.isTouchedInsideFrame()) {
-	        SoundManager.playOk();
-	        this._itemWindow.deactivate();
-	        this._sortWindow.activate();
-	        this._sortWindow.select(this._itemWindow.getSortMode());
-	        this._sortTitleWindow.show();
-	        this._sortWindow.show();
-	    }
-	} else {
-	    if (Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
-	        SoundManager.playOk();
-	        this._itemWindow.deactivate();
-	        this._sortWindow.activate();
-	        this._sortWindow.select(this._itemWindow.getSortMode());
-	        this._sortTitleWindow.show();
-	        this._sortWindow.show();
-	    }
-	}    
+    if (!Utils.isMobileDevice() && Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
+        SoundManager.playOk();
+        this._itemWindow.deactivate();
+        this._sortWindow.activate();
+        this._sortWindow.select(this._itemWindow.getSortMode());
+        this._sortTitleWindow.show();
+        this._sortWindow.show();
+    }
     Scene_MenuBase.prototype.update.call(this);
 };
 
@@ -693,6 +738,7 @@ Scene_Shop.prototype.createSortWindow = function() {
     this._sortWindow.setHandler('cancel', this.onSortCancel.bind(this));
     this._categoryWindow.setSortWindow(this._sortWindow);
     this.addWindow(this._sortWindow);
+    this._sellWindow.setSortWindow(this._sortWindow);
 };
 
 Scene_Shop.prototype.onSortOk = function() {
@@ -711,7 +757,7 @@ Scene_Shop.prototype.onSortCancel = function() {
 };
 
 Scene_Shop.prototype.update = function() {
-    if (Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._sellWindow.active) {
+    if (!Utils.isMobileDevice() && Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._sellWindow.active) {
         SoundManager.playOk();
         this._sellWindow.deactivate();
         this._sortWindow.activate();
@@ -741,6 +787,7 @@ Scene_Battle.prototype.createSortWindow = function() {
     this._sortWindow.setHandler('ok',     this.onSortOk.bind(this));
     this._sortWindow.setHandler('cancel', this.onSortCancel.bind(this));
     this.addWindow(this._sortWindow);
+    this._itemWindow.setSortWindow(this._sortWindow);
 };
 
 Scene_Battle.prototype.onSortOk = function() {
@@ -759,7 +806,7 @@ Scene_Battle.prototype.onSortCancel = function() {
 };
 MOT.ItemFavoriteSort.Scene_Battle_update = Scene_Battle.prototype.update;
 Scene_Battle.prototype.update = function() {
-    if (Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
+    if (!Utils.isMobileDevice() && Input.isTriggered(MOT.Keys.set(MOT.Param.SortItemKey)) && this._itemWindow.active) {
         SoundManager.playOk();
         this._itemWindow.deactivate();
         this._actorCommandWindow.deactivate();
