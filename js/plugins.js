@@ -6,7 +6,7 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"SRD_SkipTitleScreen","status":true,"description":"Skips the Title Screen!\r\nPretty cool, right?","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"MOT_ItemFavoriteSort","status":true,"description":"アイテムソートとアイテムのお気に入り機能を追加します","parameters":{"お気に入り登録するキー":"z","お気に入りアイテムのアイコン":"84","お気に入り登録上限数":"10","お気に入り登録時のSE:ファイル名":"Decision2","お気に入り登録時のSE:ボリューム":"90","お気に入り登録時のSE:ピッチ":"100","お気に入り解除時のSE:ファイル名":"Cancel1","お気に入り解除時のSE:ボリューム":"90","お気に入り解除時のSE:ピッチ":"100","ダブルタップの猶予フレーム":"20","ソート画面を開くキー":"s","ソートタイトルに表示される文字列":"並び替え","ソートタイトル画面:フォントサイズ":"23","ソートタイトル画面:横幅":"400","ソートタイトル画面:縦幅":"53","ソートタイトル画面:パディング":"12"}},
+{"name":"MOT_ItemFavoriteSort","status":true,"description":"アイテムソートとアイテムのお気に入り機能を追加します","parameters":{"お気に入り登録するキー":"a","お気に入りアイテムのアイコン":"84","お気に入り登録上限数":"10","お気に入り登録時のSE:ファイル名":"Decision2","お気に入り登録時のSE:ボリューム":"90","お気に入り登録時のSE:ピッチ":"100","お気に入り解除時のSE:ファイル名":"Cancel1","お気に入り解除時のSE:ボリューム":"90","お気に入り解除時のSE:ピッチ":"100","ダブルタップの猶予フレーム":"20","ソート画面を開くキー":"s","ソートタイトルに表示される文字列":"並び替え","ソートタイトル画面:フォントサイズ":"23","ソートタイトル画面:横幅":"400","ソートタイトル画面:縦幅":"53","ソートタイトル画面:パディング":"12"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"EscapeFadeOut","status":true,"description":"サイドビューで逃走時の前向き退却のモーションをフェードアウトに変更します","parameters":{"EffectDuration":"10"}},
 {"name":"DropDoubleCustom","status":false,"description":"パーティー能力の「獲得金額2倍」「アイテム入手率2倍」の数値を変更するプラグイン","parameters":{"GoldhasValue":"2","ItemhasValue":"2"}},
@@ -194,9 +194,6 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Menu_tp","status":true,"description":"キャンプメニューにもＴＰ表示","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"Rem_Menu_Scene","status":false,"description":"","parameters":{}},
-{"name":"Untitled-2","status":false,"description":"レイアウトの異なるメニュー画面","parameters":{"bgBitmapItem":"","bgBitmapSkill":"","bgBitmapEquip":"","bgBitmapStatus":"","bgBitmapOptions":"","bgBitmapFile":"","bgBitmapGameEnd":"","maxRowsMenu":"4","commandCols":"1","isDisplayStatus":"1"}},
-{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"VersionSpecified","status":true,"description":"【MMP ver.1.0】タイトル画面にバージョンを明記します。","parameters":{"version":"Version 1.0.0","fontSize":"20","fontColor":"rgb(255, 255, 255)","windowX":"540","windowY":"560"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"ROCK_CheckAction","status":false,"description":"決定キーで実行するイベントが無い場合にコモンイベントを呼ぶプラグイン","parameters":{"CommonEventId":"20"}},
@@ -211,5 +208,9 @@ var $plugins =
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"VE_BasicModule","status":true,"description":"v1.13 - Plugin with base code required for all Victor Engine plugins.","parameters":{"== Trait Names ==":"","Hit Rate Name":"Hit","Evasion Rate Name":"Evasion","Critical Rate Name":"Critical","Critical Evasion Name":"C. Evasion","Magic Evasion Name":"M. Evasion","Magic Reflection Name":"M. Reflection","Counter Attack Name":"Counter","HP Regeneration Name":"HP Regen","MP Regeneration Name":"MP Regen","TP Regeneration Name":"TP Regen","Target Rate Name":"Target Rate","Guard Rate Name":"Guard Rate\r","Recovery Effect Name":"Recovery","Pharmacology Name":"Pharmacology","MP Cost Rate Name":"MP Cost","TP Charge Rate Name":"TP Charge","Physical Damage Name":"Physical Damage","Magical Damage Name":"Magical Damage","Floor Damage Name":"Floor Damage","Experience Rate Name":"Exp. Rate\r"}},
 {"name":"VE_FogAndOverlay","status":true,"description":"v1.02 - Display fogs and overlay on maps and battles.","parameters":{"Max Fogs":"5\r"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"SOM","status":false,"description":"SO風メニュー画面（但しメニュー画面のトップしかないです）","parameters":{"bgBitmapMenu":"","maxRowsMenu":"4"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"category_plus","status":false,"description":"アイテムのカテゴリーを追加する","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
 ];

@@ -3,8 +3,8 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.91
-// 最終更新日: 2016/02/29
+// Version: 0.92
+// 最終更新日: 2016/03/01
 //=============================================================================
 //■更新履歴
 /*
@@ -14,6 +14,7 @@
   2016/02/29 - ソート画面をシングルからダブルタップ(クリック)に変更
                ショップ、戦闘シーンに抜けていた処理を追加
                範囲外をタップ(クリック)した場合カーソルアップデートが呼ばれるのを強引に呼ばれないようにした
+  2016/03/01 - プラグインを導入する前のセーブデータから始める場合のリセットを追加
 */
 //=============================================================================
 /*■利用規約
@@ -75,7 +76,10 @@
  * <sortCode:さくら> 又は <sortCode:さくらもち>等
  * Ice
  * <sortCode:あい> 又は <sortCode:あいす>等
- *
+ * 
+ * ※プラグインを導入する前のセーブデータを使用する際以下のイベントのスクリプトに記述して一度だけイベントを起動してください。
+ * $gameSystem.resetFavoriteSort();
+ * 
  * @param お気に入り登録するキー
  * @desc アイテムをお気に入りに登録する際に使用するキー a～zのみ対応
  * @default a
@@ -219,6 +223,18 @@ Game_System.prototype.initialize = function() {
     this.favoriteArmors = [0];
     this.favoriteKeyItems = [0];
 };
+//途中から始める時の救済用
+Game_System.prototype.resetFavoriteSort = function() {
+    this.sortModeItems   = 0;
+    this.sortModeWeapons = 0;
+    this.sortModeArmors  = 0;
+    this.sortModeKeys    = 0;
+    this.favoriteItems = [0];
+    this.favoriteWeapons = [0];
+    this.favoriteArmors = [0];
+    this.favoriteKeyItems = [0];
+};
+
 Game_System.prototype.favoriteCheck = function(id,category) {
     var index = 0;
     

@@ -1,6 +1,6 @@
 [
 null,
 {"id":1,"battlerName":"ali","characterIndex":1,"characterName":"nagamine","classId":1,"equips":[5,0,2,3,0],"faceIndex":0,"faceName":"alice","traits":[{"code":51,"dataId":1,"value":1}],"initialLevel":1,"maxLevel":99,"name":"アリス","nickname":"","note":"<Speech/Start: うふふ\\n戦闘開始だー>","profile":""},
-{"id":2,"battlerName":"kmm2","characterIndex":0,"characterName":"kmmw2","classId":3,"equips":[1,0,2,3,4],"faceIndex":0,"faceName":"kmm2","traits":[{"code":51,"dataId":1,"value":1},{"code":51,"dataId":6,"value":1},{"code":52,"dataId":1,"value":1},{"code":52,"dataId":3,"value":1},{"code":14,"dataId":9,"value":1}],"initialLevel":1,"maxLevel":99,"name":"雲李","nickname":"","note":"<Speech/Start:ボク、頑張るね>","profile":""},
+{"id":2,"battlerName":"kmm2","characterIndex":0,"characterName":"kmmw2","classId":3,"equips":[5,0,2,3,4],"faceIndex":0,"faceName":"kmm2","traits":[{"code":51,"dataId":1,"value":1},{"code":51,"dataId":6,"value":1},{"code":52,"dataId":1,"value":1},{"code":52,"dataId":3,"value":1},{"code":14,"dataId":9,"value":1}],"initialLevel":1,"maxLevel":99,"name":"雲李","nickname":"","note":"<Speech/Start:ボク、頑張るね>","profile":""},
 {"id":3,"battlerName":"shikyoub2","characterIndex":0,"characterName":"shikyouw2","classId":4,"equips":[5,1,0,3,4],"faceIndex":0,"faceName":"shikyou","traits":[{"code":51,"dataId":9,"value":1},{"code":51,"dataId":1,"value":1},{"code":52,"dataId":1,"value":1},{"code":52,"dataId":5,"value":1},{"code":61,"dataId":0,"value":0.6}],"initialLevel":1,"maxLevel":99,"name":"時叶","nickname":"","note":"<Speech/Start:戦闘開始だ>","profile":""}
 ]
