@@ -1,8 +1,8 @@
 ﻿//=============================================================================
 // TMVplugin - 詳細説明ウィンドウ
 // 作者: tomoaky (http://hikimoki.sakura.ne.jp/)
-// Version: 1.0
-// 最終更新日: 2016/02/25
+// Version: 1.1
+// 最終更新日: 2016/02/27
 //=============================================================================
 
 /*:
@@ -24,6 +24,11 @@
  * @desc 右側のパラメータの幅
  * 初期値: 400
  * @default 400
+ *
+ * @param horzLineHeight
+ * @desc 横線の余白も含めた高さ
+ * 初期値: 28
+ * @default 28
  *
  * @param secretItemA
  * @desc 隠しアイテムＡのタイプ名
@@ -350,6 +355,46 @@
  * 初期値: 属性
  * @default 属性
  *
+ * @param costExTextHp
+ * @desc 消費ＨＰの書式（ TMSkillCostEx.js が必要）
+ * 初期値: ＨＰを%1消費する
+ * @default ＨＰを%1消費する
+ *
+ * @param costExTextItem
+ * @desc 消費アイテムの書式（ TMSkillCostEx.js が必要）
+ * 初期値: %1を%2個消費する
+ * @default %1を%2個消費する
+ *
+ * @param costExTextExp
+ * @desc 消費経験値の書式（ TMSkillCostEx.js が必要）
+ * 初期値: 経験値を%1消費する
+ * @default 経験値を%1消費する
+ *
+ * @param costExTextGold
+ * @desc 消費金額の書式（ TMSkillCostEx.js が必要）
+ * 初期値: お金を%1消費する
+ * @default お金を%1消費する
+ *
+ * @param passiveAlwaysText
+ * @desc 常時発動の書式（ TMPassiveSkill.js が必要）
+ * 初期値: 常に効果が適用される
+ * @default 常に効果が適用される
+ *
+ * @param passiveTpText
+ * @desc ＴＰ○○以上で発動の書式（ TMPassiveSkill.js が必要）
+ * 初期値: ＴＰ%1以上で効果が適用される
+ * @default ＴＰ%1以上で効果が適用される
+ *
+ * @param passiveTpText2
+ * @desc ＴＰ○○未満で発動の書式（ TMPassiveSkill.js が必要）
+ * 初期値: ＴＰ%1未満で効果が適用される
+ * @default ＴＰ%1未満で効果が適用される
+ *
+ * @param passiveStateText
+ * @desc ○○状態で発動の書式（ TMPassiveSkill.js が必要）
+ * 初期値: %1状態で効果が適用される
+ * @default %1状態で効果が適用される
+ *
  * @help
  * 使い方:
  *   このプラグインを導入すると、アイテムやスキルを選択中にＡキーを押すことで
@@ -377,6 +422,7 @@ Imported.TMDescriptionEx = true;
   Input.keyMapper[+parameters['descriptionKeyCode']] = 'description';
   var leftPaneWidth = +parameters['leftPaneWidth'];
   var rightPaneWidth = +parameters['rightPaneWidth'];
+  var horzLineHeight = +parameters['horzLineHeight'];
   var secretItemA = parameters['secretItemA'];
   var secretItemB = parameters['secretItemB'];
   var consumableText = parameters['consumableText'];
@@ -442,6 +488,14 @@ Imported.TMDescriptionEx = true;
   var specialFlagValue = parameters['specialFlagValue'].split(',');
   var partyAbilityValue = parameters['partyAbilityValue'].split(',');
   var elementFooter = parameters['elementFooter'];
+  var costExTextHp   = parameters['costExTextHp'];
+  var costExTextItem = parameters['costExTextItem'];
+  var costExTextExp  = parameters['costExTextExp'];
+  var costExTextGold = parameters['costExTextGold'];
+  var passiveAlwaysText = parameters['passiveAlwaysText'];
+  var passiveTpText = parameters['passiveTpText'];
+  var passiveTpText2 = parameters['passiveTpText2'];
+  var passiveStateText = parameters['passiveStateText'];
   
   //-----------------------------------------------------------------------------
   // Game_Interpreter
@@ -477,7 +531,7 @@ Imported.TMDescriptionEx = true;
       var wx = (Graphics.width - Graphics.boxWidth) / 2 + this._helpWindow.x;
       var wy = (Graphics.height - Graphics.boxHeight) / 2 + this._helpWindow.y;
       return (TouchInput.x >= wx && TouchInput.x < wx + this._helpWindow.width &&
-              TouchInput.y >= wy && TouchInput.y < wy + this._helpWindow.height)
+              TouchInput.y >= wy && TouchInput.y < wy + this._helpWindow.height);
     }
     return Input.isRepeated('description');
   };
@@ -591,67 +645,67 @@ Imported.TMDescriptionEx = true;
   };
 
   Window_DescriptionEx.prototype.refreshItem = function() {
-    var lineHeight = this.lineHeight();
-    this.drawItemName(this._item, 0, lineHeight * 0);
+    var y = 0;
+    this.drawItemName(this._item, 0, y);
     this.drawItemType();
-    this.drawHorzLine(lineHeight * 1);
-    this.drawItemParameters(this.textPadding(), lineHeight * 2);
-    this.drawEffects(this.contents.width - this.textPadding() - rightPaneWidth,
-        lineHeight * 2);
+    y = this.drawHorzLine(y + this.lineHeight());
+    this.drawItemParameters(this.textPadding(), y);
+    this.drawEffects(this.contents.width - this.textPadding() - rightPaneWidth, y);
     var profileY = this.profileY();
-    this.drawHorzLine(profileY);
-    this.drawProfile(0, profileY + lineHeight);
+    y = this.drawHorzLine(profileY);
+    this.drawProfile(0, y);
   };
 
   Window_DescriptionEx.prototype.refreshWeapon = function() {
-    var lineHeight = this.lineHeight();
-    this.drawItemName(this._item, 0, lineHeight * 0);
+    var y = 0;
+    this.drawItemName(this._item, 0, y);
     this.drawWeaponType();
-    this.drawHorzLine(lineHeight * 1);
-    this.drawEquipParameters(this.textPadding(), lineHeight * 2);
-    this.drawTraits(this.contents.width - this.textPadding() - rightPaneWidth,
-        lineHeight * 2)
+    y = this.drawHorzLine(y + this.lineHeight());
+    this.drawEquipParameters(this.textPadding(), y);
+    this.drawTraits(this.contents.width - this.textPadding() - rightPaneWidth, y);
     var profileY = this.profileY();
-    this.drawHorzLine(profileY);
-    this.drawProfile(0, profileY + lineHeight);
+    y = this.drawHorzLine(profileY);
+    this.drawProfile(0, y);
   };
 
   Window_DescriptionEx.prototype.refreshArmor = function() {
-    var lineHeight = this.lineHeight();
-    this.drawItemName(this._item, 0, lineHeight * 0);
+    var y = 0;
+    this.drawItemName(this._item, 0, y);
     this.drawArmorType();
-    this.drawHorzLine(lineHeight * 1);
-    this.drawEquipParameters(this.textPadding(), lineHeight * 2);
-    this.drawTraits(this.contents.width - this.textPadding() - rightPaneWidth,
-        lineHeight * 2)
+    y = this.drawHorzLine(y + this.lineHeight());
+    this.drawEquipParameters(this.textPadding(), y);
+    this.drawTraits(this.contents.width - this.textPadding() - rightPaneWidth, y);
     var profileY = this.profileY();
-    this.drawHorzLine(profileY);
-    this.drawProfile(0, profileY + lineHeight);
+    y = this.drawHorzLine(profileY);
+    this.drawProfile(0, y);
   };
   
   Window_DescriptionEx.prototype.refreshSkill = function() {
-    var lineHeight = this.lineHeight();
-    this.drawItemName(this._item, 0, lineHeight * 0);
+    var y = 0;
+    this.drawItemName(this._item, 0, y);
     this.drawSkillType();
-    this.drawHorzLine(lineHeight * 1);
-    this.drawSkillParameters(this.textPadding(), lineHeight * 2);
-    this.drawEffects(this.contents.width - this.textPadding() - rightPaneWidth,
-        lineHeight * 2);
+    y = this.drawHorzLine(y + this.lineHeight());
+    if (Imported.TMPassiveSkill && this._item.meta.passive) {
+      this.drawPassiveSkillParameters(this.textPadding(), y);
+    } else {
+      this.drawSkillParameters(this.textPadding(), y);
+      this.drawEffects(this.contents.width - this.textPadding() - rightPaneWidth, y);
+    }
     var profileY = this.profileY();
-    this.drawHorzLine(profileY);
-    this.drawProfile(0, profileY + lineHeight);
+    y = this.drawHorzLine(profileY);
+    this.drawProfile(0, y);
   };
 
   Window_DescriptionEx.prototype.drawItemType = function() {
     if (this._item.meta.dType) {
       var text = this._item.meta.dType;
-    } else if (this._item.itypeId === 0) {
-      var text = TextManager.item;
     } else if (this._item.itypeId === 1) {
-      var text = TextManager.keyItem;
+      var text = TextManager.item;
     } else if (this._item.itypeId === 2) {
-      var text = secretItemA;
+      var text = TextManager.keyItem;
     } else if (this._item.itypeId === 3) {
+      var text = secretItemA;
+    } else if (this._item.itypeId === 4) {
       var text = secretItemB;
     }
     this.drawText(text, 0, 0, this.contents.width - this.textPadding(), 'right');
@@ -685,14 +739,15 @@ Imported.TMDescriptionEx = true;
     this.drawPrice(x, y + lineHeight);
   };
   
-  Window_DescriptionEx.prototype.drawEquipParameters = function(x, y) {
+  Window_DescriptionEx.prototype.drawEquipParameters = function(x, y, item) {
+    item = item || this._item;
     var lineHeight = this.lineHeight();
     for (var i = 0; i < 8; i++) {
       if (TextManager.param(i)) {
         this.changeTextColor(this.systemColor());
         this.drawText(TextManager.param(i), x, y, leftPaneWidth);
-        this.changeTextColor(this.normalColor());
-        this.drawText(this._item.params[i], x, y, leftPaneWidth, 'right');
+        this.resetTextColor();;
+        this.drawText(item.params[i], x, y, leftPaneWidth, 'right');
         y += lineHeight;
       }
     }
@@ -705,23 +760,17 @@ Imported.TMDescriptionEx = true;
     this.drawText(mpCostText,        x, y + lineHeight * 0, leftPaneWidth);
     this.drawText(tpCostText,        x, y + lineHeight * 1, leftPaneWidth);
     this.drawText(occasionText,      x, y + lineHeight * 2, leftPaneWidth);
-    this.drawText(requiredWtypeText, x, y + lineHeight * 3, leftPaneWidth);
-    this.changeTextColor(this.normalColor());
-    this.drawText(this._item.mpCost, x, y + lineHeight * 0, leftPaneWidth, 'right');
-    this.drawText(this._item.tpCost, x, y + lineHeight * 1, leftPaneWidth, 'right');
-    var text = occasionValue[this._item.occasion];
-    this.drawText(text, x, y + lineHeight * 2, leftPaneWidth, 'right');
-    if (this._item.requiredWtypeId1 > 0) {
-      text = $dataSystem.weaponTypes[this._item.requiredWtypeId1];
-      if (this._item.requiredWtypeId2 > 0) {
-        text += ' ' + $dataSystem.weaponTypes[this._item.requiredWtypeId2];
-      }
-    } else if (this._item.requiredWtypeId2 > 0) {
-      text = $dataSystem.weaponTypes[this._item.requiredWtypeId2];
-    } else {
-      text = 'なし';
+    this.resetTextColor();;
+    var text = this._item.mpCost;
+    if (Imported.TMSkillCostEx && this._item.meta.mpRateCost) {
+      text = this._item.meta.mpRateCost + '%';
     }
-    this.drawText(text, x, y + lineHeight * 3, leftPaneWidth, 'right');
+    this.drawText(text, x, y + lineHeight * 0, leftPaneWidth, 'right');
+    this.drawText(this._item.tpCost, x, y + lineHeight * 1, leftPaneWidth, 'right');
+    text = occasionValue[this._item.occasion];
+    this.drawText(text, x, y + lineHeight * 2, leftPaneWidth, 'right');
+    this.drawLeftParameter(x, y + lineHeight * 3, requiredWtypeText,
+                           this.requiredWtypeValue());
     this.drawBattleItemParameters(x, y + lineHeight * 5);
   };
   
@@ -733,6 +782,20 @@ Imported.TMDescriptionEx = true;
     } else {
       return '';
     }
+  };
+  
+  Window_DescriptionEx.prototype.requiredWtypeValue = function() {
+    if (this._item.requiredWtypeId1 > 0) {
+      text = $dataSystem.weaponTypes[this._item.requiredWtypeId1];
+      if (this._item.requiredWtypeId2 > 0) {
+        text += ' ' + $dataSystem.weaponTypes[this._item.requiredWtypeId2];
+      }
+    } else if (this._item.requiredWtypeId2 > 0) {
+      text = $dataSystem.weaponTypes[this._item.requiredWtypeId2];
+    } else {
+      text = 'なし';
+    }
+    return text;
   };
   
   Window_DescriptionEx.prototype.valueToText = function(value) {
@@ -758,13 +821,24 @@ Imported.TMDescriptionEx = true;
     if (text === '') return y;
     this.changeTextColor(this.systemColor());
     this.drawText(text, x, y, leftPaneWidth);
-    this.changeTextColor(this.normalColor());
+    this.resetTextColor();;
     this.drawText(value, x, y, leftPaneWidth, 'right');
     return y + this.lineHeight();
   };
   
+  Window_DescriptionEx.prototype.drawRightParameter = function(x, y, text) {
+    if (text === '') return y;
+    var lineHeight = this.lineHeight();
+    y += lineHeight;
+    if (y <= this.profileY() - lineHeight) {
+      this.resetTextColor();
+      this.drawText(text, x, y, rightPaneWidth);
+    }
+    return y;
+  };
+  
   Window_DescriptionEx.prototype.drawPrice = function(x, y) {
-    if (priceText === '') return y;
+    if (priceText === '' || this._item.price === undefined) return y;
     this.changeTextColor(this.systemColor());
     this.drawText(priceText, x, y, leftPaneWidth);
     this.drawCurrencyValue((this._item.price * priceRate).toFixed(0),
@@ -773,11 +847,10 @@ Imported.TMDescriptionEx = true;
   };
   
   Window_DescriptionEx.prototype.drawEffects = function(x, y) {
-    var lineHeight = this.lineHeight();
-    var profileY = this.profileY();
     this.changeTextColor(this.systemColor());
     this.drawText(effectText, x, y, rightPaneWidth);
-    this.changeTextColor(this.normalColor());
+    this.resetTextColor();;
+    if (Imported.TMSkillCostEx) y = this.drawCostEx(x, y);
     y = this.drawDamage(x, y);
     for (var i = 0; i < this._item.effects.length; i++) {
       var effect = this._item.effects[i];
@@ -817,17 +890,13 @@ Imported.TMDescriptionEx = true;
       } else if (effect.code === Game_Action.EFFECT_LEARN_SKILL) {
         text = effectTextLearnSkill.format($dataSkills[effect.dataId].name);
       }
-      if (text) {
-        y += lineHeight;
-        if (y < profileY) this.drawText(text, x, y, rightPaneWidth);
-      }
+      y = this.drawRightParameter(x, y, text);
     }
     this.drawOptionText(x, y);
   };
   
   Window_DescriptionEx.prototype.profileY = function() {
-    var lines = Math.floor(this.contents.height / this.lineHeight()) - 3;
-    return lines * this.lineHeight();
+    return this.contents.height - this.lineHeight() * 2 - horzLineHeight;
   };
   
   Window_DescriptionEx.prototype.drawDamage = function(x, y) {
@@ -841,26 +910,24 @@ Imported.TMDescriptionEx = true;
     } else if (this._item.damage.type === 4) {
       text = damageTextRecoverMp;
     }
-    if (text) {
-      y += this.lineHeight();
-      this.drawText(text, x, y, rightPaneWidth)
-    }
+    y = this.drawRightParameter(x, y, text);
     if (this._item.damage.type >= 5) {
       text = this._item.damage.type === 5 ? damageTextDrainHp : damageTextDrainMp;
-      y += this.lineHeight();
-      this.drawText(text, x, y, rightPaneWidth)
+      y = this.drawRightParameter(x, y, text);
     }
     return y;
   };
   
-  Window_DescriptionEx.prototype.drawTraits = function(x, y) {
-    var lineHeight = this.lineHeight();
-    var profileY = this.profileY();
+  Window_DescriptionEx.prototype.drawTraits = function(x, y, item) {
+    item = item || this._item
     this.changeTextColor(this.systemColor());
     this.drawText(traitText, x, y, rightPaneWidth);
-    this.changeTextColor(this.normalColor());
-    for (var i = 0; i < this._item.traits.length; i++) {
-      var trait = this._item.traits[i];
+    this.resetTextColor();;
+    if (Imported.TMPassiveSkill && this._item.meta.passive) {
+      y = this.drawPassiveSkillOccasion(x, y);
+    }
+    for (var i = 0; i < item.traits.length; i++) {
+      var trait = item.traits[i];
       var text = '';
       if (trait.code === Game_BattlerBase.TRAIT_ELEMENT_RATE) {
         text = traitTextElementRate.format(this.elementText(trait.dataId),
@@ -916,31 +983,26 @@ Imported.TMDescriptionEx = true;
       } else if (trait.code === Game_BattlerBase.TRAIT_PARTY_ABILITY) {
         text = partyAbilityValue[trait.dataId];
       }
-      if (text) {
-        y += lineHeight;
-        if (y < profileY) this.drawText(text, x, y, rightPaneWidth);
-      }
+      y = this.drawRightParameter(x, y, text);
     }
     this.drawOptionText(x, y);
   };
   
   Window_DescriptionEx.prototype.drawOptionText = function(x, y) {
     if (this._item.meta.dText) {
-      var lineHeight = this.lineHeight();
-      var profileY = this.profileY();
       var textArray = this._item.meta.dText.split(/\r\n|\r|\n/);
       for (var i = 0; i < textArray.length; i++) {
-        y += lineHeight;
-        if (y < profileY) this.drawTextEx(textArray[i], x, y);
+        y = this.drawRightParameter(x, y, textArray[i]);
       }
     }
   };
   
   Window_DescriptionEx.prototype.drawHorzLine = function(y) {
-    var lineY = y + this.lineHeight() / 2 - 1;
+    var lineY = y + horzLineHeight / 2 - 1;
     this.contents.paintOpacity = 48;
     this.contents.fillRect(0, lineY, this.contentsWidth(), 2, this.lineColor());
     this.contents.paintOpacity = 255;
+    return y + horzLineHeight;
   };
 
   Window_DescriptionEx.prototype.lineColor = function() {
@@ -951,6 +1013,59 @@ Imported.TMDescriptionEx = true;
     this.drawTextEx(this._item.description, x + this.textPadding(), y);
   };
 
+  Window_DescriptionEx.prototype.drawCostEx = function(x, y) {
+    var dummyActor = new Game_Actor(1);
+    var text = '';
+    if (this._item.meta.hpRateCost) {
+      text = costExTextHp.format(this._item.meta.hpRateCost + '%');
+    } else if (this._item.meta.hpCost) {
+      text = costExTextHp.format(this._item.meta.hpCost);
+    }
+    y = this.drawRightParameter(x, y, text);
+    var cost = dummyActor.skillItemCost(this._item);
+    if (cost) {
+      text = costExTextItem.format(cost.item.name, cost.num);
+      y = this.drawRightParameter(x, y, text);
+    }
+    if (this._item.meta.expCost) {
+      text = costExTextExp.format(this._item.meta.expCost);
+      y = this.drawRightParameter(x, y, text);
+    }
+    if (this._item.meta.goldCost) {
+      text = costExTextGold.format(this._item.meta.goldCost + TextManager.currencyUnit);
+      y = this.drawRightParameter(x, y, text);
+    }
+    return y;
+  };
+  
+  Window_DescriptionEx.prototype.drawPassiveSkillParameters = function(x, y) {
+    var item = $dataWeapons[+this._item.meta.passive];
+    this.drawTraits(this.contents.width - this.textPadding() - rightPaneWidth, y, item);
+    this.drawLeftParameter(x, y, requiredWtypeText, this.requiredWtypeValue());
+    y += this.lineHeight() * 2;
+    this.drawEquipParameters(this.textPadding(), y, item);
+  };
+  
+  Window_DescriptionEx.prototype.drawPassiveSkillOccasion = function(x, y) {
+    var lastY = y;
+    if (this._item.meta.passiveTp) {
+      if (+this._item.meta.passiveTp > 0) {
+        var text = passiveTpText.format(this._item.meta.passiveTp);
+      } else {
+        var text = passiveTpText2.format(-this._item.meta.passiveTp);
+      }
+      y = this.drawRightParameter(x, y, text);
+    }
+    if (this._item.meta.passiveState) {
+      var text = passiveStateText.format($dataStates[+this._item.meta.passiveState].name);
+      y = this.drawRightParameter(x, y, text);
+    }
+    if (lastY === y) {
+      y = this.drawRightParameter(x, y, passiveAlwaysText);
+    }
+    return y;
+  };
+  
   //-----------------------------------------------------------------------------
   // Scene_Base
   //
