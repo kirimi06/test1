@@ -3,7 +3,7 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.92
+// Version: 0.93
 // 最終更新日: 2016/03/01
 //=============================================================================
 //■更新履歴
@@ -15,6 +15,9 @@
                ショップ、戦闘シーンに抜けていた処理を追加
                範囲外をタップ(クリック)した場合カーソルアップデートが呼ばれるのを強引に呼ばれないようにした
   2016/03/01 - プラグインを導入する前のセーブデータから始める場合のリセットを追加
+  2016/03/01 - ダブルタップ(クリック)でソートタイトルが表示されない不具合を修正
+               継承するWindowの変更Window_BattleItem,Window_ShopSell
+               アイテム、ショップ、バトルのアイテムリストではデフォルトのリストを呼ばないように変更を加えた
 */
 //=============================================================================
 /*■利用規約
@@ -239,21 +242,21 @@ Game_System.prototype.favoriteCheck = function(id,category) {
     var index = 0;
     
     if (category === 'item') {
-	    for (var i = 0; i < this.favoriteItems.length; i++){
-	        if(this.favoriteItems[i] === id) index = i;
-	    }
+        for (var i = 0; i < this.favoriteItems.length; i++){
+            if(this.favoriteItems[i] === id) index = i;
+        }
     } else if (category === 'weapon') {
-	    for (var i = 0; i < this.favoriteWeapons.length; i++){
-	        if(this.favoriteWeapons[i] === id) index = i;
-	    }
+        for (var i = 0; i < this.favoriteWeapons.length; i++){
+            if(this.favoriteWeapons[i] === id) index = i;
+        }
     } else if (category === 'armor') {
-	    for (var i = 0; i < this.favoriteArmors.length; i++){
-	        if(this.favoriteArmors[i] === id) index = i;
-	    }
+        for (var i = 0; i < this.favoriteArmors.length; i++){
+            if(this.favoriteArmors[i] === id) index = i;
+        }
     } else if (category === 'keyItem') {
-	    for (var i = 0; i < this.favoriteKeyItems.length; i++){
-	        if(this.favoriteKeyItems[i] === id) index = i;
-	    }
+        for (var i = 0; i < this.favoriteKeyItems.length; i++){
+            if(this.favoriteKeyItems[i] === id) index = i;
+        }
     }
     if (index === 0){
         this.favoriteReg(id,category);
@@ -264,52 +267,52 @@ Game_System.prototype.favoriteCheck = function(id,category) {
 Game_System.prototype.getfavoriteId = function(id,category) {
     var fid = 0;
     if (category === 'item') {
-	    for (var i = 0; i < this.favoriteItems.length; i++){
-	        if(this.favoriteItems[i] === id) fid = i;
-	    }
+        for (var i = 0; i < this.favoriteItems.length; i++){
+            if(this.favoriteItems[i] === id) fid = i;
+        }
     } else if (category === 'weapon') {
-	    for (var i = 0; i < this.favoriteWeapons.length; i++){
-	        if(this.favoriteWeapons[i] === id) fid = i;
-	    }
+        for (var i = 0; i < this.favoriteWeapons.length; i++){
+            if(this.favoriteWeapons[i] === id) fid = i;
+        }
     } else if (category === 'armor') {
-	    for (var i = 0; i < this.favoriteArmors.length; i++){
-	        if(this.favoriteArmors[i] === id) fid = i;
-	    }
+        for (var i = 0; i < this.favoriteArmors.length; i++){
+            if(this.favoriteArmors[i] === id) fid = i;
+        }
     } else if (category === 'keyItem') {
-	    for (var i = 0; i < this.favoriteKeyItems.length; i++){
-	        if(this.favoriteKeyItems[i] === id) fid = i;
-	    }
+        for (var i = 0; i < this.favoriteKeyItems.length; i++){
+            if(this.favoriteKeyItems[i] === id) fid = i;
+        }
     }
     return fid;
 };
 Game_System.prototype.favoriteReg = function(id,category) {
-	var flg = true;
+    var flg = true;
     if (category === 'item' && this.favoriteItems.length < MOT.Param.FavoriteLimit + 1) {
-		this.favoriteItems.push(id);
+        this.favoriteItems.push(id);
     } else if (category === 'weapon' && this.favoriteWeapons.length < MOT.Param.FavoriteLimit + 1) {
-		this.favoriteWeapons.push(id);
+        this.favoriteWeapons.push(id);
     } else if (category === 'armor' && this.favoriteArmors.length < MOT.Param.FavoriteLimit + 1) {
-		this.favoriteArmors.push(id);
+        this.favoriteArmors.push(id);
     } else if (category === 'keyItem' && this.favoriteKeyItems.length < MOT.Param.FavoriteLimit + 1) {
-		this.favoriteKeyItems.push(id);
+        this.favoriteKeyItems.push(id);
     } else {
-	    flg = false;
+        flg = false;
     }
     if (flg) {
-	    AudioManager.playSe({name: MOT.Param.FavoriteRegSeFile, volume: MOT.Param.FavoriteRegSeVol, pitch: MOT.Param.FavoriteRegSePit, pan: 0});
-	} else {
-		SoundManager.playBuzzer();
-	}
+        AudioManager.playSe({name: MOT.Param.FavoriteRegSeFile, volume: MOT.Param.FavoriteRegSeVol, pitch: MOT.Param.FavoriteRegSePit, pan: 0});
+    } else {
+        SoundManager.playBuzzer();
+    }
 };
 Game_System.prototype.favoriteRel = function(index,category) {
     if (category === 'item') {
-		this.favoriteItems.splice(index, 1);
+        this.favoriteItems.splice(index, 1);
     } else if (category === 'weapon') {
-		this.favoriteWeapons.splice(index, 1);
+        this.favoriteWeapons.splice(index, 1);
     } else if (category === 'armor') {
-		this.favoriteArmors.splice(index, 1);
+        this.favoriteArmors.splice(index, 1);
     } else if (category === 'keyItem') {
-		this.favoriteKeyItems.splice(index, 1);
+        this.favoriteKeyItems.splice(index, 1);
     }
     AudioManager.playSe({name: MOT.Param.FavoriteRelSeFile, volume: MOT.Param.FavoriteRelSeVol, pitch: MOT.Param.FavoriteRelSePit, pan: 0});
 };
@@ -394,7 +397,7 @@ Window_ItemSort.prototype.setSort = function() {
             break;
     }
     if ($gameParty.inBattle()){
-    	$gameSystem.sortModeItems = this._index;
+        $gameSystem.sortModeItems = this._index;
     }
 };
 Window_ItemSort.prototype.makeCommandList = function() {
@@ -429,24 +432,33 @@ Window_ItemCategory.prototype.setSortWindow = function(sortWindow) {
 //-----------------------------------------------------------------------------
 // Window_ItemList
 //-----------------------------------------------------------------------------
-MOT.ItemFavoriteSort.Window_ItemList_initialize = Window_ItemList.prototype.initialize;
-Window_ItemList.prototype.initialize = function(x, y, width, height) {
-	MOT.ItemFavoriteSort.Window_ItemList_initialize.call(this, x, y, width, height);
-	this._sfMode = 0;
-	this._unIndex = -1;
+function Window_ItemFavoriteSortList() {
+    this.initialize.apply(this, arguments);
+}
+
+Window_ItemFavoriteSortList.prototype = Object.create(Window_ItemList.prototype);
+Window_ItemFavoriteSortList.prototype.constructor = Window_ItemFavoriteSortList;
+
+
+Window_ItemFavoriteSortList.prototype.initialize = function(x, y, width, height) {
+    Window_Selectable.prototype.initialize.call(this, x, y, width, height);
+    this._category = 'none';
+    this._data = [];
+    this._sfMode = 0;
+    this._unIndex = -1;
 };
 
 
-Window_ItemList.prototype.update = function() {
+Window_ItemFavoriteSortList.prototype.update = function() {
     Window_Selectable.prototype.update.call(this);
-	if (Utils.isMobileDevice()) {
-	    this.isDoubleClick();
-	} else {
-	    this.updateFavoriteItem();
-	}
+    if (Utils.isMobileDevice()) {
+        this.isDoubleClick();
+    } else {
+        this.updateFavoriteItem();
+    }
 };
 
-Window_ItemList.prototype.updateFavoriteItem = function() {
+Window_ItemFavoriteSortList.prototype.updateFavoriteItem = function() {
     if (this._index === -1) return ;
     if (!this.active) return ;
     if (Input.isTriggered(MOT.Keys.set(MOT.Param.FavoriteKey))) {
@@ -455,89 +467,95 @@ Window_ItemList.prototype.updateFavoriteItem = function() {
     }
 };
 
-Window_ItemList.prototype.setSortWindow = function(winobj) {
-	this._sortWindow = winobj;
+Window_ItemFavoriteSortList.prototype.setSortWindow = function(winobj) {
+    this._sortWindow = winobj;
 };
+
+Window_ItemFavoriteSortList.prototype.setSortTitleWindow = function(winobj) {
+    this._sortTitleWindow = winobj;
+};
+
 
 if (Utils.isMobileDevice()) {
-	Window_ItemList.prototype.processTouch = function() {
-	    if (this.isOpenAndActive()) {
-	        if (TouchInput.isTriggered() && this.isTouchedInsideFrame()) {
-	            this._touching = true;
-	            this._sfMode = 1;
-	        } else if (TouchInput.isTriggered() && !this.isTouchedInsideFrame()) {
-	        	this._touching = true;
-	        	this._sfMode = 2;
-	        }
-	         else if (TouchInput.isCancelled()) {
-	            if (this.isCancelEnabled()) {
-	                this.processCancel();
-	            }
-	        }
-	        if (this._touching) {
-	            if (TouchInput.isPressed()) {
-	                this.onTouch(false);
-	            }
-	        }
-	    } else {
-	        this._touching = false;
-	    }
-	};
-	//ダブルクリックの判定を残す
-	Window_ItemList.prototype.isDoubleClick = function() {
-	if (this._doubleFrame === undefined && this._touching) this._doubleFrame = 0;
-		if (this._doubleFrame < MOT.Param.FavoriteDoubleTap && TouchInput.isTriggered() && this._doubleFrame != 0) {
-			this._doubleFrame = undefined;
-			this._touching = false;
-			if (this._sfMode === 1) {
-		        $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
-		        this.refresh();
-		    } else if (this._sfMode === 2) {
-		    	this.active = false;
-		    	this._sortWindow.show();
-		    	this._sortWindow.active = true;
-		    	SoundManager.playOk();
-		    	this._sortWindow.select(this.getSortMode());
-		    }
-		    this._sfMode = 0;
-		}
-	if (this._doubleFrame !== undefined) this._doubleFrame++;
-		if (this._doubleFrame > MOT.Param.FavoriteDoubleTap) {
-			this._doubleFrame = undefined;
-			this._touching = false;
-		    this._sfMode = 0;
-			this.onTouch(true);
-		}
-	};
+    Window_ItemFavoriteSortList.prototype.processTouch = function() {
+        if (this.isOpenAndActive()) {
+            if (TouchInput.isTriggered() && this.isTouchedInsideFrame()) {
+                this._touching = true;
+                this._sfMode = 1;
+            } else if (TouchInput.isTriggered() && !this.isTouchedInsideFrame()) {
+                this._touching = true;
+                this._sfMode = 2;
+            }
+             else if (TouchInput.isCancelled()) {
+                if (this.isCancelEnabled()) {
+                    this.processCancel();
+                }
+            }
+            if (this._touching) {
+                if (TouchInput.isPressed()) {
+                    this.onTouch(false);
+                }
+            }
+        } else {
+            this._touching = false;
+        }
+    };
+    //ダブルクリックの判定を残す
+    Window_ItemFavoriteSortList.prototype.isDoubleClick = function() {
+    if (this._doubleFrame === undefined && this._touching) this._doubleFrame = 0;
+        if (this._doubleFrame < MOT.Param.FavoriteDoubleTap && TouchInput.isTriggered() && this._doubleFrame != 0) {
+            this._doubleFrame = undefined;
+            this._touching = false;
+            if (this._sfMode === 1) {
+                $gameSystem.favoriteCheck(this._data[this._index].id,this.getCategorys(this._data[this._index]));
+                this.refresh();
+            } else if (this._sfMode === 2) {
+                this.active = false;
+                this._sortWindow.show();
+                this._sortTitleWindow.show();
+                this._sortWindow.active = true;
+                SoundManager.playOk();
+                this._sortWindow.select(this.getSortMode());
+            }
+            this._sfMode = 0;
+        }
+    if (this._doubleFrame !== undefined) this._doubleFrame++;
+        if (this._doubleFrame > MOT.Param.FavoriteDoubleTap) {
+            this._doubleFrame = undefined;
+            this._touching = false;
+            this._sfMode = 0;
+            this.onTouch(true);
+        }
+    };
 
-	//_stayCount対策用
-	Window_ItemList.prototype.onTouch = function(triggered) {
-	    var lastIndex = this.index();
-	    var x = this.canvasToLocalX(TouchInput.x);
-	    var y = this.canvasToLocalY(TouchInput.y);
-	    var hitIndex = this.hitTest(x, y);
-	    if (hitIndex >= 0) {
-	        if (hitIndex === this.index()) {
-	            if (triggered && this.isTouchOkEnabled()) {
-	                this.processOk();
-	            }
-	        } else if (this.isCursorMovable()) {
-	            this.select(hitIndex);
-	        }
-	    } else if (this._stayCount >= 10 && this._sfMode !== 2) {
-	        if (y < this.padding) {
-	            this.cursorUp();
-	        } else if (y >= this.height - this.padding) {
-	            this.cursorDown();
-	        }
-	    }
-	    if (this.index() !== lastIndex) {
-	        SoundManager.playCursor();
-	    }
-	};
+    //_stayCount対策用
+    Window_ItemFavoriteSortList.prototype.onTouch = function(triggered) {
+        var lastIndex = this.index();
+        var x = this.canvasToLocalX(TouchInput.x);
+        var y = this.canvasToLocalY(TouchInput.y);
+        var hitIndex = this.hitTest(x, y);
+        if (hitIndex >= 0) {
+            if (hitIndex === this.index()) {
+                if (triggered && this.isTouchOkEnabled()) {
+                    this.processOk();
+                }
+            } else if (this.isCursorMovable()) {
+                this.select(hitIndex);
+            }
+        } else if (this._stayCount >= 10 && this._sfMode !== 2) {
+            if (y < this.padding) {
+                this.cursorUp();
+            } else if (y >= this.height - this.padding) {
+                this.cursorDown();
+            }
+        }
+        if (this.index() !== lastIndex) {
+            SoundManager.playCursor();
+        }
+    };
 };
 
-Window_ItemList.prototype.drawItemName = function(item, x, y, width) {
+Window_ItemFavoriteSortList.prototype.drawItemName = function(item, x, y, width) {
     width = width || 312;
     if (item) {
         var iconBoxWidth = Window_Base._iconWidth + 4;
@@ -551,13 +569,13 @@ Window_ItemList.prototype.drawItemName = function(item, x, y, width) {
         this.drawText(item.name, x + iconBoxWidth, y, width - iconBoxWidth);
     }
 };
-Window_ItemList.prototype.refresh = function() {
+Window_ItemFavoriteSortList.prototype.refresh = function() {
     this.makeItemList();
     this.appySort();
     this.createContents();
     this.drawAllItems();
 };
-Window_ItemList.prototype.appySort = function() {
+Window_ItemFavoriteSortList.prototype.appySort = function() {
     var sortMode = this.getSortMode();
     switch(sortMode){
         case 0:
@@ -587,7 +605,7 @@ Window_ItemList.prototype.appySort = function() {
     }
 };
 
-Window_ItemList.prototype.getSortMode = function() {
+Window_ItemFavoriteSortList.prototype.getSortMode = function() {
     switch(this._category){
         case 'item':
             return $gameSystem.sortModeItems;
@@ -599,24 +617,24 @@ Window_ItemList.prototype.getSortMode = function() {
             return $gameSystem.sortModeKeys;
     }
     if ($gameParty.inBattle()){
-    	return $gameSystem.sortModeItems;
+        return $gameSystem.sortModeItems;
     }
 };
 
-Window_ItemList.prototype.getCategorys = function(item) {
+Window_ItemFavoriteSortList.prototype.getCategorys = function(item) {
     if (item.itypeId) {
-    	if (item.itypeId == 1){
-	    	return 'keyItem';
-    	}else{
-    		return 'item';
-    	}
+        if (item.itypeId == 1){
+            return 'keyItem';
+        }else{
+            return 'item';
+        }
     }else if (item.wtypeId){
-    	return 'weapon';
+        return 'weapon';
     }else if (item.etypeId){
-    	return 'armor';
+        return 'armor';
     }
 }
-Window_ItemList.prototype.ascending = function(mode) {
+Window_ItemFavoriteSortList.prototype.ascending = function(mode) {
     var sortMode = this.getSortMode();
     var sthis = this;
     this._data.sort(function(a, b){
@@ -646,7 +664,7 @@ Window_ItemList.prototype.ascending = function(mode) {
         return 0;
     },this);
 };
-Window_ItemList.prototype.descending = function(mode) {
+Window_ItemFavoriteSortList.prototype.descending = function(mode) {
     var sortMode = this.getSortMode();
     var sthis = this;
     this._data.sort(function(a, b){
@@ -676,25 +694,78 @@ Window_ItemList.prototype.descending = function(mode) {
     },this);
 };
 
-Window_ItemList.prototype.changeStrCode = function(item) {
+Window_ItemFavoriteSortList.prototype.changeStrCode = function(item) {
     return item.replace(/[\u30a1-\u30f6]/g, function(match) {
         var chr = match.charCodeAt(0) - 0x60;
         return String.fromCharCode(chr);
     },this);
 };
+
+//-----------------------------------------------------------------------------
+// Window_ShopSell
+//-----------------------------------------------------------------------------
+Window_ShopSell.prototype = Object.create(Window_ItemFavoriteSortList.prototype);
+Window_ShopSell.prototype.constructor = Window_ShopSell;
+
+Window_ShopSell.prototype.initialize = function(x, y, width, height) {
+    Window_ItemFavoriteSortList.prototype.initialize.call(this, x, y, width, height);
+};
+
+//-----------------------------------------------------------------------------
+// Window_BattleItem
+//-----------------------------------------------------------------------------
+Window_BattleItem.prototype = Object.create(Window_ItemFavoriteSortList.prototype);
+Window_BattleItem.prototype.constructor = Window_BattleItem;
+
+Window_BattleItem.prototype.initialize = function(x, y, width, height) {
+    Window_ItemFavoriteSortList.prototype.initialize.call(this, x, y, width, height);
+    this.hide();
+};
+
+Window_BattleItem.prototype.includes = function(item) {
+    return $gameParty.canUse(item);
+};
+
+Window_BattleItem.prototype.show = function() {
+    this.selectLast();
+    this.showHelpWindow();
+    Window_ItemFavoriteSortList.prototype.show.call(this);
+};
+
+Window_BattleItem.prototype.hide = function() {
+    this.hideHelpWindow();
+    Window_ItemFavoriteSortList.prototype.hide.call(this);
+};
+
 //-----------------------------------------------------------------------------
 // Scene_Item
 //-----------------------------------------------------------------------------
 MOT.ItemFavoriteSort.Scene_Item_create = Scene_Item.prototype.create;
 Scene_Item.prototype.create = function() {
     MOT.ItemFavoriteSort.Scene_Item_create.call(this);
+    this.createItemWindow();
+    this.createActorWindow();
     this.createSortTitleWindow();
     this.createSortWindow();
 };
+
+Scene_Item.prototype.createItemWindow = function() {
+    var wy = this._categoryWindow.y + this._categoryWindow.height;
+    var wh = Graphics.boxHeight - wy;
+    this._itemWindow = new Window_ItemFavoriteSortList(0, wy, Graphics.boxWidth, wh);
+    this._itemWindow.setHelpWindow(this._helpWindow);
+    this._itemWindow.setHandler('ok',     this.onItemOk.bind(this));
+    this._itemWindow.setHandler('cancel', this.onItemCancel.bind(this));
+    this.addWindow(this._itemWindow);
+    this._categoryWindow.setItemWindow(this._itemWindow);
+};
+
 Scene_Item.prototype.createSortTitleWindow = function() {
     this._sortTitleWindow = new Window_ItemSortTitle();
     this.addWindow(this._sortTitleWindow);
+    this._itemWindow.setSortTitleWindow(this._sortTitleWindow);
 };
+
 Scene_Item.prototype.createSortWindow = function() {
     this._sortWindow = new Window_ItemSort();
     this._sortWindow.x = (Graphics.boxWidth - MOT.Param.SortItemWidth) / 2;
@@ -745,7 +816,9 @@ Scene_Shop.prototype.create = function() {
 Scene_Shop.prototype.createSortTitleWindow = function() {
     this._sortTitleWindow = new Window_ItemSortTitle();
     this.addWindow(this._sortTitleWindow);
+    this._sellWindow.setSortTitleWindow(this._sortTitleWindow);
 };
+
 Scene_Shop.prototype.createSortWindow = function() {
     this._sortWindow = new Window_ItemSort();
     this._sortWindow.x = (Graphics.boxWidth - MOT.Param.SortItemWidth) / 2;
@@ -789,13 +862,20 @@ Scene_Shop.prototype.update = function() {
 MOT.ItemFavoriteSort.Scene_Battle_createAllWindows = Scene_Battle.prototype.createAllWindows;
 Scene_Battle.prototype.createAllWindows = function() {
     MOT.ItemFavoriteSort.Scene_Battle_createAllWindows.call(this);
+    this.createItemWindow();
     this.createSortTitleWindow();
     this.createSortWindow();
+    this.createActorWindow();
+    this.createEnemyWindow();
+    this.createMessageWindow();
+    this.createScrollTextWindow();
 };
 Scene_Battle.prototype.createSortTitleWindow = function() {
     this._sortTitleWindow = new Window_ItemSortTitle();
     this.addWindow(this._sortTitleWindow);
+    this._itemWindow.setSortTitleWindow(this._sortTitleWindow);
 };
+
 Scene_Battle.prototype.createSortWindow = function() {
     this._sortWindow = new Window_ItemSort();
     this._sortWindow.x = (Graphics.boxWidth - MOT.Param.SortItemWidth) / 2;
@@ -804,6 +884,16 @@ Scene_Battle.prototype.createSortWindow = function() {
     this._sortWindow.setHandler('cancel', this.onSortCancel.bind(this));
     this.addWindow(this._sortWindow);
     this._itemWindow.setSortWindow(this._sortWindow);
+};
+
+Scene_Battle.prototype.createItemWindow = function() {
+    var wy = this._helpWindow.y + this._helpWindow.height;
+    var wh = this._statusWindow.y - wy;
+    this._itemWindow = new Window_BattleItem(0, wy, Graphics.boxWidth, wh);
+    this._itemWindow.setHelpWindow(this._helpWindow);
+    this._itemWindow.setHandler('ok',     this.onItemOk.bind(this));
+    this._itemWindow.setHandler('cancel', this.onItemCancel.bind(this));
+    this.addWindow(this._itemWindow);
 };
 
 Scene_Battle.prototype.onSortOk = function() {
@@ -831,12 +921,12 @@ Scene_Battle.prototype.update = function() {
         this._sortTitleWindow.show();
         this._sortWindow.show();
     }
-	if (this._sortWindow.active) {
-	    var active = this.isActive();
-	    $gameTimer.update(active);
-	    $gameScreen.update();
-		 Scene_Base.prototype.update.call(this);
-	} else {
-		MOT.ItemFavoriteSort.Scene_Battle_update.call(this);
-	}
+    if (this._sortWindow.active) {
+        var active = this.isActive();
+        $gameTimer.update(active);
+        $gameScreen.update();
+         Scene_Base.prototype.update.call(this);
+    } else {
+        MOT.ItemFavoriteSort.Scene_Battle_update.call(this);
+    }
 };
