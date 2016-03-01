@@ -3,7 +3,7 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.93
+// Version: 0.94
 // 最終更新日: 2016/03/01
 //=============================================================================
 //■更新履歴
@@ -865,10 +865,6 @@ Scene_Battle.prototype.createAllWindows = function() {
     this.createItemWindow();
     this.createSortTitleWindow();
     this.createSortWindow();
-    this.createActorWindow();
-    this.createEnemyWindow();
-    this.createMessageWindow();
-    this.createScrollTextWindow();
 };
 Scene_Battle.prototype.createSortTitleWindow = function() {
     this._sortTitleWindow = new Window_ItemSortTitle();
