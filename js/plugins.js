@@ -95,6 +95,8 @@ var $plugins =
 {"name":"MOG_MenuBackground","status":true,"description":"(v1.0) O plugin permite mudar a imagem de fundo do menu.","parameters":{"Disable Scenes":"Scene_Test1,Scene_Test2,Scene_Test3","Unique Backgrounds":"false","Window Opacity":"30","Scroll X-Axis":"0","Scroll Y-Axis":"0"}},
 {"name":"MOG_MenuParticles","status":true,"description":"(v1.1) Adiciona partículas nas cenas menu.","parameters":{"Number of Particles":"15","Disable Scenes":"Scene_Test1,Scene_Test2,Scene_Test3","Unique Particles":"false","X-Axis Speed":"0","Y-Axis Speed":"-1","Rotation Speed":"1","Blend Mode":"1"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
+{"name":"MOT_ItemFavoriteSort","status":true,"description":"アイテムソートとアイテムのお気に入り機能を追加します","parameters":{"お気に入り登録するキー":"a","お気に入りアイテムのアイコン":"84","お気に入り登録上限数":"10","お気に入り登録時のSE:ファイル名":"Decision2","お気に入り登録時のSE:ボリューム":"90","お気に入り登録時のSE:ピッチ":"100","お気に入り解除時のSE:ファイル名":"Cancel1","お気に入り解除時のSE:ボリューム":"90","お気に入り解除時のSE:ピッチ":"100","ダブルタップの猶予フレーム":"20","ソート画面を開くキー":"s","ソートタイトルに表示される文字列":"並び替え","ソートタイトル画面:フォントサイズ":"23","ソートタイトル画面:横幅":"400","ソートタイトル画面:縦幅":"53","ソートタイトル画面:パディング":"12"}},
+{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"Torigoya_BalloonInBattle","status":true,"description":"戦闘中セリフ表示さん for MV","parameters":{"--- 基本設定 ---":"","Balloon Window Image":"Window1","--- 上級者設定 ---":"","Balloon Padding":"8","Balloon Font Size":"16","Balloon Text Padding":"6","Balloon Line Height":"20"}},
 {"name":"Torigoya_ReplaceDeadMember","status":true,"description":"戦闘中、死亡したメンバーを自動的に控えメンバーに入れ替えます。","parameters":{}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
@@ -210,8 +212,6 @@ var $plugins =
 {"name":"SOM","status":false,"description":"SO風メニュー画面（但しメニュー画面のトップしかないです）","parameters":{"bgBitmapMenu":"","maxRowsMenu":"4"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"category_plus","status":false,"description":"アイテムのカテゴリーを追加する","parameters":{}},
-{"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
-{"name":"MOT_ItemFavoriteSort","status":true,"description":"アイテムソートとアイテムのお気に入り機能を追加します","parameters":{"お気に入り登録するキー":"a","お気に入りアイテムのアイコン":"84","お気に入り登録上限数":"10","お気に入り登録時のSE:ファイル名":"Decision2","お気に入り登録時のSE:ボリューム":"90","お気に入り登録時のSE:ピッチ":"100","お気に入り解除時のSE:ファイル名":"Cancel1","お気に入り解除時のSE:ボリューム":"90","お気に入り解除時のSE:ピッチ":"100","ダブルタップの猶予フレーム":"20","ソート画面を開くキー":"s","ソートタイトルに表示される文字列":"並び替え","ソートタイトル画面:フォントサイズ":"23","ソートタイトル画面:横幅":"400","ソートタイトル画面:縦幅":"53","ソートタイトル画面:パディング":"12"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}},
 {"name":"TYA_SymbolEncount","status":false,"description":"シンボルエンカウント作成の補助を行います。\r\n詳しい使い方はヘルプを参照してください。","parameters":{"situationVariables":"1"}},
 {"name":"-------------------------","status":false,"description":"--------------------------------------------","parameters":{}}
