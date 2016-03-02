@@ -1,4 +1,4 @@
-//=============================================================================
+﻿//=============================================================================
 // SO風メニュー　SOM.js
 //=============================================================================
 /*:ja
@@ -58,11 +58,11 @@
         this._goldWindow.x = Graphics.boxWidth - 240;
         this._goldWindow.y = this._statusWindow.height+100;
 		//コマンドウインドウの表示位置-----------------------------------
-		this._commandWindow.y =115;
-		this._commandWindow.x =100;
+		this._commandWindow.y =0;
+		this._commandWindow.x =50;
 		//ステータスウインドウの表示位置----------------------------------
         this._statusWindow.x = Graphics.boxWidth / 3 ;
-		this._statusWindow.y = 100 ;
+		this._statusWindow.y = 30 ;
 		// メニュー画面全てのウインドウを透明にする
         this._statusWindow.opacity = 0;
         this._goldWindow.opacity = 0;
@@ -107,11 +107,7 @@
 	    this.contents.clear();
             var x = Graphics.boxWidth/2
 		    this.drawTextEx(this._text, 0,this.textPadding(), 0);
-			//プレイ時間、'　'の中はお好きな名称に変えるか、いらない場合は'プレイ時間',の部分を消して下さい。
-		    this.changeTextColor(this.systemColor());
-		   	this.drawText('プレイ時間', Graphics.boxWidth - x  + this.standardPadding(), 0, 140, 'left');
-		   	this.resetTextColor();	
-		   	this.drawText($gameSystem.playtimeText(), Graphics.boxWidth - x+120 + this.standardPadding(), 0, 112, 'left');
+			
 	};
 	
 //メニュー画面の背景画像読み込み---------------------------------------------------------------
@@ -212,17 +208,7 @@
         };
         };
 
-    var _Window_MenuActor_initialize = Window_MenuActor.prototype.initialize;
-    Window_MenuActor.prototype.initialize = function() {
-        _Window_MenuActor_initialize.call(this);
-        this.y = this.fittingHeight(2);
-    };
-
-    var _Window_MenuActor_initialize = Window_MenuActor.prototype.initialize;
-    Window_MenuActor.prototype.initialize = function() {
-        _Window_MenuActor_initialize.call(this);
-        this.y = this.fittingHeight(2);
-    };
+ 
 
 })();
 
