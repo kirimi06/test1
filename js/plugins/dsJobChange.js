@@ -6,7 +6,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc ジョブチェンジシステム ver1.00
+ * @plugindesc ジョブチェンジシステム ver1.02
  * @author 道楽
  *
  * @param Command Name
@@ -25,6 +25,10 @@
  * @desc ジョブチェンジ後の最強装備にした際に表示されるメッセージ
  * @default 最強装備します
  *
+ * @param Keep Level
+ * @desc ジョブチェンジ後もレベルを維持するか
+ * @default false
+ *
  * @help
  * このプラグインは以下のメモタグの設定ができます。
  *
@@ -32,27 +36,107 @@
  * アクターに設定するメモタグ
  *
  * <ignoreChangeImage>
- *   ジョブを変更しても見た目が変更されないようになります。
+ *   ジョブチェンジしても見た目が変更されないようになります。
  *
  * ----------------------------------------------------------------------------
  * 職業に設定するメモタグ
  *
- * <faceName:Actor1,7>
- *   顔画像のファイル名と番号を設定します。
- *   番号: 0 1 2 3
- *         4 5 6 7
+ * <faceName:[ファイル名],[番号]>
+ *  ジョブチェンジした時に使用される顔画像を設定します。
+ *  [ファイル名] - 顔画像のファイル名。(文字列)
+ *  [番号]       - ファイル内の画像番号。(数字)
+ *                 0 1 2 3
+ *                 4 5 6 7
  *
- * <characterName:Actor1,7>
- *   歩行キャラのファイル名と番号を設定します。
- *   番号は顔画像と同じです
+ * <faceName[アクター番号]:[ファイル名],[番号]>
+ *  アクターがジョブチェンジした時に使用される専用顔画像を設定します。
+ *  [アクター番号] - 0001～9999までの4桁の数値が設定できます。(数字)
+ *                   データベースのアクタータブで表示されている番号になります。
+ *  [ファイル名]   - 顔画像のファイル名。(文字列)
+ *  [番号]         - ファイル内の画像番号。(数字)
+ *                   0 1 2 3
+ *                   4 5 6 7
  *
- * <battlerName:Actor1_8>
- *   戦闘キャラのファイル名を設定します。
- *   このタグは必ず必要になります。
+ * <characterName:[ファイル名],[番号]>
+ *  ジョブチェンジした時に使用される歩行キャラ画像を設定します。
+ *  [ファイル名] - 歩行キャラ画像のファイル名。(文字列)
+ *  [番号]       - ファイル内の画像番号。(数字)
+ *                 0 1 2 3
+ *                 4 5 6 7
  *
- * <jobInfo:近接攻撃に特化したクラス
- *  あらゆる武器を使いこなし眼前の敵を葬り去る>
- *   画面上部のヘルプウィンドウに表示される説明文を設定します。
+ * <characterName[アクター番号]:[ファイル名],[番号]>
+ *  アクターがジョブチェンジした時に使用される専用歩行キャラ画像を設定します。
+ *  [アクター番号] - 0001～9999までの4桁の数値が設定できます。(数字)
+ *                   データベースのアクタータブで表示されている番号になります。
+ *  [ファイル名]   - 歩行キャラ画像のファイル名。(文字列)
+ *  [番号]         - ファイル内の画像番号。(数字)
+ *                   0 1 2 3
+ *                   4 5 6 7
+ *
+ * <battlerName:[ファイル名]>
+ *  ジョブチェンジした時に使用される戦闘キャラ画像を設定します。
+ *  このタグが設定されていない場合は転職できません。
+ *  [ファイル名] - 戦闘キャラ画像のファイル名。(文字列)
+ *
+ * <battlerName[アクター番号]:[ファイル名]>
+ *  アクターがジョブチェンジした時に使用される専用戦闘キャラ画像を設定します。
+ *  [アクター番号] - 0001～9999までの4桁の数値が設定できます。(数字)
+ *                   データベースのアクタータブで表示されている番号になります。
+ *  [ファイル名]   - 戦闘キャラ画像のファイル名。(文字列)
+ *
+ * <jobInfo:[説明文]>
+ *  画面上部のヘルプウィンドウに表示される説明文を設定します。
+ *  [説明文] - ヘルプウィンドウに表示する文章。(文字列)
+ *
+ * <changeableActor:[アクター番号,...]>
+ *  ジョブチェンジできるアクター番号を設定します。
+ *  このタグが設定されていない場合は全てのアクターがジョブチェンジできます。
+ *  [アクター番号] - ジョブチェンジできるアクター番号。(数字)
+ *                   「,」区切りで複数設定することも出来ます。
+ *
+ * <requirement[条件番号]:[条件],[引数,...]>
+ *  ジョブチェンジできる条件を設定します。
+ *  [条件番号]   - 00～09までの2桁の数値が設定できます。
+ *                 なお、ひとつの職業に同じ条件番号を複数設定出来ません。
+ *  [条件][引数] - 下記に定義されている条件と引数の組み合わせ。
+ *  ・level,[職業番号],[必要なレベル]
+ *     設定した職業のレベルが数値以上必要になります。
+ *     必要なレベルに「0」を設定した場合は現在の職業のレベルとなります。
+ *
+ *  ・mhp,[必要な能力値]
+ *     設定した数値以上の最大ＨＰが必要になります。
+ *
+ *  ・mmp,[必要な能力値]
+ *     設定した数値以上の最大ＭＰが必要になります。
+ *
+ *  ・atk,[必要な能力値]
+ *     設定した数値以上の攻撃力が必要になります。
+ *
+ *  ・def,[必要な能力値]
+ *     設定した数値以上の防御力が必要になります。
+ *
+ *  ・mat,[必要な能力値]
+ *     設定した数値以上の魔法力が必要になります。
+ *
+ *  ・mdf,[必要な能力値]
+ *     設定した数値以上の魔法防御が必要になります。
+ *
+ *  ・agi,[必要な能力値]
+ *     設定した数値以上の敏捷性が必要になります。
+ *
+ *  ・luk,[必要な能力値]
+ *     設定した数値以上の運が必要になります。
+ *
+ *  ・switch,[スイッチ番号]
+ *     設定した番号のスイッチがONにする必要があります。
+ *
+ * <displayStats:[表示方法]>
+ *  条件を満たしていない場合の表示方法を設定します。
+ *  このタグが設定されていない場合は「gray」と同じ扱いになります。
+ *  [表示方法] - 下記に定義された表示方法を現す文字列。(文字列)
+ *  ・gray - グレー表示となり、設定できなくなります。
+ *  ・hide - 表示されなくなります。
+ *  ・both - いずれかのアクターが条件を満たしている場合にグレー表示となります。
  */
 
 (function() {
@@ -62,6 +146,8 @@
 	var gEffectAnimationId = Number(parameters['Effect Animation Id']);
 	var gOptimizeEquipEnable = Boolean(parameters['Optimize Equip Enable'] === 'true' || false);
 	var gOptimizeEquipText = String(parameters['Optimize Equip Text']);
+	var gKeepLevel = Boolean(parameters['Keep Level'] === 'true' || false);
+	var gRequirementsMax = 10;
 
 	//-------------------------------------------------------------------------
 	/** Utility */
@@ -83,8 +169,63 @@
 		return rad;
 	};
 
+	Utility.characterName = function(actor, data)
+	{
+		if ( actor )
+		{
+			var characterName = 'characterName' + ('0000'+actor.actorId()).slice(-4);
+			if ( data.meta[characterName] )
+			{
+				return data.meta[characterName];
+			}
+		}
+		return data.meta.characterName;
+	};
+
+	Utility.faceName = function(actor, data)
+	{
+		if ( actor )
+		{
+			var faceName = 'faceName' + ('0000'+actor.actorId()).slice(-4);
+			if ( data.meta[faceName] )
+			{
+				return data.meta[faceName];
+			}
+		}
+		return data.meta.faceName;
+	};
+
+	Utility.battlerName = function(actor, data)
+	{
+		if ( actor )
+		{
+			var battlerName = 'battlerName' + ('0000'+actor.actorId()).slice(-4);
+			if ( data.meta[battlerName] )
+			{
+				return data.meta[battlerName];
+			}
+		}
+		return data.meta.battlerName;
+	};
+
+	//-------------------------------------------------------------------------
+	/** SceneManager */
+	SceneManager.isCurrentScene = function(sceneClass)
+	{
+		return this._scene && this._scene.constructor === sceneClass;
+	};
+
 	//-------------------------------------------------------------------------
 	/** Game_Actor */
+	Game_Actor.prototype.isSpriteVisible = function()
+	{
+		if ( !SceneManager.isCurrentScene(Scene_Battle) )
+		{
+			return true;
+		}
+		return $gameSystem.isSideView();
+	};
+
 	Game_Actor.prototype.currentClassExp = function(classId)
 	{
 		return this._exp[classId];
@@ -106,24 +247,27 @@
 		if ( !this.isIgnoreChangeImage() )
 		{
 			var data = $dataClasses[classId];
-			if ( data.meta.characterName )
+			var metaCharacterName = Utility.characterName(this, data);
+			if ( metaCharacterName )
 			{
-				var metaData = data.meta.characterName.split(',');
+				var metaData = metaCharacterName.split(',');
 				var characterName = String(metaData[0]);
 				var characterIndex = Number(metaData[1]);
 				this.setCharacterImage(characterName, characterIndex);
 				$gamePlayer.refresh();
 			}
-			if ( data.meta.faceName )
+			var metaFaceName = Utility.faceName(this, data);
+			if ( metaFaceName )
 			{
-				var metaData = data.meta.faceName.split(',');
+				var metaData = metaFaceName.split(',');
 				var faceName = String(metaData[0]);
 				var faceIndex = Number(metaData[1]);
 				this.setFaceImage(faceName, faceIndex);
 			}
-			if ( data.meta.battlerName )
+			var metaBattlerName = Utility.battlerName(this, data);
+			if ( metaBattlerName )
 			{
-				this.setBattlerImage(data.meta.battlerName);
+				this.setBattlerImage(metaBattlerName);
 			}
 		}
 		this.changeClass(classId, keepExp);
@@ -146,6 +290,103 @@
 			return false;
 		}
 		return true;
+	};
+
+	Game_Actor.prototype.meetsRequirements = function(classId)
+	{
+		var data = $dataClasses[classId];
+		for ( var ii = 0; ii < gRequirementsMax; ii++ )
+		{
+			var requirement = 'requirement' + ('0'+ii).slice(-2);
+			if ( data.meta[requirement] )
+			{
+				if ( !this.checkRequirement(data.meta[requirement]) )
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
+	Game_Actor.prototype.checkRequirement = function(condition)
+	{
+		var result = true;
+		var metaData = condition.split(',');
+		switch ( metaData[0] )
+		{
+		case 'level':
+			if ( Number(metaData[2]) === 0 )
+			{
+				if ( this.level < Number(metaData[1]) )
+				{
+					result = false;
+				}
+			}
+			else
+			{
+				if ( this.calcClassLevel(Number(metaData[2])) < Number(metaData[1]) )
+				{
+					result = false;
+				}
+			}
+			break;
+		case 'mhp':
+			if ( this.mhp < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'mmp':
+			if ( this.mmp < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'atk':
+			if ( this.atk < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'def':
+			if ( this.def < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'mat':
+			if ( this.mat < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'mdf':
+			if ( this.mdf < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'agi':
+			if ( this.agi < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'luk':
+			if ( this.luk < Number(metaData[1]) )
+			{
+				result = false;
+			}
+			break;
+		case 'switch':
+			if ( !$gameSwitches.value(Number(metaData[1])) )
+			{
+				result = false;
+			}
+			break;
+		}
+		return result;
 	};
 
 	//-------------------------------------------------------------------------
@@ -217,11 +458,17 @@
 		this._selectionEffectCount = 0;
 		this._changeEnable = true;
 		this._scissorRect = null;
+		this._actor = null;
 	};
 
 	Sprite_Job.prototype.setJob = function(classId)
 	{
 		this._classId = classId;
+	};
+
+	Sprite_Job.prototype.setBattler = function(battler)
+	{
+		this._actor = battler;
 	};
 
 	Sprite_Job.prototype.setRoot = function(x, y)
@@ -282,9 +529,9 @@
 	{
 		if ( this._classId !== 0 )
 		{
-			if ( $dataClasses[this._classId].meta.battlerName )
+			var name = Utility.battlerName(this._actor, $dataClasses[this._classId]);
+			if ( name )
 			{
-				var name = $dataClasses[this._classId].meta.battlerName;
 				if ( this._battlerName !== name )
 				{
 					this._battlerName = name;
@@ -493,6 +740,13 @@
 		{
 			this._actor = actor;
 			this._actorSprite.setBattler(this._actor);
+			this._jobSprite.forEach(function(sprite) {
+				if ( sprite )
+				{
+					sprite.setBattler(this._actor);
+				}
+			}, this);
+			this.setupChangeableClasses(actor);
 			this.selectActorClass(actor);
 			this.refresh();
 		}
@@ -516,11 +770,6 @@
 		this._introRotation = 0.0;
 		this._introDistance = 0.0;
 		this._classIdTable = [];
-		var classesNum = $dataClasses.length;
-		for ( var ii = 1; ii < classesNum; ii++ )
-		{
-			this._classIdTable.push(ii);
-		}
 	};
 
 	Window_JobChange.prototype.createActorSprite = function()
@@ -541,27 +790,29 @@
 		var scissorY = 0.0 - rootY + mergin;
 		var scissorW = this.width - mergin * 2;
 		var scissorH = this.height - mergin * 2;
-		var num = this._classIdTable.length;
-		for ( var ii = 0; ii < num; ii++ )
+		var classesNum = $dataClasses.length;
+		for ( var ii = 1; ii < classesNum; ii++ )
 		{
-			var classId = this._classIdTable[ii];
-			var sprite = new Sprite_Job(classId);
-			sprite.setRoot(rootX, rootY);
-			sprite.setScissoring(scissorX, scissorY, scissorW, scissorH);
-			this._jobSprite[classId] = sprite;
-			this.addChild(this._jobSprite[classId]);
+			if ( $dataClasses[ii].meta.battlerName )
+			{
+				var sprite = new Sprite_Job(ii);
+				sprite.setRoot(rootX, rootY);
+				sprite.setScissoring(scissorX, scissorY, scissorW, scissorH);
+				this._jobSprite[ii] = sprite;
+				this.addChild(this._jobSprite[ii]);
+			}
 		}
 		this.updateJobPosition();
 	};
 
 	Window_JobChange.prototype.maxCols = function()
 	{
-		return this._jobSprite.length - 1;
+		return this._classIdTable.length;
 	};
 
 	Window_JobChange.prototype.maxItems = function()
 	{
-		return this._jobSprite.length - 1;
+		return this._classIdTable.length;
 	};
 
 	Window_JobChange.prototype.maxPageRows = function()
@@ -610,7 +861,7 @@
 			if ( this.index() >= 0 )
 			{
 				var classId = this._classIdTable[this.index()];
-				return this._actor.isClassChangeEnable(classId);
+				return this.isClassChangeEnable(classId);
 			}
 		}
 		return false;
@@ -682,7 +933,7 @@
 		{
 			var classId = this._classIdTable[ii];
 			var selection = (ii == this.index()) ? true : false;
-			var enable = this._actor.isClassChangeEnable(classId);
+			var enable = this.isClassChangeEnable(classId);
 			this._jobSprite[classId].setSelection(selection);
 			this._jobSprite[classId].setChangeEnable(enable);
 		}
@@ -706,6 +957,27 @@
 		else
 		{
 			this._helpWindow.clear();
+		}
+	};
+
+	Window_JobChange.prototype.setupChangeableClasses = function(actor)
+	{
+		this._classIdTable = [];
+		var classesNum = $dataClasses.length;
+		for ( var ii = 1; ii < classesNum; ii++ )
+		{
+			if ( $dataClasses[ii].meta.battlerName )
+			{
+				if ( this.isShowChangeableClass(actor, ii) )
+				{
+					this._classIdTable.push(ii);
+					this._jobSprite[ii].show();
+				}
+				else
+				{
+					this._jobSprite[ii].hide();
+				}
+			}
 		}
 	};
 
@@ -746,6 +1018,67 @@
 		return '';
 	};
 
+	Window_JobChange.prototype.isShowChangeableClass = function(actor, classId)
+	{
+		var result = false;
+		var data = $dataClasses[classId];
+		if ( data.meta.displayStats )
+		{
+			if ( data.meta.displayStats === 'hide' ) // 条件を満たしていない場合は非表示
+			{
+				if ( !actor.meetsRequirements(classId) )
+				{
+					return false;
+				}
+			}
+			else if ( data.meta.displayStats === 'both' ) // 誰一人条件を満たしていない場合は非表示
+			{
+				$dataActors.forEach(function(actorData) {
+					if ( actorData )
+					{
+						var actor = $gameActors.actor(actorData.id);
+						if ( actor.meetsRequirements(classId) )
+						{
+							result = true;
+						}
+					}
+				});
+				if ( !result )
+				{
+					return false;
+				}
+			}
+		}
+		if ( data.meta.changeableActor )
+		{
+			var metaData = data.meta.changeableActor.split(',');
+			metaData.forEach(function(actorId) {
+				if ( Number(actorId) === actor.actorId() )
+				{
+					result = true;
+				}
+			}, this);
+		}
+		else
+		{
+			result = true;
+		}
+		return result;
+	};
+
+	Window_JobChange.prototype.isClassChangeEnable = function(classId)
+	{
+		if ( this._actor )
+		{
+			if ( !this._actor.meetsRequirements(classId) )
+			{
+				return false;
+			}
+			return this._actor.isClassChangeEnable(classId);
+		}
+		return false;
+	};
+
 	Window_JobChange.prototype.refresh = function()
 	{
 		this.contents.clear();
@@ -753,14 +1086,17 @@
 		var x = (this.contentsWidth() - width) * 0.5;
 		var y = 292;
 		this.drawText(this.selectedJobName(), x, y, width, 'center');
-		if ( this._actor )
+		if ( !gKeepLevel )
 		{
-			var classId = this._classIdTable[this.index()];
-			var level = TextManager.levelA + ' ' + this._actor.calcClassLevel(classId);
-			var backupFontSize = this.contents.fontSize;
-			this.contents.fontSize = 18;
-			this.drawText(level, x, y-24, width, 'center');
-			this.contents.fontSize = backupFontSize;
+			if ( this._actor )
+			{
+				var classId = this._classIdTable[this.index()];
+				var level = TextManager.levelA + ' ' + this._actor.calcClassLevel(classId);
+				var backupFontSize = this.contents.fontSize;
+				this.contents.fontSize = 18;
+				this.drawText(level, x, y-24, width, 'center');
+				this.contents.fontSize = backupFontSize;
+			}
 		}
 	};
 
@@ -975,7 +1311,7 @@
 		if ( actor )
 		{
 			var classId = this._jobWindow.selectedClassId();
-			actor.changeClassEx(classId, false);
+			actor.changeClassEx(classId, gKeepLevel);
 			if ( gOptimizeEquipEnable )
 			{
 				actor.optimizeEquipments();

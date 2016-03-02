@@ -11,7 +11,7 @@ Yanfly.LSU = Yanfly.LSU || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 (Requires YEP_SkillCore.js) Make certain skills have
+ * @plugindesc v1.01 (Requires YEP_SkillCore.js) Make certain skills have
  * a limited amount of times they can be used in battle.
  * @author Yanfly Engine Plugins
  *
@@ -273,8 +273,11 @@ Yanfly.LSU = Yanfly.LSU || {};
  * Changelog
  * ============================================================================
  *
- * Version BETA:
- * - Started Plugin!
+ * Version 1.01:
+ * - Optimization Update.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -636,10 +639,11 @@ Game_BattlerBase.prototype.paySkillLimitedUseCost = function(skillId, value) {
 };
 
 Game_BattlerBase.prototype.setSkillLimitedUse = function(skillId, value) {
+    var skill = $dataSkills[skillId];
+    if (!this.isSkillLimitedUse(skill)) return;
     if (this._skillLimitedUses === undefined) this.initSkillLimitedUses();
     var max = (value === 0) ? 0 : this.skillLimitedUseMax(skillId);
     this._skillLimitedUses[skillId] = Math.floor(value.clamp(0, max));
-    this.refresh();
 };
 
 Yanfly.LSU.Game_BattlerBase_recoverAll = Game_BattlerBase.prototype.recoverAll;
@@ -654,6 +658,7 @@ Game_BattlerBase.prototype.recoverAllLimitedSkillUses = function() {
     for (var i = 0; i < length; ++i) {
       var skill = this.skills()[i];
       if (!skill) continue;
+    if (!this.isSkillLimitedUse(skill)) continue;
       if (skill.limitRecoverAllUses) this.setSkillLimitedUse(skill.id, 0);
     }
 };
@@ -663,6 +668,7 @@ Game_BattlerBase.prototype.recoverLimitedSkillUsesBattle = function(result) {
     for (var i = 0; i < length; ++i) {
       var skill = this.skills()[i];
       if (!skill) continue;
+    if (!this.isSkillLimitedUse(skill)) continue;
       var value = this.skillLimitedUseRecovery(skill.id, result);
       this.paySkillLimitedUseCost(skill.id, -value)
     }
@@ -671,6 +677,7 @@ Game_BattlerBase.prototype.recoverLimitedSkillUsesBattle = function(result) {
 Game_BattlerBase.prototype.skillLimitedUseRecovery = function(skillId, result) {
     var skill = $dataSkills[skillId];
     if (!skill) return 0;
+    if (!this.isSkillLimitedUse(skill)) return 0;
     var value = skill.limitBattleRecover[result];
     return value;
 };

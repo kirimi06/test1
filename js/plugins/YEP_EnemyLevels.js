@@ -11,7 +11,7 @@ Yanfly.ELV = Yanfly.ELV || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 This plugin enables giving your enemies levels and
+ * @plugindesc v1.03 This plugin enables giving your enemies levels and
  * parameter changes with those levels.
  * @author Yanfly Engine Plugins
  *
@@ -483,6 +483,9 @@ Yanfly.ELV = Yanfly.ELV || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.03:
+ * - Fixed a bug with average level calculation types for enemies.
  *
  * Version 1.02:
  * - Fixed a bug regarding a line of code that wasn't added properly.
@@ -1061,7 +1064,7 @@ Game_Party.prototype.averageLevelAllMembers = function() {
     var value = 0;
     for (var i = 0; i < length; ++i) {
       var member = this.allMembers()[i];
-      value = member.level;
+      value += member.level;
     }
     return Math.ceil(value / length);
 };
@@ -1071,7 +1074,7 @@ Game_Party.prototype.averageLevelBattleMembers = function() {
     var value = 0;
     for (var i = 0; i < length; ++i) {
       var member = this.battleMembers()[i];
-      value = member.level;
+      value += member.level;
     }
     return Math.ceil(value / length);
 };

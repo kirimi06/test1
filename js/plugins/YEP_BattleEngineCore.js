@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.32b Have more control over the flow of the battle system
+ * @plugindesc v1.32d Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -424,6 +424,18 @@ Yanfly.BEC = Yanfly.BEC || {};
  *   This tag must be all caps in order for the battle log window to recognize
  *   it as an instruction to center the displayed battle text message.
  *
+ * There are a couple of notetags you can use to change the way certain skills
+ * and items will show up incase you don't want a name like 'Harold's Attack'
+ * to appear in the name.
+ *
+ * Skill and Item Notetags:
+ *
+ *   <Display Text: x>
+ *   This will change the text displayed to x.
+ *
+ *   <Display Icon: x>
+ *   This will change the icon displayed to x.
+ *
  * ============================================================================
  * Battle Windows
  * ============================================================================
@@ -636,12 +648,17 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.32b:
+ * Version 1.32d:
  * - Fixed a bug that caused a crash when an actor died.
  * - Added a motion engine to be used for future plugins.
  * - Preparation for a future plugin.
  * - <Anchor X: y.z> and <Anchor Y: y.z> notetags for actors are now extended
  * to actors, classes, weapons, armors, and states.
+ * - Added <Display Text: x> and <Display Icon: x> notetags for skills and
+ * items. These notetags will alter the display name shown and icon shown
+ * respectively while performing a skill.
+ * - Switched Magic Reflect checking order with Counterattack checking order.
+ * This is to give priority to reflected actions over countered actions.
  *
  * Version 1.31b:
  * - States with Action End now have a unique trait to them where if the caster
@@ -1138,9 +1155,14 @@ DataManager.processBECNotetags1 = function(group) {
 DataManager.processBECNotetags2 = function(group) {
   var note1 = /<(?:ACTION COPY):[ ](.*):[ ]*(\d+)>/i;
   var note2 = /<(?:SPEED):[ ]([\+\-]\d+)>/i;
+  var note3 = /<(?:DISPLAY NAME|DISPLAY TEXT):[ ](.*)>/i;
+  var note4 = /<(?:DISPLAY ICON):[ ](\d+)>/i;
   for (var n = 1; n < group.length; n++) {
     var obj = group[n];
     var notedata = obj.note.split(/[\r\n]+/);
+
+    obj.battleDisplayText = obj.name;
+    obj.battleDisplayIcon = obj.iconIndex;
 
     for (var i = 0; i < notedata.length; i++) {
       var line = notedata[i];
@@ -1161,6 +1183,10 @@ DataManager.processBECNotetags2 = function(group) {
         }
       } else if (line.match(note2)) {
         obj.speed = parseInt(RegExp.$1);
+      } else if (line.match(note3)) {
+        obj.battleDisplayText = String(RegExp.$1);
+      } else if (line.match(note4)) {
+        obj.battleDisplayIcon = parseInt(RegExp.$1);
       }
     }
   }
@@ -1661,16 +1687,17 @@ BattleManager.updateAction = function() {
 };
 
 BattleManager.invokeAction = function(subject, target) {
-    if (!eval(Yanfly.Param.BECOptSpeed))  this._logWindow.push('pushBaseLine');
-    if (Math.random() < this._action.itemCnt(target)) {
-        this.invokeCounterAttack(subject, target);
-    } else if (Math.random() < this._action.itemMrf(target)) {
-        this.invokeMagicReflection(subject, target);
-    } else {
-        this.invokeNormalAction(subject, target);
-    }
-    subject.setLastTarget(target);
-    if (!eval(Yanfly.Param.BECOptSpeed)) this._logWindow.push('popBaseLine');
+  if (!eval(Yanfly.Param.BECOptSpeed))  this._logWindow.push('pushBaseLine');
+  var normal = true;
+  if (Math.random() < this._action.itemMrf(target)) {
+    this.invokeMagicReflection(subject, target);
+  } else if (Math.random() < this._action.itemCnt(target)) {
+    this.invokeCounterAttack(subject, target);
+  } else {
+    this.invokeNormalAction(subject, target);
+  }
+  subject.setLastTarget(target);
+  if (!eval(Yanfly.Param.BECOptSpeed)) this._logWindow.push('popBaseLine');
 };
 
 BattleManager.invokeCounterAttack = function(subject, target) {
@@ -2435,10 +2462,10 @@ Sprite_Battler.prototype.setupDamagePopup = function() {
         sprite.setup(this._battler);
         this.pushDamageSprite(sprite);
         BattleManager._spriteset.addChild(sprite);
+        this._battler.clearResult();
       }
     } else {
       this._battler.clearDamagePopup();
-      this._battler.clearResult();
     }
 };
 
@@ -4709,12 +4736,21 @@ Window_BattleLog.prototype.displayAction = function(subject, item) {
     if (eval(Yanfly.Param.BECFullActText)) {
       Yanfly.BEC.Window_BattleLog_displayAction.call(this, subject, item);
     } else {
-      this._actionIcon = item.iconIndex;
-      this.push('addText', '<SIMPLE>' + item.name);
+      this._actionIcon = this.displayIcon(item);
+      var text = this.displayText(item);
+      this.push('addText', '<SIMPLE>' + text);
       if (item.message2) {
-        this.push('addText', '<CENTER>' + item.message2.format(item.name));
+        this.push('addText', '<CENTER>' + item.message2.format(text));
       }
     }
+};
+
+Window_BattleLog.prototype.displayIcon = function(item) {
+    return item.battleDisplayIcon;
+};
+
+Window_BattleLog.prototype.displayText = function(item) {
+    return item.battleDisplayText;
 };
 
 Yanfly.BEC.Window_BattleLog_displayActionResults =

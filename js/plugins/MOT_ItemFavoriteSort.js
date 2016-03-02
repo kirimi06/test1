@@ -3,8 +3,8 @@
 //=============================================================================
 // MOTplugin - アイテムソート＋お気に入りアイテム
 // 作者: 翠 (http://midori.wp.xdomain.jp/)
-// Version: 0.94
-// 最終更新日: 2016/03/01
+// Version: 0.95
+// 最終更新日: 2016/03/02
 //=============================================================================
 //■更新履歴
 /*
@@ -18,6 +18,7 @@
   2016/03/01 - ダブルタップ(クリック)でソートタイトルが表示されない不具合を修正
                継承するWindowの変更Window_BattleItem,Window_ShopSell
                アイテム、ショップ、バトルのアイテムリストではデフォルトのリストを呼ばないように変更を加えた
+  2016/03/02 - Scene_Battleのupdateを少し修正
 */
 //=============================================================================
 /*■利用規約
@@ -917,12 +918,5 @@ Scene_Battle.prototype.update = function() {
         this._sortTitleWindow.show();
         this._sortWindow.show();
     }
-    if (this._sortWindow.active) {
-        var active = this.isActive();
-        $gameTimer.update(active);
-        $gameScreen.update();
-         Scene_Base.prototype.update.call(this);
-    } else {
-        MOT.ItemFavoriteSort.Scene_Battle_update.call(this);
-    }
+    MOT.ItemFavoriteSort.Scene_Battle_update.call(this);
 };
