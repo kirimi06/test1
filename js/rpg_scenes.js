@@ -1,5 +1,5 @@
 //=============================================================================
-// rpg_scenes.js
+// rpg_scenes.js v1.1.0
 //=============================================================================
 
 //-----------------------------------------------------------------------------
@@ -1499,6 +1499,7 @@ Scene_Save.prototype.onSavefileOk = function() {
 
 Scene_Save.prototype.onSaveSuccess = function() {
     SoundManager.playSave();
+	StorageManager.cleanBackup(this.savefileId());
     this.popScene();
 };
 
@@ -2266,8 +2267,8 @@ Scene_Battle.prototype.startActorCommandSelection = function() {
     this._actorCommandWindow.setup(BattleManager.actor());
 };
 
-Scene_Battle.prototype.commandAttack = function() {	
-    BattleManager.inputtingAction().setAttack();	
+Scene_Battle.prototype.commandAttack = function() {
+    BattleManager.inputtingAction().setAttack();
     this.selectEnemySelection();
 };
 
