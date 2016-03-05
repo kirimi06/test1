@@ -11,7 +11,7 @@ Yanfly.SVE = Yanfly.SVE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06a (Requires YEP_BattleEngineCore.js) This plugin lets
+ * @plugindesc v1.07 (Requires YEP_BattleEngineCore.js) This plugin lets
  * you use Animated Sideview Actors for enemies!
  * @author Yanfly Engine Plugins
  *
@@ -713,6 +713,9 @@ Yanfly.SVE = Yanfly.SVE || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.06a:
  * - Fixed a bug that prevented animated sideview enemies from not mirroring.
  * - Added <Sideview Show State Overlay> and <Sideview Hide State Overlay>
@@ -808,10 +811,13 @@ for (Yanfly.i = 1; Yanfly.i < 31; ++Yanfly.i) {
 
 Yanfly.SVE.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.SVE.DataManager_isDatabaseLoaded.call(this)) return false;
-		DataManager.processSVENotetags1($dataEnemies);
-    DataManager.processSVENotetags2($dataStates);
-		return true;
+  if (!Yanfly.SVE.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_AnimatedSVEnemies) {
+  	this.processSVENotetags1($dataEnemies);
+    this.processSVENotetags2($dataStates);
+    Yanfly._loaded_YEP_X_AnimatedSVEnemies = true;
+  }
+	return true;
 };
 
 DataManager.processSVENotetags1 = function(group) {
@@ -1612,6 +1618,8 @@ Sprite_Enemy.prototype.refreshMotion = function() {
     if (!this._svBattlerEnabled) return;
     var enemy = this._enemy;
     if (!enemy) return;
+    var motionGuard = Sprite_Actor.MOTIONS['guard'];
+    if (this._motion === motionGuard && !BattleManager.isInputting()) return;
     var stateMotion = enemy.stateMotionIndex();
     if (enemy.isInputting() || enemy.isActing()) {
         this.startMotion('walk');

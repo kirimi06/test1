@@ -11,7 +11,7 @@ Yanfly.Core = Yanfly.Core || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.12 Needed for the majority of Yanfly Engine Scripts. Also
+ * @plugindesc v1.13 Needed for the majority of Yanfly Engine Scripts. Also
  * contains bug fixes found inherently in RPG Maker.
  * @author Yanfly Engine Plugins
  *
@@ -445,6 +445,9 @@ Yanfly.Core = Yanfly.Core || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.13:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.12:
  * - Fixed a bug with a notetag: <Learn at Level: x>. Now, the notetag works
  * with both <Learn at Level: x> and <Learn Level: x>
@@ -550,7 +553,7 @@ Yanfly.Param.ColorPowerDown = Number(Yanfly.Parameters['Color: Power Down']);
 Yanfly.Param.ColorTpGauge1 = Number(Yanfly.Parameters['Color: TP Gauge 1']);
 Yanfly.Param.ColorTpGauge2 = Number(Yanfly.Parameters['Color: TP Gauge 2']);
 Yanfly.Param.ColorTpCost = Number(Yanfly.Parameters['Color: TP Cost Color']);
-Yanfly.Param.GoldFontSize = String(Yanfly.Parameters['Gold Font Size']);
+Yanfly.Param.GoldFontSize = Number(Yanfly.Parameters['Gold Font Size']);
 Yanfly.Icon.Gold = Number(Yanfly.Parameters['Gold Icon']);
 Yanfly.Param.GoldOverlap = String(Yanfly.Parameters['Gold Overlap']);
 Yanfly.Param.ItemQuantitySize = Number(Yanfly.Parameters['Quantity Text Size']);
@@ -634,12 +637,15 @@ ScreenSprite.prototype.initialize = function() {
 Yanfly.Core.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
     if (!Yanfly.Core.DataManager_isDatabaseLoaded.call(this)) return false;
-    this.processCORENotetags1($dataItems);
-    this.processCORENotetags1($dataWeapons);
-    this.processCORENotetags1($dataArmors);
-    this.processCORENotetags2($dataEnemies);
-    this.processCORENotetags3($dataActors);
-    this.processCORENotetags4($dataClasses);
+    if (!Yanfly._loaded_YEP_CoreEngine) {
+      this.processCORENotetags1($dataItems);
+      this.processCORENotetags1($dataWeapons);
+      this.processCORENotetags1($dataArmors);
+      this.processCORENotetags2($dataEnemies);
+      this.processCORENotetags3($dataActors);
+      this.processCORENotetags4($dataClasses);
+      Yanfly._loaded_YEP_CoreEngine = true;
+    }
     return true;
 };
 

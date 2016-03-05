@@ -11,7 +11,7 @@ Yanfly.Slip = Yanfly.Slip || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 You can create slippery tiles by marking them with
+ * @plugindesc v1.02 You can create slippery tiles by marking them with
  * either a terrain tag or a region number.
  * @author Yanfly Engine Plugins
  *
@@ -48,6 +48,9 @@ Yanfly.Slip = Yanfly.Slip || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.01:
  * - Added failsafe for people who aren't using tilesets 
  *
@@ -72,9 +75,12 @@ Yanfly.Param.SlipFrame = Number(Yanfly.Parameters['Slippery Frame']);
 
 Yanfly.Slip.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Slip.DataManager_isDatabaseLoaded.call(this)) return false;
-		this.processSlipNotetags($dataTilesets);
-		return true;
+  if (!Yanfly.Slip.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_SlipperyTiles) {
+	  this.processSlipNotetags($dataTilesets);
+    Yanfly._loaded_YEP_SlipperyTiles = true;
+  }
+	return true;
 };
 
 DataManager.processSlipNotetags = function(group) {

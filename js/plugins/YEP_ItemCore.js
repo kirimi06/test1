@@ -11,7 +11,7 @@ Yanfly.Item = Yanfly.Item || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.18a Changes the way Items are handled for your game
+ * @plugindesc v1.19 Changes the way Items are handled for your game
  * and the Item Scene, too.
  * @author Yanfly Engine Plugins
  *
@@ -317,6 +317,9 @@ Yanfly.Item = Yanfly.Item || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.19:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.18a:
  * - Added 'Midgame Note Parsing' plugin parameter.
  * - Fixed a visual error with MP recovery displaying a 0 instead of ---.
@@ -431,10 +434,13 @@ Yanfly.Param.ItemNoteParse = eval(Yanfly.Param.ItemNoteParse);
 Yanfly.Item.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
   if (!Yanfly.Item.DataManager_isDatabaseLoaded.call(this)) return false;
-  this.setDatabaseLengths();
-  this.processItemCoreNotetags($dataItems);
-  this.processItemCoreNotetags($dataWeapons);
-  this.processItemCoreNotetags($dataArmors);
+  if (!Yanfly._loaded_YEP_ItemCore) {
+    this.setDatabaseLengths();
+    this.processItemCoreNotetags($dataItems);
+    this.processItemCoreNotetags($dataWeapons);
+    this.processItemCoreNotetags($dataArmors);
+    Yanfly._loaded_YEP_ItemCore = true;
+  }
   return true;
 };
 

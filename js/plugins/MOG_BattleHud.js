@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v2.4) Permite customizar o layout de batalha.
+ * @plugindesc (v2.5) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -458,7 +458,7 @@
  * @desc Definição do posição X-axis do layout.
  * @default 0   
  *
- * @param L Skill Y-Axis
+ * @param L SKill Y-Axis
  * @desc Definição do posição Y-axis do layout.
  * @default -67
  *
@@ -624,7 +624,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v2.4) +++
+ * +++ MOG_BattleHud (v2.5) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -664,6 +664,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (2.5) - Correção de alguns plugins parameters não funcionarem.
  * (2.4) - Correção de não apresentar os ícones de Buff e Debuff. 
  * (2.3) - Melhoria na codificação.
  * (2.2) - Adição da opção do alinhamento dos números. 

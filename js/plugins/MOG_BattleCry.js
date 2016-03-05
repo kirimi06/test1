@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.0) Adiciona vozes na batalha.
+ * @plugindesc (v1.1) Adiciona vozes na batalha.
  * @author Moghunter
  *
  * @param Volume
@@ -12,7 +12,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cry (v1.0) +++
+ * +++ MOG - Battle Cry (v1.1) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -20,6 +20,10 @@
  * Para definir as vozes é necessário editar o plugin manualmente.
  * A edição do plugin deve ser feita a partir da linha 70.
  *
+ * =============================================================================
+ * HISTÓRICO
+ * =============================================================================
+ * (v1.1) Corrigido o bug de não mover o personagem na hora da ação.
  */
 
 //=============================================================================
@@ -364,10 +368,10 @@ Game_Battler.prototype.battleCrySetupEnemy = function() {
 //===============================
 // ** PerfotmAction
 //===============================
-var _alias_mog_bcry_performActionStart = Game_Battler.prototype.performAction;
+var _alias_mog_bcry_performActionStart = Game_Battler.prototype.performActionStart;
 Game_Battler.prototype.performActionStart = function(action) {
-   _alias_mog_bcry_performActionStart.call(this, action);
    if (action) {this.playVoiceAction(action)};
+   _alias_mog_bcry_performActionStart.call(this, action);
 };
 
 //===============================

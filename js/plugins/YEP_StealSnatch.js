@@ -11,7 +11,7 @@ Yanfly.Steal = Yanfly.Steal || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 Allows your actors to be able to steal and snatch
+ * @plugindesc v1.05 Allows your actors to be able to steal and snatch
  * items from enemies.
  * @author Yanfly Engine Plugins
  *
@@ -424,6 +424,9 @@ Yanfly.Steal = Yanfly.Steal || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.04:
  * - Fixed a bug with <Steal Rate: +x%> notetag that caused the game to freeze.
  *
@@ -518,25 +521,25 @@ Yanfly.Param.StealSEGold = {
 
 Yanfly.Steal.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Steal.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Steal.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_StealSnatch) {
     this.processStealNotetagsI($dataItems);
     this.processStealNotetagsW($dataWeapons);
     this.processStealNotetagsA($dataArmors);
-    DataManager.processStealNotetags1($dataEnemies);
-
-		DataManager.processStealNotetags2($dataSkills);
-    DataManager.processStealNotetags2($dataItems);
-
-    DataManager.processStealNotetags3($dataItems);
-    DataManager.processStealNotetags3($dataWeapons);
-    DataManager.processStealNotetags3($dataArmors);
-
-    DataManager.processStealNotetags4($dataActors);
-    DataManager.processStealNotetags4($dataClasses);
-    DataManager.processStealNotetags4($dataWeapons);
-    DataManager.processStealNotetags4($dataArmors);
-    DataManager.processStealNotetags4($dataStates);
-		return true;
+    this.processStealNotetags1($dataEnemies);
+  	this.processStealNotetags2($dataSkills);
+    this.processStealNotetags2($dataItems);
+    this.processStealNotetags3($dataItems);
+    this.processStealNotetags3($dataWeapons);
+    this.processStealNotetags3($dataArmors);
+    this.processStealNotetags4($dataActors);
+    this.processStealNotetags4($dataClasses);
+    this.processStealNotetags4($dataWeapons);
+    this.processStealNotetags4($dataArmors);
+    this.processStealNotetags4($dataStates);
+    Yanfly._loaded_YEP_StealSnatch = true;
+  }
+	return true;
 };
 
 DataManager.processStealNotetagsI = function(group) {

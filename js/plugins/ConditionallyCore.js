@@ -1,14 +1,14 @@
 //
-//  条件付き○○用ベース ver1.01
+//  条件付き○○用ベース ver1.02
 //
 // author yana
 //
 
 var Imported = Imported || {};
-Imported['ConditionallyCore'] = 1.01;
+Imported['ConditionallyCore'] = 1.02;
 
 /*:
- * @plugindesc ver1.01/条件付き○○のプラグインを使用するのに、必要となる条件をまとめたベースプラグインです。
+ * @plugindesc ver1.02/条件付き○○のプラグインを使用するのに、必要となる条件をまとめたベースプラグインです。
  * @author Yana
  * 
  * @help プラグインコマンドはありません。
@@ -266,6 +266,8 @@ Imported['ConditionallyCore'] = 1.01;
  * 利用規約：特になし。素材利用は自己責任でお願いします。
  * ------------------------------------------------------
  * 更新履歴:
+ * ver1.02:
+ * スイッチ条件が正常に機能していないバグを修正。
  * ver1.01:
  * ステータス条件に最大HPと最大MPの条件を追加。
  * ver1.00:
@@ -315,7 +317,7 @@ function ConditionallyManager() {
 			'value7':/(?:(\d+),)*(\d+:\d+[%％]以[上下]?)(?:[,，]\d+:\d+[%％]以[上下]?)*/,
 			'value8':/(\d+)が(\d+)以([上下])?/,
 			'value9':/(\d+)が(O[NF])/,
-			'value10':/(?:(\d+):)*([WA])(\d+)(?:[,，]([WA])(\d+))*/,
+			'value10':/(?:(\d+):)*([WAwa])(\d+)(?:[,，]([WAwa])(\d+))*/,
 			'value11':/(.+)/,
 			'value12':/(.+)(\d+)以([上下])/,
 			'value13':/(.+)*/
@@ -374,11 +376,11 @@ function ConditionallyManager() {
 							case 'value10':
 								var num = null;
 								result = reg.split(',');
-								if (result[0].match(/(\d+):([WA])(\d+)/)){
+								if (result[0].match(/(\d+):([WAwa])(\d+)/)){
 									num = parseInt(RegExp.$1);
 								}
 								for(var u=0;u<result.length;u++){
-									result[u].match(/([WA])(\d+)/);
+									result[u].match(/([WAwa])(\d+)/);
 									result[u] = [RegExp.$1,parseInt(RegExp.$2)];
 								}
 								result.unshift(num);
@@ -418,7 +420,6 @@ function ConditionallyManager() {
 	
 	ConditionallyManager.checkConditions = function(user, target, conditions, dieStatus){
 		this._dieStatus = dieStatus;
-		
 		var fcns = [
 					this.checkTurn,
 					this.checkState,
@@ -443,8 +444,8 @@ function ConditionallyManager() {
 					this.checkSkill,
 					this.checkItem
 				   ];
-				   
 		for(var i=0;i<conditions.length;i++){
+			if (!conditions[i]){ continue }
 			var targets = this.setTargets(user,target,conditions[i][0]);
 			if (!fcns[conditions[i][1]].call(this,targets,conditions[i][2])){
 				return false;
@@ -602,7 +603,7 @@ function ConditionallyManager() {
 	};
 	ConditionallyManager.checkSwitch = function(targets,conditions){
 		var flag = $gameSwitches.value(conditions[0]);
-		return flag === (conditions[1] === 'N');
+		return flag === (conditions[1] === 'ON');
 	};
 	ConditionallyManager.checkEquip = function(targets,conditions){
 		if(!targets[0]){ return false }
@@ -640,10 +641,12 @@ function ConditionallyManager() {
 				var eId = conditions[j][1];
 				switch(eVar){
 				case 'W':
+				case 'w':
 					result = targets[i].weapons().filter(function(equip){
 						return equip.wtypeId === eId;
 					});
 				case 'A':
+				case 'a':
 					result = targets[i].armors().filter(function(equip){
 						return equip.atypeId === eId;
 					});

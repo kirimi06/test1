@@ -11,7 +11,7 @@ Yanfly.Subclass = Yanfly.Subclass || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 (Requires YEP_ClassChangeCore.js) Allow your actors
+ * @plugindesc v1.07 (Requires YEP_ClassChangeCore.js) Allow your actors
  * to subclass into a secondary class!
  * @author Yanfly Engine Plugins
  *
@@ -251,6 +251,9 @@ Yanfly.Subclass = Yanfly.Subclass || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.06:
  * - Added 'EXP' plugin parameter. This determines the rate the equipped
  * subclass will earn EXP.
@@ -326,12 +329,15 @@ Yanfly.Param.SubclassArmors = eval(String(Yanfly.Parameters['Armors']));
 
 Yanfly.Subclass.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Subclass.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Subclass.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_Subclass) {
     DataManager.processSubclassNotetags1($dataActors);
     DataManager.processSubclassNotetags2($dataClasses);
     DataManager.processSubclassNotetags3($dataSkills);
     DataManager.processSubclassNotetags3($dataItems);
-    return true;
+    Yanfly._loaded_YEP_X_Subclass = true;
+  }
+  return true;
 };
 
 DataManager.processSubclassNotetags1 = function(group) {

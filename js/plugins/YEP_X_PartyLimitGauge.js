@@ -11,7 +11,7 @@ Yanfly.PLG = Yanfly.PLG || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 (Requires YEP_SkillCore.js) A party-wide skill
+ * @plugindesc v1.04 (Requires YEP_SkillCore.js) A party-wide skill
  * resource is accessible across all members of a unit.
  * @author Yanfly Engine Plugins
  *
@@ -487,6 +487,9 @@ Yanfly.PLG = Yanfly.PLG || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.03:
  * - Fixed a bug with some damage formulas being unable to use 'user'.
  *
@@ -571,7 +574,8 @@ Yanfly.Param.PLGBattleLose = String(Yanfly.Parameters['Lose Battle']);
 
 Yanfly.PLG.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.PLG.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.PLG.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_PartyLimitGauge) {
     this.processPLGNotetags1($dataActors, true);
     this.processPLGNotetags1($dataEnemies, true);
     this.processPLGNotetags2($dataActors);
@@ -582,7 +586,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processPLGNotetags2($dataStates);
     this.processPLGNotetags3($dataSkills);
     this.processPLGNotetags3($dataItems);
-    return true;
+    Yanfly._loaded_YEP_X_PartyLimitGauge = true;
+  }
+  return true;
 };
 
 DataManager.processPLGNotetags1 = function(group, isActor) {

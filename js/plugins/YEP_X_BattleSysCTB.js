@@ -11,7 +11,7 @@ Yanfly.CTB = Yanfly.CTB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.10a (Requires YEP_BattleEngineCore.js) Add CTB (Charge
+ * @plugindesc v1.12 (Requires YEP_BattleEngineCore.js) Add CTB (Charge
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -387,6 +387,9 @@ Yanfly.CTB = Yanfly.CTB || {};
  * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.12:
+ * - Updated for RPG Maker MV version 1.1.0.
  *
  * Version 1.11:
  * - Counterattacks no longer cause turn order inconsistencies.

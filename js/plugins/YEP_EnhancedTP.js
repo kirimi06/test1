@@ -11,7 +11,7 @@ Yanfly.ETP = Yanfly.ETP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Gives you more control over how TP is handled in
+ * @plugindesc v1.02 Gives you more control over how TP is handled in
  * your game in addition to letting players switch TP modes.
  * @author Yanfly Engine Plugins
  *
@@ -2669,13 +2669,16 @@ for (Yanfly.i = 1; Yanfly.i < Yanfly.Param.ETPMax + 1; ++Yanfly.i) {
 
 Yanfly.ETP.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.ETP.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.ETP.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_EnhancedTP) {
     this.processETPNotetags1($dataActors);
     this.processETPNotetags1($dataEnemies);
     this.processETPNotetags2($dataSkills);
     this.processETPNotetags2($dataItems);
     this.processETPNotetags3($dataSkills);
-    return true;
+    Yanfly._loaded_YEP_EnhancedTP = true;
+  }
+  return true;
 };
 
 DataManager.processETPNotetags1 = function(group) {

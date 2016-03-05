@@ -11,7 +11,7 @@ Yanfly.EqReq = Yanfly.EqReq || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 (Requires YEP_EquipCore.js) Place requirements on
+ * @plugindesc v1.01 (Requires YEP_EquipCore.js) Place requirements on
  * pieces of equipment before actors can use them!
  * @author Yanfly Engine Plugins
  *
@@ -202,6 +202,16 @@ Yanfly.EqReq = Yanfly.EqReq || {};
  *   breaks. If you plan on using text codes, \i[4] would appear as \\i[4].
  *   Whatever value the 'text' variable has at the end will determine the text
  *   that will be displayed.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -240,10 +250,13 @@ Yanfly.Param.EqReqSwitches = eval(String(Yanfly.Parameters['Draw Switches']));
 Yanfly.EqReq.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
   if (!Yanfly.EqReq.DataManager_isDatabaseLoaded.call(this)) return false;
-  this.processEqReqNotetagsC($dataClasses);
-  this.processEqReqNotetagsS($dataSkills);
-  this.processEqReqNotetags1($dataWeapons);
-  this.processEqReqNotetags1($dataArmors);
+  if (!Yanfly._loaded_YEP_X_EquipRequirements) {
+    this.processEqReqNotetagsC($dataClasses);
+    this.processEqReqNotetagsS($dataSkills);
+    this.processEqReqNotetags1($dataWeapons);
+    this.processEqReqNotetags1($dataArmors);
+    Yanfly._loaded_YEP_X_EquipRequirements = true;
+  }
   return true;
 };
 

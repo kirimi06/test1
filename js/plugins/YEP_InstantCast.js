@@ -11,7 +11,7 @@ Yanfly.Instant = Yanfly.Instant || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07b Allows skills/items to be instantly cast after being
+ * @plugindesc v1.08 Allows skills/items to be instantly cast after being
  * selected in the battle menu.
  * @author Yanfly Engine Plugins
  *
@@ -149,6 +149,9 @@ Yanfly.Instant = Yanfly.Instant || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.07b:
  * - Optimized to fit Tick-Based Battle Systems better.
  * - Fixed a bug where if the user uses an instant action self-berserks itself,
@@ -201,8 +204,9 @@ Yanfly.Icon.Instant = Number(Yanfly.Parameters['Instant Icon']);
 
 Yanfly.Instant.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Instant.DataManager_isDatabaseLoaded.call(this)) return false;
-		DataManager.processInstantNotetags1($dataSkills);
+  if (!Yanfly.Instant.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_InstantCast) {
+  	DataManager.processInstantNotetags1($dataSkills);
     DataManager.processInstantNotetags1($dataItems);
     DataManager.processInstantNotetags2($dataActors);
     DataManager.processInstantNotetags2($dataClasses);
@@ -210,7 +214,9 @@ DataManager.isDatabaseLoaded = function() {
     DataManager.processInstantNotetags2($dataWeapons);
     DataManager.processInstantNotetags2($dataArmors);
     DataManager.processInstantNotetags2($dataStates);
-		return true;
+    Yanfly._loaded_YEP_InstantCast = true;
+  }
+	return true;
 };
 
 DataManager.processInstantNotetags1 = function(group) {

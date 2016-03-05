@@ -11,7 +11,7 @@ Yanfly.SCD = Yanfly.SCD || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 (Requires YEP_SkillCore.js) Cooldowns can be applied
+ * @plugindesc v1.08 (Requires YEP_SkillCore.js) Cooldowns can be applied
  * to skills to prevent them from being used continuously.
  * @author Yanfly Engine Plugins
  *
@@ -358,6 +358,9 @@ Yanfly.SCD = Yanfly.SCD || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.07:
  * - Named versions of these notetags have been added:
  * <Skill x Cooldown: y>, <Skill x Cooldown: +/-y>,
@@ -424,24 +427,27 @@ Yanfly.Icon.Warmup = Number(Yanfly.Parameters['Warmup Icon']);
 
 Yanfly.SCD.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.SCD.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.SCD.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_SkillCooldowns) {
     this.processSCDNotetagsS($dataSkills);
-		this.processSCDNotetags1($dataSkills);
-		this.processSCDNotetags2($dataSkills);
-		this.processSCDNotetags2($dataItems);
-		this.processSCDNotetags2($dataActors);
-		this.processSCDNotetags2($dataClasses);
-		this.processSCDNotetags2($dataEnemies);
-		this.processSCDNotetags2($dataWeapons);
-		this.processSCDNotetags2($dataArmors);
-		this.processSCDNotetags2($dataStates);
-		this.processSCDNotetags3($dataActors);
-		this.processSCDNotetags3($dataClasses);
-		this.processSCDNotetags3($dataEnemies);
-		this.processSCDNotetags3($dataWeapons);
-		this.processSCDNotetags3($dataArmors);
-		this.processSCDNotetags3($dataStates);
-		return true;
+  	this.processSCDNotetags1($dataSkills);
+  	this.processSCDNotetags2($dataSkills);
+  	this.processSCDNotetags2($dataItems);
+  	this.processSCDNotetags2($dataActors);
+  	this.processSCDNotetags2($dataClasses);
+  	this.processSCDNotetags2($dataEnemies);
+  	this.processSCDNotetags2($dataWeapons);
+  	this.processSCDNotetags2($dataArmors);
+  	this.processSCDNotetags2($dataStates);
+  	this.processSCDNotetags3($dataActors);
+  	this.processSCDNotetags3($dataClasses);
+  	this.processSCDNotetags3($dataEnemies);
+  	this.processSCDNotetags3($dataWeapons);
+  	this.processSCDNotetags3($dataArmors);
+  	this.processSCDNotetags3($dataStates);
+    Yanfly._loaded_YEP_X_SkillCooldowns = true;
+  }
+	return true;
 };
 
 DataManager.processSCDNotetagsS = function(group) {

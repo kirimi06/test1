@@ -11,7 +11,7 @@ Yanfly.ARS = Yanfly.ARS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 (Requires YEP_DamageCore.js) Scale defensive
+ * @plugindesc v1.02 (Requires YEP_DamageCore.js) Scale defensive
  * stats relative to a universal scale.
  * @author Yanfly Engine Plugins
  * 
@@ -338,6 +338,9 @@ Yanfly.ARS = Yanfly.ARS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.01:
  * - Fixed the notetag <Armor Reduction: x%> from not working with the intended
  * effect.
@@ -373,16 +376,19 @@ Yanfly.Param.ARSBCerArmor = String(Yanfly.Parameters['Certain Base Armor']);
 
 Yanfly.ARS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.ARS.DataManager_isDatabaseLoaded.call(this)) return false;
-		this.processARSNotetags1($dataSkills);
-	  this.processARSNotetags1($dataItems);
-		this.processARSNotetags2($dataActors);
-		this.processARSNotetags2($dataClasses);
-		this.processARSNotetags2($dataEnemies);
-		this.processARSNotetags2($dataWeapons);
-		this.processARSNotetags2($dataArmors);
-		this.processARSNotetags2($dataStates);
-		return true;
+  if (!Yanfly.ARS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_ArmorScaling) {
+  	this.processARSNotetags1($dataSkills);
+    this.processARSNotetags1($dataItems);
+  	this.processARSNotetags2($dataActors);
+  	this.processARSNotetags2($dataClasses);
+  	this.processARSNotetags2($dataEnemies);
+  	this.processARSNotetags2($dataWeapons);
+  	this.processARSNotetags2($dataArmors);
+  	this.processARSNotetags2($dataStates);
+    Yanfly._loaded_YEP_X_ArmorScaling = true;
+  }
+	return true;
 };
 
 DataManager.processARSNotetags1 = function(group) {

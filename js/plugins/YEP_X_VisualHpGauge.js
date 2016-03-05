@@ -11,7 +11,7 @@ Yanfly.VHG = Yanfly.VHG || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 (Requires YEP_BattleEngineCore.js) Reveal HP Gauges
+ * @plugindesc v1.05 (Requires YEP_BattleEngineCore.js) Reveal HP Gauges
  * when a battler is selected or takes damage in battle.
  * @author Yanfly Engine Plugins
  *
@@ -143,6 +143,9 @@ Yanfly.VHG = Yanfly.VHG || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.04:
  * - Optimization update.
  *
@@ -204,10 +207,13 @@ Yanfly.Param.VHGShowMax = eval(String(Yanfly.Parameters['Show Max']));
 
 Yanfly.VHG.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.VHG.DataManager_isDatabaseLoaded.call(this)) return false;
-		this.processVHGNotetags($dataClasses);
-		this.processVHGNotetags($dataEnemies);
-		return true;
+  if (!Yanfly.VHG.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_VisualHpGauge) {
+  	this.processVHGNotetags($dataClasses);
+  	this.processVHGNotetags($dataEnemies);
+    Yanfly._loaded_YEP_X_VisualHpGauge = true;
+  }
+	return true;
 };
 
 DataManager.processVHGNotetags = function(group) {

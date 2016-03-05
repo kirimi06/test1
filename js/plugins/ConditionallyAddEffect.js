@@ -1,14 +1,14 @@
 //
-//  条件付き追加効果 ver1.01
+//  条件付き追加効果 ver1.021
 //
 // author yana
 //
 
 var Imported = Imported || {};
-Imported['ConditionallyAddEffect'] = 1.01;
+Imported['ConditionallyAddEffect'] = 1.021;
 
 /*:
- * @plugindesc ver1.01/条件を満たすと発動する追加効果を設定できるようになります。
+ * @plugindesc ver1.021/条件を満たすと発動する追加効果を設定できるようになります。
  * @author Yana
  * 
  * @param Display Add Effect Text
@@ -17,6 +17,8 @@ Imported['ConditionallyAddEffect'] = 1.01;
  * @default _userの_nameの追加効果が発動した！
  * 
  * @help プラグインコマンドはありません。
+ * 
+ * ※YEP_BattleEngineCoreよりも下に配置してください。
  * 
  * スキルやアイテムのメモ欄に
  * 
@@ -39,6 +41,11 @@ Imported['ConditionallyAddEffect'] = 1.01;
  * 利用規約：特になし。素材利用は自己責任でお願いします。
  * ------------------------------------------------------
  * 更新履歴:
+ * ver1.021:
+ * コンソールの表示を削除。
+ * ver1.02:
+ * YEP_BattleEngineCore_ver1.28dとの併用化処理を追加。
+ * メモ欄に記述のSIにsiも使用できるように追加。
  * ver1.01:
  * メッセージを非表示にする機能が正常に動作していなかったバグを修正。
  * メッセージの変換順を変更。
@@ -68,7 +75,7 @@ Imported['ConditionallyAddEffect'] = 1.01;
 				}else{
 					effect['conditions'].push(ConditionallyManager.makeCondition(texts[i]));
 				}
-			}else if (texts[i].match(/^<追加効果:([IS])(\d+),(\d+)[%％]>/)){
+			}else if (texts[i].match(/^<追加効果:([ISis])(\d+),(\d+)[%％]>/)){
 				var effect = {
 					'type':RegExp.$1,
 					'id':parseInt(RegExp.$2),
@@ -91,7 +98,7 @@ Imported['ConditionallyAddEffect'] = 1.01;
 	BattleManager.endAction = function(){
 		this._isAddEffect = true;
 		_CAef_BManager_endAction.call(this);
-		if (!this._subject._endAddEffect){
+		if (this._subject && !this._subject._endAddEffect){
 			this.executeAddEffect();
 			if(this._phase === 'turn'){
 				this._isAddEffect = false;
@@ -117,9 +124,11 @@ Imported['ConditionallyAddEffect'] = 1.01;
 					var action = new Game_Action(user);
 					switch(cEff[i]['type']){
 					case 'I':
+					case 'i':
 						action.setItem(cEff[i]['id']);
 						break;
 					case 'S':
+					case 's':
 						action.setSkill(cEff[i]['id']);
 						break;
 					}
@@ -148,6 +157,23 @@ Imported['ConditionallyAddEffect'] = 1.01;
 		}
 	};
 	
+	if(Imported.YEP_BattleEngineCore){
+	BattleManager.startActionC = function(subject,action,targets) {
+    	this._action = action;
+    	this.setTargets(targets);
+    	this._allTargets = targets.slice();
+    	this._individualTargets = targets.slice();
+    	this._phase = 'phaseChange';
+    	this._phaseSteps = ['setup', 'whole', 'target', 'follow', 'finish'];
+    	this._returnPhase = '';
+    	this._actionList = [];
+    	//subject.useItem(this._action.item());
+    	this._action.applyGlobal();
+    	this._logWindow.displayAddEffect(subject,this._lastAction.item());
+    	this._logWindow.startAction(this._subject, this._action, this._targets);
+		this._subject._endAddEffect = true;
+	}; 
+	}else{
 	BattleManager.startActionC = function(subject,action,targets) {
     	this._phase = 'action';
    		this._action = action;
@@ -158,6 +184,7 @@ Imported['ConditionallyAddEffect'] = 1.01;
     	this._logWindow.displayAddEffect(subject,this._lastAction.item());
     	this._logWindow.startActionC(subject, action, targets);
 		this._subject._endAddEffect = true;
+	};
 	};
 	
 	Window_BattleLog.prototype.displayAddEffect = function(subject,item){
@@ -184,10 +211,17 @@ Imported['ConditionallyAddEffect'] = 1.01;
         this.push('wait');
 	};
 	
-	var _CAef_GBattler_clearResult = Game_Battler.prototype.clearResult;
-	Game_Battler.prototype.clearResult = function() {
-		this._lastHit = this._result.isHit() === true;
-		_CAef_GBattler_clearResult.call(this);
+	var _CAef_GAction_apply = Game_Action.prototype.apply;
+	Game_Action.prototype.apply = function(target) {
+		$gameTemp._tmpTarget = target;
+		_CAef_GAction_apply.call(this,target);
+	}
+	
+	var _CAef_GActionResult_isHit = Game_ActionResult.prototype.isHit;
+	Game_ActionResult.prototype.isHit = function() {
+		var result = _CAef_GActionResult_isHit.call(this);
+		$gameTemp._tmpTarget._lastHit = result;
+		return result;	
 	};
 	
 	var _CAef_SActor_stepBack = Sprite_Actor.prototype.stepBack;

@@ -11,7 +11,7 @@ Yanfly.Crit = Yanfly.Crit || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01b (Requires YEP_DamageCore.js) Control over critical
+ * @plugindesc v1.02 (Requires YEP_DamageCore.js) Control over critical
  * hits have been added.
  * @author Yanfly Engine Plugins
  *
@@ -195,6 +195,9 @@ Yanfly.Crit = Yanfly.Crit || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.01b:
  * - Fixed a bug regarding Lunatic Critical Hit Rates.
  * - Fixed a default formula that caused critical hits to heal unexpectedly.
@@ -223,16 +226,19 @@ Yanfly.Param.flatCrit = String(Yanfly.Parameters['Flat Critical Formula']);
 
 Yanfly.Crit.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Crit.DataManager_isDatabaseLoaded.call(this)) return false;
-		this.processCritNotetags1($dataSkills);
-		this.processCritNotetags1($dataItems);
-		this.processCritNotetags2($dataActors);
-	  this.processCritNotetags2($dataClasses);
-	  this.processCritNotetags2($dataWeapons);
-	  this.processCritNotetags2($dataArmors);
-	  this.processCritNotetags2($dataStates);
-	  this.processCritNotetags2($dataEnemies);
-		return true;
+  if (!Yanfly.Crit.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_CriticalControl) {
+  	this.processCritNotetags1($dataSkills);
+  	this.processCritNotetags1($dataItems);
+  	this.processCritNotetags2($dataActors);
+    this.processCritNotetags2($dataClasses);
+    this.processCritNotetags2($dataWeapons);
+    this.processCritNotetags2($dataArmors);
+    this.processCritNotetags2($dataStates);
+    this.processCritNotetags2($dataEnemies);
+    Yanfly._loaded_YEP_X_CriticalControl = true;
+  }
+	return true;
 };
 
 DataManager.processCritNotetags1 = function(group) {

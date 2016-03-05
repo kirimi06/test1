@@ -11,7 +11,7 @@ Yanfly.APS = Yanfly.APS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.05a This plugin allows for some states to function as
+ * @plugindesc v1.07 This plugin allows for some states to function as
  * passives for actors, enemies, skills, and equips.
  * @author Yanfly Engine Plugins
  *
@@ -101,6 +101,12 @@ Yanfly.APS = Yanfly.APS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.06:
+ * - Added a mass member refresh whenever $gamePlayer is refreshed.
+ *
  * Version 1.05a:
  * - Added Lunatic Mode - <Custom Passive Condition> notetag for states.
  * - Fixed a bug that would cause infinite loops.
@@ -132,7 +138,8 @@ Yanfly.APS = Yanfly.APS || {};
 
 Yanfly.APS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.APS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.APS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_AutoPassiveStates) {
     this.processAPSNotetags1($dataActors);
     this.processAPSNotetags1($dataClasses);
     this.processAPSNotetags1($dataEnemies);
@@ -140,7 +147,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processAPSNotetags1($dataWeapons);
     this.processAPSNotetags1($dataArmors);
     this.processAPSNotetags2($dataStates);
-    return true;
+    Yanfly._loaded_YEP_AutoPassiveStates = true;
+  }
+  return true;
 };
 
 DataManager.processAPSNotetags1 = function(group) {
@@ -431,6 +440,33 @@ if (!Game_Enemy.prototype.skills) {
       }
       return skills;
     }
+};
+
+//=============================================================================
+// Game_Unit
+//=============================================================================
+
+Game_Unit.prototype.refreshMembers = function() {
+    var group = this.allMembers();
+    var length = group.length;
+    for (var i = 0; i < length; ++i) {
+      var member = group[i];
+      if (member) member.refresh();
+    }
+};
+
+Game_Unit.prototype.allMembers = function() {
+    return this.members();
+};
+
+//=============================================================================
+// Game_Player
+//=============================================================================
+
+Yanfly.APS.Game_Player_refresh = Game_Player.prototype.refresh;
+Game_Player.prototype.refresh = function() {
+    $gameParty.refreshMembers();
+    Yanfly.APS.Game_Player_refresh.call(this);
 };
 
 //=============================================================================

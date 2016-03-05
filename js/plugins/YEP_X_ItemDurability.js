@@ -11,7 +11,7 @@ Yanfly.IDur = Yanfly.IDur || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 (Requires YEP_ItemCore.js) Independent equipment
+ * @plugindesc v1.01 (Requires YEP_ItemCore.js) Independent equipment
  * now have durability, which when runs out, will break.
  * @author Yanfly Engine Plugins
  *
@@ -484,8 +484,11 @@ Yanfly.IDur = Yanfly.IDur || {};
  * Changelog
  * ============================================================================
  *
- * Version BETA:
- * - Started Plugin!
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -555,7 +558,8 @@ Yanfly.Param.IDurColor = {
 
 Yanfly.IDur.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.IDur.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.IDur.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_ItemDurability) {
     this.processIDurNotetags1($dataWeapons);
     this.processIDurNotetags1($dataArmors);
     this.processIDurNotetags2($dataItems);
@@ -563,7 +567,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processIDurNotetags2($dataArmors);
     this.processIDurNotetags3($dataSkills);
     this.processIDurNotetags3($dataItems);
-    return true;
+    Yanfly._loaded_YEP_X_ItemDurability = true;
+  }
+  return true;
 };
 
 DataManager.processIDurNotetags1 = function(group) {

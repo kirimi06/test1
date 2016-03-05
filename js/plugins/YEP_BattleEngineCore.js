@@ -11,7 +11,7 @@ Yanfly.BEC = Yanfly.BEC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.32d Have more control over the flow of the battle system
+ * @plugindesc v1.33 Have more control over the flow of the battle system
  * with this plugin and alter various aspects to your liking.
  * @author Yanfly Engine Plugins
  *
@@ -648,6 +648,9 @@ Yanfly.BEC = Yanfly.BEC || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.33:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.32d:
  * - Fixed a bug that caused a crash when an actor died.
  * - Added a motion engine to be used for future plugins.
@@ -943,7 +946,8 @@ Yanfly.Param.BECShowBuffText = String(Yanfly.Parameters['Show Buff Text']);
 
 Yanfly.BEC.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.BEC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.BEC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_BattleEngineCore) {
     this.processMELODYNotetags($dataSkills);
     this.processMELODYNotetags($dataItems);
     this.processBECNotetags1($dataSkills);
@@ -962,7 +966,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processBECNotetags5($dataArmors, false);
     this.processBECNotetags5($dataStates, false);
     this.processBECNotetags6($dataStates);
-    return true;
+    Yanfly._loaded_YEP_BattleEngineCore = true;
+  }
+  return true;
 };
 
 DataManager.processMELODYNotetags = function(group) {
@@ -1479,7 +1485,6 @@ BattleManager.processEscape = function() {
     SoundManager.playEscape();
     var success = this._preemptive ? true : (Math.random() < this._escapeRatio);
     if (success) {
-        $gameParty.removeBattleStates();
         $gameParty.performEscapeSuccess();
         this.displayEscapeSuccessMessage();
         this._escaped = true;
@@ -1491,6 +1496,12 @@ BattleManager.processEscape = function() {
         this.startTurn();
     }
     return success;
+};
+
+Yanfly.BEC.BattleManager_processAbort = BattleManager.processAbort;
+BattleManager.processAbort = function() {
+    $gameParty.removeBattleStates();
+    Yanfly.BEC.BattleManager_processAbort.call(this);
 };
 
 BattleManager.startTurn = function() {
@@ -2691,6 +2702,8 @@ Yanfly.BEC.Sprite_Actor_refreshMotion = Sprite_Actor.prototype.refreshMotion;
 Sprite_Actor.prototype.refreshMotion = function() {
     var actor = this._actor;
     if (!actor) return;
+    var motionGuard = Sprite_Actor.MOTIONS['guard'];
+    if (this._motion === motionGuard && !BattleManager.isInputting()) return;
     var stateMotion = actor.stateMotionIndex();
     if (actor.isInputting() || actor.isActing()) {
       this.startMotion(actor.idleMotion());

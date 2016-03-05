@@ -11,7 +11,7 @@ Yanfly.ATB = Yanfly.ATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.21 (Requires YEP_BattleEngineCore.js) Add ATB (Active
+ * @plugindesc v1.22 (Requires YEP_BattleEngineCore.js) Add ATB (Active
  * Turn Battle) into your game using this plugin!
  * @author Yanfly Engine Plugins
  *
@@ -434,6 +434,9 @@ Yanfly.ATB = Yanfly.ATB || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.22:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.21:
  * - Counterattacks no longer cause interrupts if attack actions have interrupt
  * functionality.
@@ -575,16 +578,19 @@ Yanfly.Param.ATBColorChar2 = Number(Yanfly.Parameters['Charge Gauge Color 2']);
 
 Yanfly.ATB.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.ATB.DataManager_isDatabaseLoaded.call(this)) return false;
-    DataManager.processATBNotetags1($dataSkills);
-    DataManager.processATBNotetags1($dataItems);
-    DataManager.processATBNotetags2($dataActors);
-    DataManager.processATBNotetags2($dataClasses);
-    DataManager.processATBNotetags2($dataEnemies);
-    DataManager.processATBNotetags2($dataWeapons);
-    DataManager.processATBNotetags2($dataArmors);
-    DataManager.processATBNotetags2($dataStates);
-    return true;
+  if (!Yanfly.ATB.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_BattleSysATB) {
+    this.processATBNotetags1($dataSkills);
+    this.processATBNotetags1($dataItems);
+    this.processATBNotetags2($dataActors);
+    this.processATBNotetags2($dataClasses);
+    this.processATBNotetags2($dataEnemies);
+    this.processATBNotetags2($dataWeapons);
+    this.processATBNotetags2($dataArmors);
+    this.processATBNotetags2($dataStates);
+    Yanfly._loaded_YEP_X_BattleSysATB = true;
+  }
+  return true;
 };
 
 DataManager.processATBNotetags1 = function(group) {

@@ -11,7 +11,7 @@ Yanfly.WA = Yanfly.WA || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 This plugin allows you to go past the standard
+ * @plugindesc v1.02 This plugin allows you to go past the standard
  * weapon images and even using custom images.
  * @author Yanfly Engine Plugins
  *
@@ -134,6 +134,9 @@ Yanfly.WA = Yanfly.WA || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.01:
  * - Fixed a conflict with sideview enemies using no weapon animations.
  *
@@ -160,14 +163,17 @@ Yanfly.Param.WAMotion = Yanfly.Param.WAMotion.toLowerCase();
 
 Yanfly.WA.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.WA.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.WA.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_WeaponAnimation) {
     this.processWANotetags1($dataActors);
     this.processWANotetags1($dataClasses);
     this.processWANotetags1($dataEnemies);
     this.processWANotetags1($dataWeapons);
     this.processWANotetags1($dataArmors);
     this.processWANotetags1($dataStates);
-    return true;
+    Yanfly._loaded_YEP_WeaponAnimation = true;
+  }
+  return true;
 };
 
 DataManager.processWANotetags1 = function(group) {

@@ -11,7 +11,7 @@ Yanfly.ABR = Yanfly.ABR || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Battlers can be surrounded by an absorption barrier
+ * @plugindesc v1.03 Battlers can be surrounded by an absorption barrier
  * that would mitigate damage dealt to HP.
  * @author Yanfly Engine Plugins
  *
@@ -403,6 +403,9 @@ Yanfly.ABR = Yanfly.ABR || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.02:
  * - Fixed a bug where if Barrier Penetration was at 100%, it would be treated
  * as 0%.
@@ -448,7 +451,8 @@ Yanfly.Param.ABRPenFlat = Number(Yanfly.Parameters['Default Penetration Flat']);
 
 Yanfly.ABR.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.ABR.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.ABR.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_AbsorptionBarrier) {
     this.processABRNotetags1($dataSkills);
     this.processABRNotetags1($dataItems);
     this.processABRNotetags2($dataActors);
@@ -457,7 +461,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processABRNotetags2($dataWeapons);
     this.processABRNotetags2($dataArmors);
     this.processABRNotetags2($dataStates);
-    return true;
+    Yanfly._loaded_YEP_AbsorptionBarrier = true;
+  }
+  return true;
 };
 
 DataManager.processABRNotetags1 = function(group) {

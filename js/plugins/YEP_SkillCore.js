@@ -11,7 +11,7 @@ Yanfly.Skill = Yanfly.Skill || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.07 Skills are now given more functions and the ability
+ * @plugindesc v1.08 Skills are now given more functions and the ability
  * to require different types of costs.
  * @author Yanfly Engine Plugins
  *
@@ -322,6 +322,9 @@ Yanfly.Skill = Yanfly.Skill || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.07:
  * - Fixed a bug that prevented immortal actors at 0 HP from using skills.
  *
@@ -384,7 +387,8 @@ Yanfly.Icon.Hp = Number(Yanfly.Parameters['HP Icon']);
 
 Yanfly.Skill.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Skill.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Skill.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_SkillCore) {
     this.processSkillNotetags($dataSkills);
     this.processObjectNotetags($dataSkills);
     this.processObjectNotetags($dataItems);
@@ -393,7 +397,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processGSCNotetags2($dataWeapons);
     this.processGSCNotetags2($dataArmors);
     this.processGSCNotetags2($dataStates);
-    return true;
+    Yanfly._loaded_YEP_SkillCore = true;
+  }
+  return true;
 };
 
 DataManager.processSkillNotetags = function(group) {

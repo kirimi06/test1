@@ -11,7 +11,7 @@ Yanfly.DMG = Yanfly.DMG || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Expand the control you have over the game's damage
+ * @plugindesc v1.02 Expand the control you have over the game's damage
  * calculation with more features and effects.
  * @author Yanfly Engine Plugins
  *
@@ -697,6 +697,10 @@ Yanfly.DMG = Yanfly.DMG || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ * - <Damage Formula> notetag now supports comments.
+ *
  * Version 1.01:
  * - Fixed a bug with <Damage Formula> not recording custom formulas correctly.
  *
@@ -729,14 +733,17 @@ for (Yanfly.i = 1; Yanfly.i <= 100; ++Yanfly.i) {
 Yanfly.DMG.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
     if (!Yanfly.DMG.DataManager_isDatabaseLoaded.call(this)) return false;
-    this.processDMGNotetags1($dataSkills);
-    this.processDMGNotetags1($dataItems);
-    this.processDMGNotetags2($dataActors);
-    this.processDMGNotetags2($dataClasses);
-    this.processDMGNotetags2($dataEnemies);
-    this.processDMGNotetags2($dataWeapons);
-    this.processDMGNotetags2($dataArmors);
-    this.processDMGNotetags2($dataStates);
+    if (!Yanfly._loaded_YEP_DamageCore) {
+      this.processDMGNotetags1($dataSkills);
+      this.processDMGNotetags1($dataItems);
+      this.processDMGNotetags2($dataActors);
+      this.processDMGNotetags2($dataClasses);
+      this.processDMGNotetags2($dataEnemies);
+      this.processDMGNotetags2($dataWeapons);
+      this.processDMGNotetags2($dataArmors);
+      this.processDMGNotetags2($dataStates);
+      Yanfly._loaded_YEP_DamageCore = true;
+    }
 		return true;
 };
 
@@ -766,7 +773,7 @@ DataManager.processDMGNotetags1 = function(group) {
 			} else if (line.match(/<\/(?:DAMAGE FORMULA)>/i)) {
 				damageFormulaMode = false;
 			} else if (damageFormulaMode) {
-        obj.damage.formula = obj.damage.formula + line + ' ';
+        obj.damage.formula = obj.damage.formula + line + '\n';
       }
 		}
 	}

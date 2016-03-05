@@ -11,7 +11,7 @@ Yanfly.Row = Yanfly.Row || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 Places party members into row formations to give
+ * @plugindesc v1.08 Places party members into row formations to give
  * them distinct advantages based on row location.
  * @author Yanfly Engine Plugins
  *
@@ -695,8 +695,13 @@ Yanfly.Row = Yanfly.Row || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.07:
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.07b:
  * - Fixed a bug that prevented the Row command in-battle from updating.
+ * - Optimization update.
+ * - Disabled Row States from being applied outside of battle.
  *
  * Version 1.06a:
  * - Fixed a bug where Lunatic Mode effects weren't working properly.
@@ -803,7 +808,8 @@ Yanfly.Param.RowEnemyY = String(Yanfly.Parameters['Enemy Row Y']);
 
 Yanfly.Row.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Row.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Row.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_RowFormation) {
     this.processRowNotetags1($dataActors);
     this.processRowNotetags1($dataEnemies);
     this.processRowNotetags2($dataSkills);
@@ -815,7 +821,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processRowNotetags3($dataArmors);
     this.processRowNotetags3($dataStates);
     this.processRowNotetags4($dataStates);
-    return true;
+    Yanfly._loaded_YEP_RowFormation = true;
+  }
+  return true;
 };
 
 DataManager.processRowNotetags1 = function(group) {
@@ -1033,15 +1041,17 @@ Game_System.prototype.setBattleRowCooldown = function() {
 Yanfly.Row.Game_BattlerBase_refresh = Game_BattlerBase.prototype.refresh;
 Game_BattlerBase.prototype.refresh = function() {
     this._isRowLocked = undefined;
-    this._rowStatesRaw = undefined;
+    this._requestRowStatesRefresh = true;
     Yanfly.Row.Game_BattlerBase_refresh.call(this);
 };
 
 Yanfly.Row.Game_BattlerBase_states = Game_BattlerBase.prototype.states;
 Game_BattlerBase.prototype.states = function() {
     var array = Yanfly.Row.Game_BattlerBase_states.call(this);
-    array = array.concat(this.rowStates());
-    this.sortRowStates(array);
+    if ($gameParty.inBattle()) {
+      this.addRowStates(array);
+      this.sortRowStates(array);
+    }
     return array;
 };
 
@@ -1050,6 +1060,15 @@ Yanfly.Row.Game_BattlerBase_isStateAffected =
 Game_BattlerBase.prototype.isStateAffected = function(stateId) {
     if (this.isRowStateAffected(stateId)) return true;
     return Yanfly.Row.Game_BattlerBase_isStateAffected.call(this, stateId);
+};
+
+Game_BattlerBase.prototype.addRowStates = function(array) {
+    var length = this.rowStatesRaw().length;
+    for (var i = 0; i < length; ++i) {
+      var stateId = this.rowStatesRaw()[i];
+      var state = $dataStates[stateId];
+      if (state) array.push(state);
+    }
 };
 
 Game_BattlerBase.prototype.rowStates = function() {
@@ -1081,6 +1100,7 @@ Game_BattlerBase.prototype.getRowStateData = function() {
 };
 
 Game_BattlerBase.prototype.meetRowStateCondition = function(stateId) {
+    if (!$gameParty.inBattle()) return false;
     if (this._checkingRowStateCondition) return false;
     var state = $dataStates[stateId];
     if (!state) return false;
@@ -1111,6 +1131,7 @@ Game_BattlerBase.prototype.sortRowStates = function(array) {
 };
 
 Game_BattlerBase.prototype.isRowStateAffected = function(stateId) {
+    if (!$gameParty.inBattle()) return false;
     return this.rowStatesRaw().contains(stateId);
 };
 
@@ -1128,6 +1149,10 @@ Game_BattlerBase.prototype.meetsItemConditions = function(item) {
     return Yanfly.Row.Game_BattlerBase_meetsItemConditions.call(this, item);
 };
 
+Game_BattlerBase.prototype.isRowStateRefreshRequested = function() {
+    return this._requestRowStatesRefresh;
+};
+
 //=============================================================================
 // Game_Battler
 //=============================================================================
@@ -1139,6 +1164,7 @@ Game_Battler.prototype.initRowFormation = function() {
       return this._row = this.enemy().defaultRow;
     }
     this._row = 1;
+    this._rowStatesRaw = undefined;
 };
 
 Game_Battler.prototype.row = function() {
@@ -1182,6 +1208,7 @@ Game_Battler.prototype.setRow = function(rowId) {
     var currentRow = this._row;
     this._row = rowId.clamp(1, Yanfly.Param.RowMaximum);
     var changed = currentRow !== this._row;
+    if (changed) this.friendsUnit().clearBattleRowCache();
     if ($gameParty.inBattle() && changed) BattleManager.requestRefreshRows();
 };
 
@@ -1192,6 +1219,7 @@ Game_Battler.prototype.alterRow = function(value) {
     this._row += value;
     this._row = this._row.clamp(1, Yanfly.Param.RowMaximum);
     var changed = currentRow !== this._row;
+    if (changed) this.friendsUnit().clearBattleRowCache();
     if ($gameParty.inBattle() && changed) BattleManager.requestRefreshRows();
 };
 
@@ -1389,6 +1417,26 @@ Game_Unit.prototype.updateMemberRows = function(rowId) {
       if (!member) continue;
       if (member.row() < rowId) continue;
       member.alterRow(-1);
+    }
+};
+
+Game_Unit.prototype.isRowStateRefreshRequested = function() {
+    var length = this.members();
+    for (var i = 0; i < length; ++i) {
+      var member = this.members()[i];
+      if (member && member.isRowStateRefreshRequested())  return true;
+    }
+    return false;
+};
+
+Game_Unit.prototype.clearBattleRowCache = function() {
+    var length = this.members().length;
+    for (var i = 0; i < length; ++i) {
+      var member = this.members()[i];
+      if (member) {
+        member._rowStatesRaw = undefined;
+        member._requestRowStatesRefresh = false;
+      }
     }
 };
 
@@ -1934,6 +1982,12 @@ Yanfly.Row.Scene_Battle_update = Scene_Battle.prototype.update;
 Scene_Battle.prototype.update = function() {
     Yanfly.Row.Scene_Battle_update.call(this);
     if (BattleManager.isRowRefreshRequested()) this.refreshRowPositions();
+    if ($gameParty.isRowStateRefreshRequested()) {
+      $gameParty.clearBattleRowCache();
+    }
+    if ($gameTroop.isRowStateRefreshRequested()) {
+      $gameTroop.clearBattleRowCache();
+    }
 };
 
 Scene_Battle.prototype.refreshRowPositions = function() {

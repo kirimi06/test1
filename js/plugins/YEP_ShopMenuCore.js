@@ -11,7 +11,7 @@ Yanfly.Shop = Yanfly.Shop || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01a Revamps the shop menu appearance and provides the
+ * @plugindesc v1.03 Revamps the shop menu appearance and provides the
  * framework for many new shop options.
  * @author Yanfly Engine Plugins
  *
@@ -167,6 +167,12 @@ Yanfly.Shop = Yanfly.Shop || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.02:
+ * - Fixed a visual bug that listed actor stats in the wrong order.
+ *
  * Version 1.01a:
  * - Disabled LEFT/RIGHT movement from the status window while inputting an
  * item quantity to buy.
@@ -214,11 +220,14 @@ if (!Imported.YEP_ItemCore) {
 
 Yanfly.Shop.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Shop.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Shop.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_ShopMenuCore) {
     this.processShopNotetags($dataItems);
     this.processShopNotetags($dataWeapons);
     this.processShopNotetags($dataArmors);
-    return true;
+    Yanfly._loaded_YEP_ShopMenuCore = true;
+  }
+  return true;
 };
 
 DataManager.processShopNotetags = function(group) {
@@ -854,7 +863,7 @@ Window_ShopStatus.prototype.getRectPosition = function(index) {
     var rect = new Rectangle();
     rect.width = Math.floor(this.contents.width / 2);
     rect.height = this.lineHeight();
-    rect.x = index % 2 === 0 ? rect.width : 0;
+    rect.x = index % 2 === 0 ? 0 : rect.width;
     rect.y = Math.floor(index / 2) * this.lineHeight() + this.lineHeight() * 2;
     return rect;
 };

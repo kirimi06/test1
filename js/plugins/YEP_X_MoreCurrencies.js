@@ -11,7 +11,7 @@ Yanfly.MC = Yanfly.MC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 (Requires YEP_ShopMenuCore.js) This plugin adds
+ * @plugindesc v1.03 (Requires YEP_ShopMenuCore.js) This plugin adds
  * functionality for your shops to have multiple currencies.
  * @author Yanfly Engine Plugins
  *
@@ -221,6 +221,9 @@ Yanfly.MC = Yanfly.MC || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.02:
  * - Fixed crash bugs from selling independent items from games saved before
  * the plugin was installed. These independent items will not contain any sell
@@ -263,14 +266,17 @@ if (Yanfly.Icon.Gold) Yanfly.Param.MCGoldIcon = Yanfly.Icon.Gold;
 
 Yanfly.MC.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.MC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.MC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_MoreCurrencies) {
     this.processMCNotetagsI($dataItems);
     this.processMCNotetagsW($dataWeapons);
     this.processMCNotetagsA($dataArmors);
     this.processMCNotetags1($dataItems, 0);
     this.processMCNotetags1($dataWeapons, 1);
     this.processMCNotetags1($dataArmors, 2);
-    return true;
+    Yanfly._loaded_YEP_X_MoreCurrencies = true;
+  }
+  return true;
 };
 
 DataManager.processMCNotetagsI = function(group) {
@@ -1285,43 +1291,51 @@ Yanfly.MC.Scene_Shop_doSellGold = Scene_Shop.prototype.doSellGold;
 Scene_Shop.prototype.doSellGold = function(number) {
     Yanfly.MC.Scene_Shop_doSellGold.call(this, number);
     // Variables
-    var length = this._item.variableSellPrices.length;
-    if (length > 0) {
-      for (var i = 0; i < length; ++i) {
-        var varId = this._item.variableSellPrices[i];
-        var value = $gameVariables.value(varId);
-        var price = this._item.variableSellPrice[varId];
-        $gameVariables.setValue(varId, value + price * number);
+    if (this._item.variableSellPrices) {
+      var length = this._item.variableSellPrices.length;
+      if (length > 0) {
+        for (var i = 0; i < length; ++i) {
+          var varId = this._item.variableSellPrices[i];
+          var value = $gameVariables.value(varId);
+          var price = this._item.variableSellPrice[varId];
+          $gameVariables.setValue(varId, value + price * number);
+        }
       }
     }
     // Items
-    var length = this._item.itemSellPrices.length;
-    if (length > 0) {
-      for (var i = 0; i < length; ++i) {
-        var varId = this._item.itemSellPrices[i];
-        var value = $gameParty.numItems($dataItems[varId]);
-        var price = this._item.itemSellPrice[varId];
-        $gameParty.gainItem($dataItems[varId], price * number);
+    if (this._item.itemSellPrices) {
+      var length = this._item.itemSellPrices.length;
+      if (length > 0) {
+        for (var i = 0; i < length; ++i) {
+          var varId = this._item.itemSellPrices[i];
+          var value = $gameParty.numItems($dataItems[varId]);
+          var price = this._item.itemSellPrice[varId];
+          $gameParty.gainItem($dataItems[varId], price * number);
+        }
       }
     }
     // Weapons
-    var length = this._item.weaponSellPrices.length;
-    if (length > 0) {
-      for (var i = 0; i < length; ++i) {
-        var varId = this._item.weaponSellPrices[i];
-        var value = $gameParty.numItems($dataWeapons[varId]);
-        var price = this._item.weaponSellPrice[varId];
-        $gameParty.gainItem($dataWeapons[varId], price * number);
+    if (this._item.weaponSellPrices) {
+      var length = this._item.weaponSellPrices.length;
+      if (length > 0) {
+        for (var i = 0; i < length; ++i) {
+          var varId = this._item.weaponSellPrices[i];
+          var value = $gameParty.numItems($dataWeapons[varId]);
+          var price = this._item.weaponSellPrice[varId];
+          $gameParty.gainItem($dataWeapons[varId], price * number);
+        }
       }
     }
     // Armors
-    var length = this._item.armorSellPrices.length;
-    if (length > 0) {
-      for (var i = 0; i < length; ++i) {
-        var varId = this._item.armorSellPrices[i];
-        var value = $gameParty.numItems($dataArmors[varId]);
-        var price = this._item.armorSellPrice[varId];
-        $gameParty.gainItem($dataArmors[varId], price * number);
+    if (this._item.armorSellPrices) {
+      var length = this._item.armorSellPrices.length;
+      if (length > 0) {
+        for (var i = 0; i < length; ++i) {
+          var varId = this._item.armorSellPrices[i];
+          var value = $gameParty.numItems($dataArmors[varId]);
+          var price = this._item.armorSellPrice[varId];
+          $gameParty.gainItem($dataArmors[varId], price * number);
+        }
       }
     }
 };

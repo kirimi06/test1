@@ -1,14 +1,14 @@
 //
-//  フェイズスキル特徴 ver1.02
+//  フェイズスキル特徴 ver1.05
 //
 // author yana
 //
 
 var Imported = Imported || {};
-Imported['PhaseSkillTrait'] = 1.02;
+Imported['PhaseSkillTrait'] = 1.05;
 
 /*:
- * @plugindesc ver1.02/条件を満たすと戦闘開始時やターン開始時、ターン終了時等にスキルを発動する特徴を設定できるようになります。
+ * @plugindesc ver1.05/条件を満たすと戦闘開始時やターン開始時、ターン終了時等にスキルを発動する特徴を設定できるようになります。
  * @author Yana
  * 
  * @param Invoke Count
@@ -93,6 +93,16 @@ Imported['PhaseSkillTrait'] = 1.02;
  * 利用規約：特になし。素材利用は自己責任でお願いします。
  * ------------------------------------------------------
  * 更新履歴:
+ * ver1.05:
+ * ターンエンドフェイズに発動したスキルで戦闘が終了した場合、次回の戦闘でターンエンドフェイズスキルが正常に発動しないバグを修正。
+ * ver1.043:
+ * YEP_BattleEngineCore_v1.28dとの併用化処理を追加。
+ * ver1.04:
+ * 処理内容を少し変更。
+ * メモ欄に記述するキーワードでISに加え、isも使用できるように追加。
+ * ver1.03:
+ * 逃げるのに失敗したとき、パーティのスタートフェイズスキル及びエンドフェイズスキルが発動しないように変更。
+ * 逃げるのに失敗したとき、メッセージの表示終了を待たずにアニメとログが表示されるバグを修正。
  * ver1.02:
  * 使用ログを表示しない設定を追加。
  * ver1.01:
@@ -128,7 +138,7 @@ Imported['PhaseSkillTrait'] = 1.02;
 				}else{
 					effect['conditions'].push(ConditionallyManager.makeCondition(texts[i]));
 				}
-			}else if (texts[i].match(/^<((?:バトル|ターン))((?:スタート|エンド))フェイズ:([IS])(\d+),(\d+)[%％]>/)){
+			}else if (texts[i].match(/^<((?:バトル|ターン))((?:スタート|エンド))フェイズ:([ISis])(\d+),(\d+)[%％]>/)){
 				var effect = {
 					'var':RegExp.$1+RegExp.$2,
 					'type':RegExp.$3,
@@ -144,6 +154,7 @@ Imported['PhaseSkillTrait'] = 1.02;
 	
 	var _SaEPS_BManager_startBattle = BattleManager.startBattle;
 	BattleManager.startBattle = function() {
+    	this.clearSaep();
 		this._startTurn = true;
 		_SaEPS_BManager_startBattle.call(this);
     };
@@ -160,11 +171,34 @@ Imported['PhaseSkillTrait'] = 1.02;
     	}
     };
     
+    if (Imported.YEP_BattleEngineCore){
+    var _SaEPSn_BManager_startTurn = BattleManager.startTurn;
+    BattleManager.startTurn = function() {
+    	this._callStartTurn = true;
+    	_SaEPSn_BManager_startTurn.call(this);
+    	this._callStartTurn = false;
+    };
+    
+    var _SaEPS_BManager_getNextSubject = BattleManager.getNextSubject;
+    BattleManager.getNextSubject = function() {
+    	if (this._callStartTurn){ return null }
+    	return _SaEPS_BManager_getNextSubject.call(this);
+	};
+	}
+    
     var _SaEPS_BManager_startTurn = BattleManager.startTurn;
     BattleManager.startTurn = function() {
     	_SaEPS_BManager_startTurn.call(this);
     	this._saepPhase = 'turnStart';
     	this.executeSaepAction();
+    };
+    
+    BattleManager.clearSaep = function() {
+    	this._saepTurnEnd = false;
+    	this._selectedEscape = false;
+    	this._endSaep = false;
+    	this._subject = null;
+    	this._saepPhase = null;
     };
     
     var _SaEPS_BManager_endTurn = BattleManager.endTurn;
@@ -174,24 +208,26 @@ Imported['PhaseSkillTrait'] = 1.02;
     		this._saepPhase = 'turnEnd';
     		this.executeSaepAction();
     	}
-    	if (this._phase !== 'action'){
+    	if (this._phase !== 'action' && this._phase !== 'phaseChange'){
     		this._saepTurnEnd = false;
     		_SaEPS_BManager_endTurn.call(this);
+    		this._selectedEscape = false;
     	}
 	};
     
     var _SaEPS_BManager_endAction = BattleManager.endAction;
     BattleManager.endAction = function() {
     	if (this._saepActions && this._saepActions.length > 0){
+    		this._logWindow.endAction(this._subject);
+    		_SaEPS_BManager_endAction.call(this);
     		this.executeSaepAction();
     	}else{
     		if (this._startTurn){
     			this._logWindow.endAction(this._subject);
     			this._phase = 'start';
     			this._startTurn = false;
-    		}else{
-    			_SaEPS_BManager_endAction.call(this);
     		}
+    		_SaEPS_BManager_endAction.call(this);
     		if (this._endSaep){ 
     			this._endSaep = false;
     			this._subject = null;
@@ -203,14 +239,13 @@ Imported['PhaseSkillTrait'] = 1.02;
     BattleManager.executeSaepAction = function() {
     	var phase = this._saepPhase;
     	if ((this.saepActions && this.saepActions.length > 0) || this.checkSaepAction(phase)){
-    		console.log(2)
     		for(;;){
     			if ($gameParty.isAllDead() || $gameTroop.isAllDead()){
     				this._saepActions = [];
     				return;
     			}
     			if (this._saepActions.length === 0){
-    				return
+    				return;
     			}
     			var params = this._saepActions.shift();
     			var subject = params[0];
@@ -231,8 +266,11 @@ Imported['PhaseSkillTrait'] = 1.02;
     
     BattleManager.checkSaepAction = function(phase) {
     	if (this._saepActions && this._saepActions.length > 0){ return true }
+    	if (this._preSaepTurn === $gameTroop._turnCount && this._preSaepPhase === this._saepPhase){ return false }
+    	this._preSaepTurn = $gameTroop._turnCount;
+    	this._preSaepPhase = this._saepPhase;
     	this._saepActions = [];
-    	var members = this.allBattleMembers();
+    	var members = this._selectedEscape ? $gameTroop.aliveMembers() : this.allBattleMembers();
     	members.sort(function(a,b){
     		if (sortType === 2){
     			if (!a.speed()){a.makeSpeed()}
@@ -296,9 +334,11 @@ Imported['PhaseSkillTrait'] = 1.02;
     	var action = new Game_Action(subject);
     	switch(cond['type']){
     	case 'I':
+    	case 'i':
     		action.setItem(cond['id']);
     		break;
     	case 'S':
+    	case 's':
     		action.setSkill(cond['id']);
     		break;
     	};
@@ -329,6 +369,7 @@ Imported['PhaseSkillTrait'] = 1.02;
     		}
     		text = text.replace('_name',subject.name());
     		text = text.replace('_item',item.name);
+    		if (BattleManager._selectedEscape){ this.push('wait') }
         	this.push('addText', text);
         	this.push('wait');
         	this.push('clear');
@@ -349,4 +390,25 @@ Imported['PhaseSkillTrait'] = 1.02;
 		if (BattleManager._callSaep){ return }
 		_SaEPS_GBattler_useItem.call(this,item);
 	};
+	
+    var _SaEPS_SBattle_commandEscape = Scene_Battle.prototype.commandEscape;
+    Scene_Battle.prototype.commandEscape = function() {
+    	BattleManager._selectedEscape = true;
+    	_SaEPS_SBattle_commandEscape.call(this);
+    };
+    
+    var _SaEPS_WBLog_updateWaitMode = Window_BattleLog.prototype.updateWaitMode;
+	Window_BattleLog.prototype.updateWaitMode = function() {
+		if ($gameMessage.isBusy()){ return true }
+		_SaEPS_WBLog_updateWaitMode.call(this);
+	}
+	
+	if (Imported.YEP_BattleEngineCore){
+	var _SaEPS_GBBase_updateStateActionEnd = Game_BattlerBase.prototype.updateStateActionEnd;
+	Game_BattlerBase.prototype.updateStateActionEnd = function() {
+		if (!BattleManager._saepPhase){
+			_SaEPS_GBBase_updateStateActionEnd.call(this);
+		}
+	};
+	}
 }());

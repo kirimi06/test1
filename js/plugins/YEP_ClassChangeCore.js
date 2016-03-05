@@ -11,7 +11,7 @@ Yanfly.CCC = Yanfly.CCC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 This plugin creates a system where your player
+ * @plugindesc v1.08 This plugin creates a system where your player
  * can change classes through the main menu.
  * @author Yanfly Engine Plugins
  *
@@ -203,6 +203,9 @@ Yanfly.CCC = Yanfly.CCC || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.07:
  * - Fixed a bug that carried over a previously changed actor's stats into the
  * stat comparison window.
@@ -275,9 +278,12 @@ Yanfly.Param.CCCLvFontSize = Number(Yanfly.Parameters['Class Level Font Size']);
 Yanfly.CCC.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
     if (!Yanfly.CCC.DataManager_isDatabaseLoaded.call(this)) return false;
-    this.processCCCNotetags1($dataClasses);
-    this.processCCCNotetags2($dataActors);
-    this.processCCCNotetags3($dataClasses);
+    if (!Yanfly._loaded_YEP_ClassChangeCore) {
+      this.processCCCNotetags1($dataClasses);
+      this.processCCCNotetags2($dataActors);
+      this.processCCCNotetags3($dataClasses);
+      Yanfly._loaded_YEP_ClassChangeCore = true;
+    }
     return true;
 };
 

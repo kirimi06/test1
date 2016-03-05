@@ -11,7 +11,7 @@ Yanfly.IS = Yanfly.IS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03a Players can now craft their own items in-game
+ * @plugindesc v1.05 Players can now craft their own items in-game
  * through an item synthesis system.
  * @author Yanfly Engine Plugins
  *
@@ -254,6 +254,13 @@ Yanfly.IS = Yanfly.IS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.04:
+ * - Added failsafes to prevent crashes from saved games that did not have this
+ * plugin already installed.
+ *
  * Version 1.03a:
  * - Fixed a bug that caused a crash for OpenSynthesis recipe commands.
  * - Fixed an issue with recipe counts not appearing right.
@@ -317,7 +324,8 @@ Yanfly.Param.ISDefPant = Number(Yanfly.Parameters['Default Pan']);
 
 Yanfly.IS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.IS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.IS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_ItemSynthesis) {
     this.processISNotetagsI($dataItems);
     this.processISNotetagsW($dataWeapons);
     this.processISNotetagsA($dataArmors);
@@ -325,10 +333,12 @@ DataManager.isDatabaseLoaded = function() {
     Yanfly.IS.SynthesisItemTotal   = 0;
     Yanfly.IS.SynthesisWeaponTotal = 0;
     Yanfly.IS.SynthesisArmorTotal  = 0;
-		this.processISNotetags1($dataItems, 0);
-	  this.processISNotetags1($dataWeapons, 1);
-	  this.processISNotetags1($dataArmors, 2);
-		return true;
+  	this.processISNotetags1($dataItems, 0);
+    this.processISNotetags1($dataWeapons, 1);
+    this.processISNotetags1($dataArmors, 2);
+    Yanfly._loaded_YEP_ItemSynthesis = true;
+  }
+	return true;
 };
 
 DataManager.processISNotetagsI = function(group) {
@@ -564,19 +574,19 @@ Game_System.prototype.isEnableSynthesis = function() {
 Game_System.prototype.totalRecipes = function() {
     var value = 0;
     $gameParty.items().forEach(function(item) {
-      if (item.recipeItem.length > 0) value += 1;
-      if (item.recipeWeapon.length > 0) value += 1;
-      if (item.recipeArmor.length > 0) value += 1;
+      if (item.recipeItem && item.recipeItem.length > 0) value += 1;
+      if (item.recipeWeapon && item.recipeWeapon.length > 0) value += 1;
+      if (item.recipeArmor && item.recipeArmor.length > 0) value += 1;
     }, this);
     $gameParty.weapons().forEach(function(item) {
-      if (item.recipeItem.length > 0) value += 1;
-      if (item.recipeWeapon.length > 0) value += 1;
-      if (item.recipeArmor.length > 0) value += 1;
+      if (item.recipeItem && item.recipeItem.length > 0) value += 1;
+      if (item.recipeWeapon && item.recipeWeapon.length > 0) value += 1;
+      if (item.recipeArmor && item.recipeArmor.length > 0) value += 1;
     }, this);
     $gameParty.armors().forEach(function(item) {
-      if (item.recipeItem.length > 0) value += 1;
-      if (item.recipeWeapon.length > 0) value += 1;
-      if (item.recipeArmor.length > 0) value += 1;
+      if (item.recipeItem && item.recipeItem.length > 0) value += 1;
+      if (item.recipeWeapon && item.recipeWeapon.length > 0) value += 1;
+      if (item.recipeArmor && item.recipeArmor.length > 0) value += 1;
     }, this);
     return value;
 };

@@ -11,7 +11,7 @@ Yanfly.SwE = Yanfly.SwE || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 This is utility plugin made to help randomize sets of
+ * @plugindesc v1.01 This is utility plugin made to help randomize sets of
  * enemies for battle.
  * @author Yanfly Engine Plugins
  *
@@ -50,6 +50,16 @@ Yanfly.SwE = Yanfly.SwE || {};
  *   above format. Enemies with matching names will be added to the random swap
  *   pool for the swap dummy. If you have multiple enemies in the database with
  *   the same name, priority will be given to the enemy with the highest ID.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -59,10 +69,13 @@ Yanfly.SwE = Yanfly.SwE || {};
 
 Yanfly.SwE.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.SwE.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.SwE.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_SwapEnemies) {
     this.processSwENotetagsE($dataEnemies);
     this.processSwENotetags1($dataEnemies);
-    return true;
+    Yanfly._loaded_YEP_SwapEnemies = true;
+  }
+  return true;
 };
 
 DataManager.processSwENotetagsE = function(group) {

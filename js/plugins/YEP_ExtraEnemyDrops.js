@@ -11,7 +11,7 @@ Yanfly.EED = Yanfly.EED || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 Allows your enemies to drop more than just three
+ * @plugindesc v1.04 Allows your enemies to drop more than just three
  * items as per the editor's limit.
  * @author Yanfly Engine Plugins
  *
@@ -345,6 +345,9 @@ Yanfly.EED = Yanfly.EED || {};
  * Changelog
  * ============================================================================
  *
+ * Version v1.04:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version v1.03:
  * - Fixed documentation errors.
  * - Fixed a bug with the Turn Count condition.
@@ -377,7 +380,8 @@ Yanfly.Param.Variables = String(Yanfly.Parameters['Variables']);
 
 Yanfly.EED.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.EED.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.EED.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_ExtraEnemyDrops) {
     this.processEEDNotetagsI($dataItems);
     this.processEEDNotetagsW($dataWeapons);
     this.processEEDNotetagsA($dataArmors);
@@ -385,7 +389,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processEEDNotetagsT($dataStates);
     this.processEEDNotetagsSys($dataSystem);
     this.processEEDNotetags1($dataEnemies);
-    return true;
+    Yanfly._loaded_YEP_ExtraEnemyDrops = true;
+  }
+  return true;
 };
 
 DataManager.processEEDNotetagsI = function(group) {

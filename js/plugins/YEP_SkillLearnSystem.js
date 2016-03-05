@@ -11,7 +11,7 @@ Yanfly.SLS = Yanfly.SLS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.07 Allows actors to learn skills from the skill menu
+ * @plugindesc v1.08 Allows actors to learn skills from the skill menu
  * through crafting them via items or otherwise.
  * @author Yanfly Engine Plugins
  *
@@ -228,6 +228,9 @@ Yanfly.SLS = Yanfly.SLS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.08:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.07:
  * - Updated the <Learn Require Level: x> notetag. If you are using the Class
  * Change Core, the requirement will now depend on the level of the class.
@@ -296,13 +299,16 @@ Yanfly.Param.SLSDefaultJp = Number(Yanfly.Parameters['Default JP Cost']);
 
 Yanfly.SLS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.SLS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.SLS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_SkillLearnSystem) {
     this.processSLSNotetagsI($dataItems);
     this.processSLSNotetagsW($dataWeapons);
     this.processSLSNotetagsA($dataArmors);
     this.processSLSNotetags1($dataClasses);
     this.processSLSNotetags2($dataSkills);
-    return true;
+    Yanfly._loaded_YEP_SkillLearnSystem = true;
+  }
+  return true;
 };
 
 DataManager.processSLSNotetagsI = function(group) {

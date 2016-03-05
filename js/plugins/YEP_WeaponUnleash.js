@@ -11,7 +11,7 @@ Yanfly.WUL = Yanfly.WUL || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 Replace the Attack command or give it the option of
+ * @plugindesc v1.01 Replace the Attack command or give it the option of
  * have a skill randomly occur when using it!
  * @author Yanfly Engine Plugins
  *
@@ -247,6 +247,16 @@ Yanfly.WUL = Yanfly.WUL || {};
  *   If a guard unleash check passes earlier in the list while there are still
  *   guard unleashes later in the list, that guard unleash will take priority
  *   and override all the following guard unleashes.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -263,7 +273,8 @@ Yanfly.Param = Yanfly.Param || {};
 
 Yanfly.WUL.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.WUL.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.WUL.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_WeaponUnleash) {
     this.processWULNotetagsS($dataSkills);
     this.processWULNotetags1($dataActors);
     this.processWULNotetags1($dataClasses);
@@ -272,7 +283,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processWULNotetags1($dataArmors);
     this.processWULNotetags1($dataStates);
     this.processWULNotetags2($dataSkills);
-    return true;
+    Yanfly._loaded_YEP_WeaponUnleash = true;
+  }
+  return true;
 };
 
 DataManager.processWULNotetagsS = function(group) {

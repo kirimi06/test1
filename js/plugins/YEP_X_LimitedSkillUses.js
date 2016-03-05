@@ -11,7 +11,7 @@ Yanfly.LSU = Yanfly.LSU || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 (Requires YEP_SkillCore.js) Make certain skills have
+ * @plugindesc v1.02 (Requires YEP_SkillCore.js) Make certain skills have
  * a limited amount of times they can be used in battle.
  * @author Yanfly Engine Plugins
  *
@@ -273,8 +273,12 @@ Yanfly.LSU = Yanfly.LSU || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.01:
+ * Version 1.02:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.01a:
  * - Optimization Update.
+ * - Various functions in the skill window will now return their x positions.
  *
  * Version 1.00:
  * - Finished Plugin!
@@ -318,7 +322,8 @@ Yanfly.Param.LSULoseRecover = Number(Yanfly.Parameters['Lose Recover']);
 
 Yanfly.LSU.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.LSU.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.LSU.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_LimitedSkillUses) {
     this.processLSUNotetagsS($dataSkills);
     this.processLSUNotetags1($dataSkills);
     this.processLSUNotetags2($dataSkills);
@@ -329,7 +334,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processLSUNotetags3($dataWeapons);
     this.processLSUNotetags3($dataArmors);
     this.processLSUNotetags3($dataStates);
-    return true;
+    Yanfly._loaded_YEP_X_LimitedSkillUses = true;
+  }
+  return true;
 };
 
 DataManager.processLSUNotetagsS = function(group) {
@@ -830,7 +837,8 @@ Window_SkillList.prototype.drawSkillCost = function(skill, wx, wy, width) {
     if (skill && this._actor.isSkillLimitedEmpty(skill)) {
       return this.drawSkillLimitEmpty(skill, wx, wy, width);
     }
-    Yanfly.LSU.Window_SkillList_drawSkillCost.call(this, skill, wx, wy, width);
+    return Yanfly.LSU.Window_SkillList_drawSkillCost.call(this, skill, wx,
+      wy, width);
 };
 
 Window_SkillList.prototype.drawSkillLimitEmpty = function(skill, wx, wy, ww) {
@@ -843,8 +851,10 @@ Window_SkillList.prototype.drawSkillLimitEmpty = function(skill, wx, wy, ww) {
     this.changeTextColor(this.textColor(Yanfly.Param.LSUTextColor));
     var text = Yanfly.Param.LSUEmpty;
     this.drawText(text, wx, wy, ww, 'right');
+    var returnWidth = ww - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
     this.resetTextColor();
     this.resetFontSettings();
+    return returnWidth;
 };
 
 Yanfly.LSU.Window_SkillList_dOC = Window_SkillList.prototype.drawOtherCost;
@@ -874,7 +884,7 @@ Window_SkillList.prototype.drawLimitedSkillUses = function(skill, wx, wy, dw) {
     var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
     this.resetTextColor();
     this.resetFontSettings();
-    return dw;
+    return returnWidth;
 };
 
 //=============================================================================

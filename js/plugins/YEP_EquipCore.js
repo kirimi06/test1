@@ -11,7 +11,7 @@ Yanfly.Equip = Yanfly.Equip || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.10 Allows for the equipment system to be more flexible to
+ * @plugindesc v1.11 Allows for the equipment system to be more flexible to
  * allow for unique equipment slots per class.
  * @author Yanfly Engine Plugins
  *
@@ -159,6 +159,9 @@ Yanfly.Equip = Yanfly.Equip || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.11:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.10:
  * - Fixed a bug that did not clear changes made to an actor's stats after
  * having unequipped them and then switching actors.
@@ -233,11 +236,14 @@ for (Yanfly.i = 0; Yanfly.i < Yanfly.Data.length; ++Yanfly.i) {
 
 Yanfly.Equip.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.Equip.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.Equip.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_EquipCore) {
     DataManager.processEquipNotetags1($dataClasses);
     DataManager.processEquipNotetags2($dataWeapons);
     DataManager.processEquipNotetags2($dataArmors);
-    return true;
+    Yanfly._loaded_YEP_EquipCore = true;
+  }
+  return true;
 };
 
 DataManager.processEquipNotetags1 = function(group) {

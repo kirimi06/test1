@@ -11,7 +11,7 @@ Yanfly.LS = Yanfly.LS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 Enables passive life steal traits without them being
+ * @plugindesc v1.01 Enables passive life steal traits without them being
  * active abilities but instead as passive traits.
  * @author Yanfly Engine Plugins
  *
@@ -226,6 +226,16 @@ Yanfly.LS = Yanfly.LS || {};
  *   The 'flate' variable is the bonus amount of flat bonus the related user
  *   will life steal HP/MP from its target relative to the damage dealt. This
  *   is a flat bonus value and stacks additively.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -233,7 +243,7 @@ Yanfly.LS = Yanfly.LS || {};
 // Parameter Variables
 //=============================================================================
 
-Yanfly.Parameters = PluginManager.parameters('YEP_Template');
+Yanfly.Parameters = PluginManager.parameters('YEP_LifeSteal');
 Yanfly.Param = Yanfly.Param || {};
 
 Yanfly.Param.LSHPOver = eval(String(Yanfly.Parameters['Enable HP Overheal']));
@@ -248,7 +258,8 @@ Yanfly.Param.LSMPNeg = eval(String(Yanfly.Parameters['Negative MP LifeSteal']));
 
 Yanfly.LS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.LS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.LS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_LifeSteal) {
     this.processLSNotetags1($dataActors);
     this.processLSNotetags1($dataClasses);
     this.processLSNotetags1($dataEnemies);
@@ -257,7 +268,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processLSNotetags1($dataStates);
     this.processLSNotetags2($dataSkills);
     this.processLSNotetags2($dataItems);
-    return true;
+    Yanfly._loaded_YEP_LifeSteal = true;
+  }
+  return true;
 };
 
 DataManager.processLSNotetags1 = function(group) {

@@ -11,7 +11,7 @@ Yanfly.XParam = Yanfly.XParam || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 Control the formulas of the extra parameters for
+ * @plugindesc v1.01 Control the formulas of the extra parameters for
  * HIT, EVA, CRI, CEV, MEV, MRF, CNT, HRG, MRG, and TRG.
  * @author Yanfly Engine Plugins
  *
@@ -358,8 +358,11 @@ Yanfly.XParam = Yanfly.XParam || {};
  * Changelog
  * ============================================================================
  *
- * Version BETA:
- * - Started Plugin!
+ * Version 1.01:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
+ * Version 1.00:
+ * - Finished Plugin!
  */
 //=============================================================================
 
@@ -388,14 +391,17 @@ Yanfly.Param.XParamFormula.push(String(Yanfly.Parameters['TRG Formula']));
 
 Yanfly.XParam.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.XParam.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.XParam.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_ExtraParamFormula) {
     this.processXParamNotetags($dataActors);
     this.processXParamNotetags($dataClasses);
     this.processXParamNotetags($dataEnemies);
     this.processXParamNotetags($dataWeapons);
     this.processXParamNotetags($dataArmors);
     this.processXParamNotetags($dataStates);
-    return true;
+    Yanfly._loaded_YEP_ExtraParamFormula = true;
+  }
+  return true;
 };
 
 DataManager.processXParamNotetags = function(group) {

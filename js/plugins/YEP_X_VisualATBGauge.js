@@ -11,7 +11,7 @@ Yanfly.VATB = Yanfly.VATB || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 (Requires YEP_BattleSysATB.js) Provides a visible ATB
+ * @plugindesc v1.03 (Requires YEP_BattleSysATB.js) Provides a visible ATB
  * gauge for your enemies!
  * @author Yanfly Engine Plugins
  *
@@ -76,6 +76,9 @@ Yanfly.VATB = Yanfly.VATB || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.03:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.02:
  * - Optimization update.
  *
@@ -109,9 +112,12 @@ Yanfly.Param.VATBThick = eval(String(Yanfly.Parameters['Use Thick Gauges']));
 
 Yanfly.VATB.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.VATB.DataManager_isDatabaseLoaded.call(this)) return false;
-    DataManager.processVATBNotetags1($dataEnemies);
-    return true;
+  if (!Yanfly.VATB.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_VisualATBGauge) {
+    this.processVATBNotetags1($dataEnemies);
+    Yanfly._loaded_YEP_X_VisualATBGauge = true;
+  }
+  return true;
 };
 
 DataManager.processVATBNotetags1 = function(group) {

@@ -11,7 +11,7 @@ Yanfly.BSC = Yanfly.BSC || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 Alter the basic mechanics behind buffs and states
+ * @plugindesc v1.07 Alter the basic mechanics behind buffs and states
  * that aren't adjustable within the RPG Maker editor.
  * @author Yanfly Engine Plugins
  *
@@ -449,6 +449,9 @@ Yanfly.BSC = Yanfly.BSC || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.06:
  * - Added new notetags for <Custom Battle Effect>, <Custom Victory Effect>,
  * <Custom Escape Effect>, and <Custom Defeat Effect> for Lunatic Mode.
@@ -507,7 +510,8 @@ Yanfly.Param.BSCShowEnemyTurns = eval(Yanfly.Param.BSCShowEnemyTurns);
 
 Yanfly.BSC.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.BSC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.BSC.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_BuffsStatesCore) {
     this.processBSCNotetagsT($dataStates);
     this.processBSCNotetags1($dataStates);
     this.processBSCNotetags2($dataActors);
@@ -519,7 +523,9 @@ DataManager.isDatabaseLoaded = function() {
     this.processBSCNotetags3($dataSkills);
     this.processBSCNotetags3($dataItems);
     this.processBSCNotetags4($dataEnemies);
-    return true;
+    Yanfly._loaded_YEP_BuffsStatesCore = true;
+  }
+  return true;
 };
 
 DataManager.processBSCNotetagsT = function(group) {
@@ -544,7 +550,7 @@ DataManager.processBSCNotetags1 = function(group) {
     obj.turnBufferY = Yanfly.Param.BSCTurnBufferY;
     obj.turnColor = Yanfly.Param.BSCTurnColor;
     obj.reapplyRules = Yanfly.Param.BSCReapplyRules;
-    obj.customEffectEval = obj.customEffectEval || {};
+    obj.customEffectEval = {};
     obj.customEffectEval['addState'] = '';
     obj.customEffectEval['removeState'] = '';
     obj.customEffectEval['leaveState'] = '';

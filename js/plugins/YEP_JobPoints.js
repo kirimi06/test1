@@ -11,7 +11,7 @@ Yanfly.JP = Yanfly.JP || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.06 This plugin by itself doesn't do much, but it enables
+ * @plugindesc v1.07 This plugin by itself doesn't do much, but it enables
  * actors to acquire JP (job points) used for other plugins.
  * @author Yanfly Engine Plugins
  *
@@ -191,6 +191,9 @@ Yanfly.JP = Yanfly.JP || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.07:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.06:
  * - Added 'Alive Actors' plugin parameter to prevent dead actors from gaining
  * JP from enemies. Any JP that currently dead actors earned in battle from
@@ -250,16 +253,19 @@ Yanfly.Param.JpAftermathEarn = String(Yanfly.Parameters['Aftermath JP Earned']);
 
 Yanfly.JP.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.JP.DataManager_isDatabaseLoaded.call(this)) return false;
-		this.processJPNotetags1($dataActors);
-	  this.processJPNotetags2($dataSkills);
-	  this.processJPNotetags2($dataItems);
-		this.processJPNotetags3($dataEnemies);
-		this.processJPNotetags4($dataClasses);
-		this.processJPNotetags4($dataWeapons);
-		this.processJPNotetags4($dataArmors);
-		this.processJPNotetags4($dataStates);
-		return true;
+  if (!Yanfly.JP.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_JobPoints) {
+  	this.processJPNotetags1($dataActors);
+    this.processJPNotetags2($dataSkills);
+    this.processJPNotetags2($dataItems);
+  	this.processJPNotetags3($dataEnemies);
+  	this.processJPNotetags4($dataClasses);
+  	this.processJPNotetags4($dataWeapons);
+  	this.processJPNotetags4($dataArmors);
+  	this.processJPNotetags4($dataStates);
+    Yanfly._loaded_YEP_JobPoints = true;
+  }
+	return true;
 };
 
 DataManager.processJPNotetags1 = function(group) {

@@ -11,7 +11,7 @@ Yanfly.IUS = Yanfly.IUS || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04 (Requires YEP_ItemCore.js) Allows independent items to
+ * @plugindesc v1.05 (Requires YEP_ItemCore.js) Allows independent items to
  * be upgradeable and gain better stats.
  * @author Yanfly Engine Plugins
  *
@@ -191,6 +191,9 @@ Yanfly.IUS = Yanfly.IUS || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.04:
  * - Added 'Text Color: x' upgrade effect to allow you to change the text color
  * of independent items.
@@ -235,12 +238,15 @@ Yanfly.Param.IUSUpgradeSound = String(Yanfly.Parameters['Default Sound']);
 
 Yanfly.IUS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.IUS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.IUS.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_X_ItemUpgradeSlots) {
     this.processUpgradeNotetags1($dataItems);
     this.processUpgradeNotetags1($dataWeapons);
     this.processUpgradeNotetags1($dataArmors);
     this.processUpgradeNotetags2($dataItems);
-		return true;
+    Yanfly._loaded_YEP_X_ItemUpgradeSlots = true;
+  }
+	return true;
 };
 
 DataManager.processUpgradeNotetags1 = function(group) {
@@ -1067,7 +1073,7 @@ Window_UpgradeItemList.prototype.makeItemList = function() {
 };
 
 //=============================================================================
-// Window_ItemActionCommand
+// Scene_Item
 //=============================================================================
 
 Yanfly.IUS.Scene_Item_createItemWindow = Scene_Item.prototype.createItemWindow;

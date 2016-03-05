@@ -11,7 +11,7 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.04a This plugin allows you to structure battle A.I.
+ * @plugindesc v1.05 This plugin allows you to structure battle A.I.
  * patterns with more control.
  * @author Yanfly Engine Plugins
  *
@@ -372,6 +372,9 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.05:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.04a:
  * - Fixed a bug that would cause a crash with the None scope for skills.
  * - Switched over a function to operate in another for better optimization.
@@ -409,12 +412,15 @@ Yanfly.Param.CoreAIDefaultLevel = Number(Yanfly.Parameters['Default AI Level']);
 
 Yanfly.CoreAI.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.CoreAI.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.CoreAI.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_BattleAICore) {
     this.processCoreAINotetags1($dataEnemies);
-		this.processCoreAINotetags2($dataSkills);
+  	this.processCoreAINotetags2($dataSkills);
     this.processCoreAINotetags3($dataStates);
     this.processCoreAINotetags4($dataSystem);
-		return true;
+    Yanfly._loaded_YEP_BattleAICore = true;
+  }
+	return true;
 };
 
 DataManager.processCoreAINotetags1 = function(group) {

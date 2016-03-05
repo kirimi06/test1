@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.5) Adiciona flechas de indicação nos alvos selecionados.
+ * @plugindesc (v1.6) Adiciona flechas de indicação nos alvos selecionados.
  * @author Moghunter
  *
  * @param X-Axis
@@ -46,9 +46,17 @@
  * @desc Selecionar os alvos ao "clicar" nos alvos.
  * @default true
  *
+ * @param  Help All Allies
+ * @desc Definição do texto no modo todos os alvos.
+ * @default All Allies
+ *
+ * @param  Help All Enemies
+ * @desc Definição do texto no modo todos os alvos.
+ * @default All Enemies 
+ *
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cursor (v1.4) +++
+ * +++ MOG - Battle Cursor (v1.6) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -73,6 +81,7 @@
  * ============================================================================
  * HISTÓRICO
  * ============================================================================
+ * (v1.6) - Correção do texto de ajuda no modo todos os alvos.
  * (v1.5) - Melhoria na compatibilidade de plugins.
  * (v1.4) - Correção de não piscar todos os battler na seleção de todos alvos.
  * (v1.3) - Correção de não atualizar o nome no efeito transformação.
@@ -99,7 +108,9 @@
 	Moghunter.bcursor_sort_x = String(Moghunter.parameters['Sort X-Axis'] || "true");
 	Moghunter.bcursor_window = String(Moghunter.parameters['Window Visible'] || "false");
 	Moghunter.bcursor_touch_selection = String(Moghunter.parameters['Touch Selection'] || "true");
-	
+	Moghunter.bcursor_helpAllAllies = String(Moghunter.parameters['Help All Allies'] || "All Allies");
+	Moghunter.bcursor_helpAllEnemies = String(Moghunter.parameters['Help All Enemies'] || "All Enemies");
+		
 //=============================================================================
 // ** Game_Temp
 //=============================================================================
@@ -498,6 +509,19 @@ Game_Party.prototype.select = function(activeMember) {
 	_mog_bat_cursor_gparty_select.call(this,activeMember);
 };
 
+//=============================================================================
+// ** Window Help
+//=============================================================================	
+
+//==============================
+// * Refresh
+//==============================
+var _mog_bcursor_whelp_refresh = Window_Help.prototype.drawText;
+Window_Help.prototype.drawText = function(text, x, y, maxWidth, align) {
+    if ($gameTemp._arrowAllTargets[0]) {text = String(Moghunter.bcursor_helpAllEnemies)};
+	if ($gameTemp._arrowAllTargets[1]) {text = String(Moghunter.bcursor_helpAllAllies)};
+	_mog_bcursor_whelp_refresh.call(this,text, x, y, maxWidth, align);	
+};
 
 //=============================================================================
 // ** Window BattleActor
@@ -758,4 +782,3 @@ Window_BattleEnemy.prototype.processTouch = function() {
 	};
 	_alias_mog_bcursor_wenmy_processTouch.call(this);
 };
-

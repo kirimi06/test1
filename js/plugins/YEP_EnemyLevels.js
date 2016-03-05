@@ -11,7 +11,7 @@ Yanfly.ELV = Yanfly.ELV || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.03 This plugin enables giving your enemies levels and
+ * @plugindesc v1.04 This plugin enables giving your enemies levels and
  * parameter changes with those levels.
  * @author Yanfly Engine Plugins
  *
@@ -484,6 +484,9 @@ Yanfly.ELV = Yanfly.ELV || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04:
+ * - Updated for RPG Maker MV version 1.1.0.
+ *
  * Version 1.03:
  * - Fixed a bug with average level calculation types for enemies.
  *
@@ -560,12 +563,15 @@ Yanfly.Param.ELVFlat = [
 
 Yanfly.ELV.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
 DataManager.isDatabaseLoaded = function() {
-    if (!Yanfly.ELV.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly.ELV.DataManager_isDatabaseLoaded.call(this)) return false;
+  if (!Yanfly._loaded_YEP_EnemyLevels) {
     this.processELVNotetagsS($dataSkills);
     this.processELVNotetags1($dataEnemies);
     this.processELVNotetags2($dataSkills);
     this.processELVNotetags2($dataItems);
-    return true;
+    Yanfly._loaded_YEP_EnemyLevels = true;
+  }
+  return true;
 };
 
 DataManager.processELVNotetagsS = function(group) {

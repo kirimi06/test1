@@ -1,21 +1,26 @@
 //
-//  スキル使用条件 ver1.00
+//  スキル使用条件 ver1.01
 //
 // author yana
 //
 
 var Imported = Imported || {};
-Imported['TermsOfSkillUse'] = 1.00;
+Imported['TermsOfSkillUse'] = 1.01;
 
 /*:
- * @plugindesc ver1.00/スキルやアイテムに詳細な使用条件を設定できます。
+ * @plugindesc ver1.01/スキルやアイテムに詳細な使用条件を設定できます。
  * CoditionallyCoreのプラグインが必要です。
  * @author Yana
  * 
  * @param Unselectable Target Color
- * @desc　使用条件により選択不能なターゲットの表示色。
+ * @desc　使用条件により選択不能なターゲットの表示色です。
  * Window.pngの右下のインデックスで指定します。
  * @default 5
+ * 
+ * @param Unselectable Usable
+ * @desc　使用条件により選択不能にするかの設定です。
+ * falseの場合、スキルが使用できるかどうかのみの判定となります。
+ * @default true
  * 
  * @help ------------------------------------------------------
  * 注意
@@ -51,6 +56,9 @@ Imported['TermsOfSkillUse'] = 1.00;
  * 利用規約：特になし。素材利用は自己責任でお願いします。
  * ------------------------------------------------------
  * 更新履歴:
+ * ver1.01:
+ * ゲームをロードした時に、正常に使用条件がクリアされていないバグを修正。
+ * 条件を満たさない対象が対象にならない機能を無効化する設定を追加。
  * ver1.00:
  * 公開
  */
@@ -59,6 +67,7 @@ Imported['TermsOfSkillUse'] = 1.00;
 	
 	var parameters = PluginManager.parameters('TermsOfSkillUse');
 	var unselectableTargetColor = Number(parameters['Unselectable Target Color'] || 5);
+	var unselectableUsable = String(parameters['Unselectable Usable']) === 'true';
 	
 	function CondSkillManager() {
     	throw new Error('This is a static class');
@@ -173,12 +182,27 @@ Imported['TermsOfSkillUse'] = 1.00;
 	};
 	Game_BattlerBase.prototype.initLastCond = function(){
 		this._lastCond = { 'item':[],'skill':[] };
-	}
+	};
+	
+	Game_Unit.prototype.initLastCond = function() {
+		for (var i=0;i<this.members().length;i++){
+			var member = this.members()[i]
+			if (member){ member.initLastCond() }
+		}
+	};
+	
+	var _tOSU_BManager_startBattle = BattleManager.startBattle;
+	BattleManager.startBattle = function() {
+		$gameParty.initLastCond();
+		$gameTroop.initLastCond();
+		_tOSU_BManager_startBattle.call(this);
+	};
 	
 	////////////////////////////////////////////////////////////////////////////
 	
 	// 条件を満たさない対象を判定する
 	Window_BattleActor.prototype.isEnabled = function(index){
+		if (!unselectableUsable){ return true }
 		if (!BattleManager.inputtingAction()){ return true }
 		var item = BattleManager.inputtingAction().item();
 		return $gameParty.battleMembers()[index].lastCond(item);
@@ -204,6 +228,7 @@ Imported['TermsOfSkillUse'] = 1.00;
 	};
 	// 条件を満たさない対象を判定する
 	Window_BattleEnemy.prototype.isEnabled = function(index){
+		if (!unselectableUsable){ return true }
 		if (!BattleManager.inputtingAction()){ return true }
 		var item = BattleManager.inputtingAction().item();
 		return this._enemies[index].lastCond(item);
@@ -243,6 +268,7 @@ Imported['TermsOfSkillUse'] = 1.00;
 	var _tOSU_GParty_members = Game_Party.prototype.members;
 	Game_Party.prototype.members = function(){
 		var members = _tOSU_GParty_members.call(this);
+		if (!unselectableUsable){ return members }
 		if (CondSkillManager._callRT && !CondSkillManager._callAs){
 			members = members.filter(function(member){
 				return member.lastCond(CondSkillManager._callRT);
@@ -254,6 +280,7 @@ Imported['TermsOfSkillUse'] = 1.00;
 	var _tOSU_GTroop_members = Game_Troop.prototype.members;
 	Game_Troop.prototype.members = function(){
 		var members = _tOSU_GTroop_members.call(this);
+		if (!unselectableUsable){ return members }
 		if (CondSkillManager._callRT && !CondSkillManager._callAs){
 			members = members.filter(function(member){
 				return member.lastCond(CondSkillManager._callRT);
