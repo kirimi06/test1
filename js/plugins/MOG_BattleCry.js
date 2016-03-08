@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.1) Adiciona vozes na batalha.
+ * @plugindesc (v1.2) Adiciona vozes na batalha.
  * @author Moghunter
  *
  * @param Volume
@@ -12,7 +12,7 @@
  * 
  * @help  
  * =============================================================================
- * +++ MOG - Battle Cry (v1.1) +++
+ * +++ MOG - Battle Cry (v1.2) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -23,6 +23,7 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
+ * (v1.2) Compatibilidade com MOG Battle Transitions. 
  * (v1.1) Corrigido o bug de não mover o personagem na hora da ação.
  */
 
@@ -279,8 +280,11 @@ BattleManager.randomActor = function() {
 var _alias_mog_bmngr_startBattle = BattleManager.startBattle;
 BattleManager.startBattle = function() {
      _alias_mog_bmngr_startBattle.call(this);
-	 var actor = this.randomActor();
-     if (actor) {SoundManager.selectVoice(actor._v_start)};
+	 if (!Imported.MOG_BattleTransitions || 
+	      (Imported.MOG_BattleTransitions && $gameSystem._treType[1] === -1)) {
+	     var actor = this.randomActor();
+        if (actor) {SoundManager.selectVoice(actor._v_start)};
+     };
 };
 
 //==================================

@@ -2,11 +2,11 @@
     Scene_Menu.prototype.create = function() {
         Scene_MenuBase.prototype.create.call(this);
         this.createCommandWindow();
-        this.createActorPortrait();
-        this.createCommandImages();
+        this.createGoldWindow();
+        this.createStatusWindow();
     };
     
-    Scene_Menu.prototype.createCommandImages = function() {
+        Scene_Menu.prototype.createCommandImages = function() {
         this._itemButton = new Sprite();
         this._skillButton = new Sprite();
         this._equipButton = new Sprite();
@@ -40,7 +40,7 @@
         }
     }
 
-    Scene_Menu.prototype.start = function(){
+        Scene_Menu.prototype.start = function(){
     Scene_MenuBase.prototype.start.call(this);
 };
     Scene_Menu.prototype.createCommandWindow = function() {

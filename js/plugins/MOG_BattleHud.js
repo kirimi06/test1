@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v2.5) Permite customizar o layout de batalha.
+ * @plugindesc (v2.6) Permite customizar o layout de batalha.
  * @author Moghunter
  *
  * @param Hud X-Axis
@@ -530,7 +530,7 @@
  * @desc Definição do posição X-axis do layout.
  * @default 0   
  *
- * @param L Actor Y-Axis
+ * @param L SKill Y-Axis
  * @desc Definição do posição Y-axis do layout.
  * @default -67   
  *
@@ -578,6 +578,14 @@
  * @desc Ativar o Layout da tela.
  * @default true
  *
+ * @param Screen X-Axis
+ * @desc Definição do posição X-axis da imagem.
+ * @default 0
+ *
+ * @param Screen Y-Axis
+ * @desc Definição do posição Y-axis da imagem.
+ * @default 0
+ *
  * @param >> CUSTOM POSITION ===================
  * @desc 
  * @default   
@@ -624,7 +632,7 @@
  *
  * @help  
  * =============================================================================
- * +++ MOG_BattleHud (v2.5) +++
+ * +++ MOG_BattleHud (v2.6) +++
  * By Moghunter 
  * https://atelierrgss.wordpress.com/
  * =============================================================================
@@ -664,7 +672,8 @@
  * =============================================================================
  * HISTÓRICO
  * =============================================================================
- * (2.5) - Correção de alguns plugins parameters não funcionarem.
+ * (2.6) - Correção de parametro da posição do Screen Layout Y. 
+ * (2.5) - Correção de alguns plugins parameters não fucionarem
  * (2.4) - Correção de não apresentar os ícones de Buff e Debuff. 
  * (2.3) - Melhoria na codificação.
  * (2.2) - Adição da opção do alinhamento dos números. 
@@ -712,11 +721,13 @@
     // Layout Overlay
 	Moghunter.bhud_layoverlay_visible = String(Moghunter.parameters['Layout2 Visible'] || "true");
 	Moghunter.bhud_layoverlay_x = Number(Moghunter.parameters['Layout2 X-Axis'] || 0);
-	Moghunter.bhud_layoverlay_y = Number(Moghunter.parameters['Layout2 X-Axis'] || 0);
+	Moghunter.bhud_layoverlay_y = Number(Moghunter.parameters['Layout2 Y-Axis'] || 0);
 	
     // Screen Layout
 	Moghunter.bhud_screen_layout = String(Moghunter.parameters['Screen Layout'] || true);
-	
+	Moghunter.bhud_screen_layout_x = Number(Moghunter.parameters['Screen X-Axis'] || 0);
+	Moghunter.bhud_screen_layout_y = Number(Moghunter.parameters['Screen Y-Axis'] || 0);
+		
 	// TURN POSITION
 	Moghunter.bhud_turn_visible = String(Moghunter.parameters['Turn Visible'] || true);
 	Moghunter.bhud_turn_pos_x = Number(Moghunter.parameters['Turn X-Axis'] || 0);
@@ -1345,6 +1356,8 @@ Spriteset_Battle.prototype.create_battle_hud = function() {
 Spriteset_Battle.prototype.create_screen_layout = function() {	
 	this._screen_layout = new Sprite(ImageManager.loadBHud("Layout_Screen"));
 	this._screen_layout.opacity = 0;
+	this._screen_layout.x = Moghunter.bhud_screen_layout_x;
+	this._screen_layout.y = Moghunter.bhud_screen_layout_y;
     this.addChild(this._screen_layout);
 };
 
@@ -1749,8 +1762,8 @@ Battle_Hud.prototype.refresh_position = function() {
 	    this._turn.y = this._pos_y + Moghunter.bhud_turn_pos_y;
 	 };
 	 if (this._layout2) { 
-	  	 this._layout2.x = this._pos_x;
-	     this._layout2.y = this._pos_y;
+	  	 this._layout2.x = this._pos_x + Moghunter.bhud_layoverlay_x;
+	     this._layout2.y = this._pos_y + Moghunter.bhud_layoverlay_y;
      };
 	 this._battler._face_pos = [this._face.x,this._face.y]; 
 };

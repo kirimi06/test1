@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc (v1.2) Apresenta a quantidade de acertos no alvo.
+ * @plugindesc (v1.3) Apresenta a quantidade de acertos no alvo.
  * @author Moghunter
  *
  * @param C HIT Layout X-Axis
@@ -55,6 +55,7 @@
  * =============================================================================
  * ** Histórico **
  * =============================================================================
+ * v1.3 - Melhoria no tempo de apresentação do contador.  
  * v1.2 - Correção do setup do plugin. 
  * v1.1 - Correção do glitch  de piscar o layout no começo da batalha.
  *      
@@ -117,7 +118,8 @@ Game_Action.prototype.executeDamage = function(target, value) {
 		$gameTemp.combo_data[1] += 1;
 		$gameTemp.combo_data[2] += value;}
 	else if (this.subject().isEnemy() && target.isActor()) {
-		$gameTemp.combo_data[3] = true;		
+		$gameTemp.combo_data[3] = true;	
+		$gameTemp.combo_data[4] = false;
 	};
 };
 
@@ -126,20 +128,21 @@ Game_Action.prototype.executeDamage = function(target, value) {
 //=============================================================================
 
 //==============================
-// * updateAction
+// * Start Action
 //==============================
-var _alias_mog_combocounter_bm_update = BattleManager.update
-BattleManager.update = function() {
-    _alias_mog_combocounter_bm_update.call(this);
-	if (!this.isBusyCCounter()) {$gameTemp.combo_data[4] = false;}
-	else { $gameTemp.combo_data[4] = true};
+var _mog_ccount_bmngr_startAction = BattleManager.startAction;
+BattleManager.startAction = function() {
+    $gameTemp.combo_data[4] = true;
+	_mog_ccount_bmngr_startAction.call(this);
 };
 
 //==============================
-// * isBusyCCounter
+// * End Action
 //==============================
-BattleManager.isBusyCCounter = function() {
-    return (this._spriteset.isBusy() || this._logWindow.isBusy());
+var _mog_ccount_bmngr_endAction = BattleManager.endAction;
+BattleManager.endAction = function() {
+	_mog_ccount_bmngr_endAction.call(this);
+	$gameTemp.combo_data[4] = false;
 };
 
 //=============================================================================
